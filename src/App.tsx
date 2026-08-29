@@ -10,6 +10,7 @@ import { ClipboardIcon, CalendarIcon, MoreIcon } from './components/icons'
 import { useScrolled } from './hooks/useScrolled'
 import { useHouseholdSync } from './hooks/useHouseholdSync'
 import JoinInvite from './components/JoinInvite'
+import InstallBanner from './components/InstallBanner'
 
 type Tab = 'list' | 'recipes' | 'planning' | 'shopping'
 
@@ -158,6 +159,8 @@ export default function App() {
           </div>
         </div>
       </header>
+
+      <InstallBanner />
 
       <main className="flex-1 overflow-y-auto pb-16 sm:pb-0">
         {showSettings ? (
