@@ -8,7 +8,8 @@ import { categoryColorKey } from '../data/categoryColors'
 import { createHousehold, fetchHouseholdName, renameHousehold } from '../lib/household'
 import CategoryIconPicker from './CategoryIconPicker'
 import StoreIconPicker from './StoreIconPicker'
-import { CheckIcon, CopyIcon, CrossIcon, PlusIcon, TrashIcon } from './icons'
+import HouseholdShareModal from './HouseholdShareModal'
+import { CheckIcon, CopyIcon, CrossIcon, PlusIcon, ShareIcon, TrashIcon } from './icons'
 import type { StoreIconValue } from '../types'
 
 let nextId = 0
@@ -137,6 +138,7 @@ function HouseholdSection() {
   const [nameLocal, setNameLocal] = useState('')
   const [toast, setToast] = useState<string | null>(null)
   const toastTimer = useRef<ReturnType<typeof setTimeout>>()
+  const [showShare, setShowShare] = useState(false)
 
   const active = households.find((h) => h.code === activeCode) ?? null
   const others = households.filter((h) => h.code !== activeCode)
@@ -267,7 +269,14 @@ function HouseholdSection() {
                 {copied ? <CheckIcon className="h-4 w-4" /> : <CopyIcon className="h-4 w-4" />}
               </button>
             </div>
-            <p className="text-xs text-slate-400">Partage ce code pour inviter quelqu'un</p>
+            <button
+              type="button"
+              onClick={() => setShowShare(true)}
+              className="flex items-center gap-1.5 rounded-full bg-brand-600 px-4 py-2 text-sm font-bold text-white hover:bg-brand-700"
+            >
+              <ShareIcon className="h-4 w-4" />
+              Inviter quelqu'un
+            </button>
             <button
               type="button"
               onClick={() => leave(active.code)}
@@ -278,6 +287,10 @@ function HouseholdSection() {
           </div>
         ) : (
           <p className="text-center text-sm text-slate-500">Aucun foyer actif pour le moment.</p>
+        )}
+
+        {showShare && active && (
+          <HouseholdShareModal code={active.code} name={active.name} onClose={() => setShowShare(false)} />
         )}
 
         {others.length > 0 && (

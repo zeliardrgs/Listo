@@ -9,6 +9,7 @@ import SettingsIcon from './components/SettingsIcon'
 import { ClipboardIcon, CalendarIcon } from './components/icons'
 import { useScrolled } from './hooks/useScrolled'
 import { useHouseholdSync } from './hooks/useHouseholdSync'
+import JoinInvite from './components/JoinInvite'
 
 type Tab = 'list' | 'recipes' | 'planning' | 'shopping'
 
@@ -122,6 +123,8 @@ export default function App() {
           </>
         )}
       </main>
+
+      <JoinInvite />
     </div>
   )
 }

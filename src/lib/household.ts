@@ -38,3 +38,24 @@ export async function createHousehold(name: string): Promise<string> {
 export async function renameHousehold(code: string, name: string): Promise<void> {
   await setDoc(doc(db, 'households', code), { name: name.trim() || code }, { merge: true })
 }
+
+const JOIN_PARAM = 'join'
+
+export function buildJoinLink(code: string): string {
+  const url = new URL(window.location.href)
+  url.search = ''
+  url.hash = ''
+  url.searchParams.set(JOIN_PARAM, code)
+  return url.toString()
+}
+
+// Reads (and strips) a household code from a shared join link's query
+// string, e.g. `?join=ABC123`.
+export function consumeJoinCodeFromUrl(): string | null {
+  const url = new URL(window.location.href)
+  const code = url.searchParams.get(JOIN_PARAM)
+  if (!code) return null
+  url.searchParams.delete(JOIN_PARAM)
+  window.history.replaceState(null, '', url.toString())
+  return code.trim().toUpperCase()
+}
