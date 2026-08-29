@@ -3,15 +3,53 @@ import { doc, onSnapshot, setDoc } from 'firebase/firestore'
 import { db } from '../lib/firebase'
 import { useAppStore } from '../store/useAppStore'
 import { useHouseholdStore } from '../store/useHouseholdStore'
-import { emptySyncableState, pickSyncable, type SyncableState } from '../lib/sync'
+import { emptySyncedAppData, pickConfig, type SharedConfig } from '../lib/sync'
+import { syncKeyedCollection } from '../lib/collectionSync'
+import type { PlanningItem, Recipe, ShoppingItem } from '../types'
 
 const PUSH_DEBOUNCE_MS = 400
 
-// Keeps the app store in sync with the active household's Firestore
-// document: pulls remote changes in real time (works offline too, from
-// Firestore's local cache) and pushes local changes back, debounced.
-// `lastRemoteJSON`/`lastPushedJSON` short-circuit the echo a write of our
-// own creates when it round-trips back through onSnapshot.
+function arrayToRecord<T extends { id: string }>(arr: T[]): Record<string, T> {
+  const out: Record<string, T> = {}
+  arr.forEach((item) => {
+    out[item.id] = item
+  })
+  return out
+}
+
+interface SlotValue {
+  items: PlanningItem[]
+  note: string
+}
+
+function getSlotsLocal(): Record<string, SlotValue> {
+  const { planningSlots, planningNotes } = useAppStore.getState()
+  const keys = new Set([...Object.keys(planningSlots), ...Object.keys(planningNotes)])
+  const out: Record<string, SlotValue> = {}
+  keys.forEach((key) => {
+    const items = planningSlots[key] || []
+    const note = planningNotes[key] || ''
+    if (items.length > 0 || note) out[key] = { items, note }
+  })
+  return out
+}
+
+function applySlotsLocal(next: Record<string, SlotValue>) {
+  const planningSlots: Record<string, PlanningItem[]> = {}
+  const planningNotes: Record<string, string> = {}
+  Object.entries(next).forEach(([key, v]) => {
+    if (v.items?.length) planningSlots[key] = v.items
+    if (v.note) planningNotes[key] = v.note
+  })
+  useAppStore.setState({ planningSlots, planningNotes })
+}
+
+// Keeps the app store in sync with the active household: the small,
+// rarely-changed settings (stores/categories/tags/overrides) sync as one
+// document, while items/recipes/planning queue/planning slots each sync as
+// their own Firestore subcollection (one doc per entity) via
+// syncKeyedCollection — so two devices editing different things offline
+// never clobber each other's changes when they reconnect.
 export function useHouseholdSync() {
   const activeCode = useHouseholdStore((s) => s.activeCode)
   // Persists across re-renders (unlike a variable inside the effect) so we
@@ -21,61 +59,87 @@ export function useHouseholdSync() {
 
   useEffect(() => {
     if (previousCode.current !== null && previousCode.current !== activeCode) {
-      useAppStore.setState(emptySyncableState())
+      useAppStore.setState(emptySyncedAppData())
     }
     previousCode.current = activeCode
 
     if (!activeCode) return
 
-    const ref = doc(db, 'households', activeCode)
-    let lastRemoteJSON: string | null = null
-    let lastPushedJSON: string | null = null
-    let receivedFirstSnapshot = false
-    let pushTimer: ReturnType<typeof setTimeout> | undefined
+    const stopFns: Array<() => void> = []
 
-    const unsubscribeSnapshot = onSnapshot(ref, (snap) => {
-      const data = snap.data()
-      const remote = data?.appState as SyncableState | undefined
+    stopFns.push(
+      syncKeyedCollection<ShoppingItem>(
+        activeCode,
+        'items',
+        () => arrayToRecord(useAppStore.getState().items),
+        (rec) => useAppStore.setState({ items: Object.values(rec) })
+      )
+    )
+    stopFns.push(
+      syncKeyedCollection<Recipe>(
+        activeCode,
+        'recipes',
+        () => arrayToRecord(useAppStore.getState().recipes),
+        (rec) => useAppStore.setState({ recipes: Object.values(rec) })
+      )
+    )
+    stopFns.push(
+      syncKeyedCollection<PlanningItem>(
+        activeCode,
+        'planningQueue',
+        () => arrayToRecord(useAppStore.getState().planningQueue),
+        (rec) => useAppStore.setState({ planningQueue: Object.values(rec) })
+      )
+    )
+    stopFns.push(syncKeyedCollection<SlotValue>(activeCode, 'planningSlots', getSlotsLocal, applySlotsLocal))
+
+    // Shared settings (stores/categories/tags/overrides): one small document,
+    // rarely edited concurrently, so a plain whole-object sync is enough.
+    const configRef = doc(db, 'households', activeCode)
+    let lastConfigRemoteJSON: string | null = null
+    let lastConfigPushedJSON: string | null = null
+    let receivedFirstConfig = false
+    let configPushTimer: ReturnType<typeof setTimeout> | undefined
+
+    const unsubscribeConfigSnapshot = onSnapshot(configRef, (snap) => {
+      const remote = snap.data()?.config as SharedConfig | undefined
       const remoteJSON = remote ? JSON.stringify(remote) : null
 
-      const remoteName = data?.name as string | undefined
-      if (remoteName) useHouseholdStore.getState().updateName(activeCode, remoteName)
-
-      if (!receivedFirstSnapshot) {
-        receivedFirstSnapshot = true
+      if (!receivedFirstConfig) {
+        receivedFirstConfig = true
         if (remote) {
-          lastRemoteJSON = remoteJSON
+          lastConfigRemoteJSON = remoteJSON
           useAppStore.setState(remote)
         } else {
-          // Fresh household with no shared data yet: seed it with whatever
-          // this device currently has locally.
-          const initial = pickSyncable(useAppStore.getState())
-          lastPushedJSON = JSON.stringify(initial)
-          setDoc(ref, { appState: initial }, { merge: true })
+          const initial = pickConfig(useAppStore.getState())
+          lastConfigPushedJSON = JSON.stringify(initial)
+          setDoc(configRef, { config: initial }, { merge: true })
         }
         return
       }
 
-      if (remoteJSON === lastPushedJSON) return
-      lastRemoteJSON = remoteJSON
+      if (remoteJSON === lastConfigPushedJSON) return
+      lastConfigRemoteJSON = remoteJSON
       if (remote) useAppStore.setState(remote)
     })
 
-    const unsubscribeStore = useAppStore.subscribe((state) => {
-      const syncable = pickSyncable(state)
-      const json = JSON.stringify(syncable)
-      if (json === lastRemoteJSON) return
-      clearTimeout(pushTimer)
-      pushTimer = setTimeout(() => {
-        lastPushedJSON = json
-        setDoc(ref, { appState: syncable }, { merge: true })
+    const unsubscribeConfigStore = useAppStore.subscribe((state) => {
+      const config = pickConfig(state)
+      const json = JSON.stringify(config)
+      if (json === lastConfigRemoteJSON) return
+      clearTimeout(configPushTimer)
+      configPushTimer = setTimeout(() => {
+        lastConfigPushedJSON = json
+        setDoc(configRef, { config }, { merge: true })
       }, PUSH_DEBOUNCE_MS)
     })
 
-    return () => {
-      unsubscribeSnapshot()
-      unsubscribeStore()
-      clearTimeout(pushTimer)
-    }
+    stopFns.push(() => {
+      unsubscribeConfigSnapshot()
+      unsubscribeConfigStore()
+      clearTimeout(configPushTimer)
+    })
+
+    return () => stopFns.forEach((stop) => stop())
   }, [activeCode])
 }

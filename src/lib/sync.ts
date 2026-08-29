@@ -1,10 +1,11 @@
 import type { PlanningItem, Recipe, ShoppingItem, StoreIconValue } from '../types'
 
-// The slice of the app store that's shared within a household. Notably
-// excludes `listSortMode`, which is a per-device UI preference.
-export interface SyncableState {
-  items: ShoppingItem[]
-  recipes: Recipe[]
+// Settings-ish fields, shared within a household as one small document since
+// they change rarely and concurrent edits are unlikely. Everything else
+// (items, recipes, planning) syncs as one Firestore document per entity —
+// see collectionSync.ts — so two people editing different things offline
+// never clobber each other.
+export interface SharedConfig {
   customCategories: string[]
   customStores: string[]
   customBrands: string[]
@@ -16,14 +17,9 @@ export interface SyncableState {
   categoryColorOverrides: Record<string, string>
   storeIconOverrides: Record<string, StoreIconValue>
   defaultStore: string
-  planningQueue: PlanningItem[]
-  planningSlots: Record<string, PlanningItem[]>
-  planningNotes: Record<string, string>
 }
 
-const SYNCABLE_KEYS: (keyof SyncableState)[] = [
-  'items',
-  'recipes',
+const CONFIG_KEYS: (keyof SharedConfig)[] = [
   'customCategories',
   'customStores',
   'customBrands',
@@ -34,26 +30,19 @@ const SYNCABLE_KEYS: (keyof SyncableState)[] = [
   'categoryEmojiOverrides',
   'categoryColorOverrides',
   'storeIconOverrides',
-  'defaultStore',
-  'planningQueue',
-  'planningSlots',
-  'planningNotes'
+  'defaultStore'
 ]
 
-export function pickSyncable<T extends SyncableState>(state: T): SyncableState {
+export function pickConfig<T extends SharedConfig>(state: T): SharedConfig {
   const out = {} as Record<string, unknown>
-  SYNCABLE_KEYS.forEach((key) => {
+  CONFIG_KEYS.forEach((key) => {
     out[key] = state[key]
   })
-  return out as unknown as SyncableState
+  return out as unknown as SharedConfig
 }
 
-// Used when switching the active household (including to none), so a
-// previous household's data never lingers or leaks into another one.
-export function emptySyncableState(): SyncableState {
+export function emptyConfig(): SharedConfig {
   return {
-    items: [],
-    recipes: [],
     customCategories: [],
     customStores: [],
     customBrands: [],
@@ -64,7 +53,27 @@ export function emptySyncableState(): SyncableState {
     categoryEmojiOverrides: {},
     categoryColorOverrides: {},
     storeIconOverrides: {},
-    defaultStore: '',
+    defaultStore: ''
+  }
+}
+
+// Every field of the app store that's shared within a household in some
+// form (either via the config doc or a per-entity collection). Used to
+// blank the local store when switching households, so one household's data
+// never lingers or leaks into another before its own data has loaded.
+export interface SyncedAppData extends SharedConfig {
+  items: ShoppingItem[]
+  recipes: Recipe[]
+  planningQueue: PlanningItem[]
+  planningSlots: Record<string, PlanningItem[]>
+  planningNotes: Record<string, string>
+}
+
+export function emptySyncedAppData(): SyncedAppData {
+  return {
+    ...emptyConfig(),
+    items: [],
+    recipes: [],
     planningQueue: [],
     planningSlots: {},
     planningNotes: {}
