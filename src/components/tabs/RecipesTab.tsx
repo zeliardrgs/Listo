@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useAppStore } from '../../store/useAppStore'
+import { useHouseholdStore } from '../../store/useHouseholdStore'
+import { useSyncStatusStore } from '../../store/useSyncStatusStore'
 import RecipeCard from '../RecipeCard'
 import RecipeDetailModal from '../RecipeDetailModal'
 import { SearchIcon, PlusIcon, CrossIcon, RecipeIcon } from '../icons'
@@ -19,6 +21,9 @@ export default function RecipesTab() {
   const removeRecipeFromPlanning = useAppStore((s) => s.removeRecipeFromPlanning)
   const planningQueue = useAppStore((s) => s.planningQueue)
   const planningSlots = useAppStore((s) => s.planningSlots)
+  const activeHousehold = useHouseholdStore((s) => s.activeCode)
+  const recipesLoaded = useSyncStatusStore((s) => s.loaded.recipes ?? false)
+  const isLoading = !!activeHousehold && !recipesLoaded
   const [search, setSearch] = useState('')
   const [searchOpen, setSearchOpen] = useState(false)
   const [tagFilter, setTagFilter] = useState<string | null>(null)
@@ -162,7 +167,14 @@ export default function RecipesTab() {
         </div>
       )}
 
-      {filtered.length === 0 && (
+      {isLoading && (
+        <div className="mt-10 flex flex-col items-center gap-3 text-sm text-slate-400">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-200 border-t-brand-600" />
+          Chargement des recettes…
+        </div>
+      )}
+
+      {!isLoading && filtered.length === 0 && (
         <p className="mt-10 text-center text-sm text-slate-400">
           {recipes.length === 0 ? 'Aucune recette. Appuie sur « + » pour en ajouter une.' : 'Aucune recette ne correspond.'}
         </p>

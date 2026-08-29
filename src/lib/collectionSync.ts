@@ -16,7 +16,8 @@ export function syncKeyedCollection<V>(
   code: string,
   collectionName: string,
   getLocal: () => Record<string, V>,
-  applyLocal: (next: Record<string, V>) => void
+  applyLocal: (next: Record<string, V>) => void,
+  onReady?: () => void
 ): () => void {
   const colRef = collection(db, 'households', code, collectionName)
   const syncedJSON = new Map<string, string>()
@@ -52,6 +53,7 @@ export function syncKeyedCollection<V>(
           syncedJSON.set(key, JSON.stringify(value))
           setDoc(doc(colRef, key), value as object)
         })
+        onReady?.()
         return
       }
       const next: Record<string, V> = {}
@@ -60,6 +62,7 @@ export function syncKeyedCollection<V>(
         syncedJSON.set(d.id, JSON.stringify(next[d.id]))
       })
       applyLocal(next)
+      onReady?.()
       return
     }
 

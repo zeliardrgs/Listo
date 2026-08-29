@@ -3,6 +3,7 @@ import { doc, onSnapshot, setDoc } from 'firebase/firestore'
 import { db } from '../lib/firebase'
 import { useAppStore } from '../store/useAppStore'
 import { useHouseholdStore } from '../store/useHouseholdStore'
+import { useSyncStatusStore } from '../store/useSyncStatusStore'
 import { emptySyncedAppData, pickConfig, type SharedConfig } from '../lib/sync'
 import { syncKeyedCollection } from '../lib/collectionSync'
 import type { PlanningItem, Recipe, ShoppingItem } from '../types'
@@ -62,6 +63,7 @@ export function useHouseholdSync() {
       useAppStore.setState(emptySyncedAppData())
     }
     previousCode.current = activeCode
+    useSyncStatusStore.getState().reset()
 
     if (!activeCode) return
 
@@ -72,7 +74,8 @@ export function useHouseholdSync() {
         activeCode,
         'items',
         () => arrayToRecord(useAppStore.getState().items),
-        (rec) => useAppStore.setState({ items: Object.values(rec) })
+        (rec) => useAppStore.setState({ items: Object.values(rec) }),
+        () => useSyncStatusStore.getState().markLoaded('items')
       )
     )
     stopFns.push(
@@ -80,7 +83,8 @@ export function useHouseholdSync() {
         activeCode,
         'recipes',
         () => arrayToRecord(useAppStore.getState().recipes),
-        (rec) => useAppStore.setState({ recipes: Object.values(rec) })
+        (rec) => useAppStore.setState({ recipes: Object.values(rec) }),
+        () => useSyncStatusStore.getState().markLoaded('recipes')
       )
     )
     stopFns.push(
@@ -88,10 +92,15 @@ export function useHouseholdSync() {
         activeCode,
         'planningQueue',
         () => arrayToRecord(useAppStore.getState().planningQueue),
-        (rec) => useAppStore.setState({ planningQueue: Object.values(rec) })
+        (rec) => useAppStore.setState({ planningQueue: Object.values(rec) }),
+        () => useSyncStatusStore.getState().markLoaded('planningQueue')
       )
     )
-    stopFns.push(syncKeyedCollection<SlotValue>(activeCode, 'planningSlots', getSlotsLocal, applySlotsLocal))
+    stopFns.push(
+      syncKeyedCollection<SlotValue>(activeCode, 'planningSlots', getSlotsLocal, applySlotsLocal, () =>
+        useSyncStatusStore.getState().markLoaded('planningSlots')
+      )
+    )
 
     // Shared settings (stores/categories/tags/overrides): one small document,
     // rarely edited concurrently, so a plain whole-object sync is enough.
@@ -115,6 +124,7 @@ export function useHouseholdSync() {
           lastConfigPushedJSON = JSON.stringify(initial)
           setDoc(configRef, { config: initial }, { merge: true })
         }
+        useSyncStatusStore.getState().markLoaded('config')
         return
       }
 

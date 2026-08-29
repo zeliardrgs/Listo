@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useAppStore } from '../store/useAppStore'
 import { useHouseholdStore } from '../store/useHouseholdStore'
 import { useCategoryEmojiName } from '../hooks/useCategoryEmojiName'
@@ -135,17 +135,34 @@ function HouseholdSection() {
   const [copied, setCopied] = useState(false)
   const [editingName, setEditingName] = useState(false)
   const [nameLocal, setNameLocal] = useState('')
+  const [toast, setToast] = useState<string | null>(null)
+  const toastTimer = useRef<ReturnType<typeof setTimeout>>()
 
   const active = households.find((h) => h.code === activeCode) ?? null
   const others = households.filter((h) => h.code !== activeCode)
+
+  useEffect(() => () => clearTimeout(toastTimer.current), [])
+
+  function showToast(message: string) {
+    clearTimeout(toastTimer.current)
+    setToast(message)
+    toastTimer.current = setTimeout(() => setToast(null), 2500)
+  }
+
+  function handleSwitch(h: { code: string; name: string }) {
+    switchTo(h.code)
+    showToast(`« ${h.name} » actif`)
+  }
 
   async function handleCreate() {
     setBusy(true)
     setError(null)
     try {
       const code = await createHousehold(createNameDraft)
-      addHousehold({ code, name: createNameDraft.trim() || code })
+      const name = createNameDraft.trim() || code
+      addHousehold({ code, name })
       setCreateNameDraft('')
+      showToast(`Foyer « ${name} » créé`)
     } catch {
       setError("Impossible de créer le foyer, vérifie ta connexion et réessaie.")
     } finally {
@@ -156,8 +173,9 @@ function HouseholdSection() {
   async function handleJoin() {
     const code = joinCode.trim().toUpperCase()
     if (!code) return
-    if (households.some((h) => h.code === code)) {
-      switchTo(code)
+    const known = households.find((h) => h.code === code)
+    if (known) {
+      handleSwitch(known)
       setJoinCode('')
       return
     }
@@ -171,6 +189,7 @@ function HouseholdSection() {
       }
       addHousehold({ code, name })
       setJoinCode('')
+      showToast(`Foyer « ${name} » rejoint`)
     } catch {
       setError('Impossible de vérifier ce code, vérifie ta connexion et réessaie.')
     } finally {
@@ -267,7 +286,7 @@ function HouseholdSection() {
               <li key={h.code} className="flex items-center gap-2 px-3 py-2 text-sm">
                 <button
                   type="button"
-                  onClick={() => switchTo(h.code)}
+                  onClick={() => handleSwitch(h)}
                   className="flex-1 text-left font-medium text-slate-700 hover:text-brand-700"
                   title="Basculer sur ce foyer"
                 >
@@ -340,6 +359,12 @@ function HouseholdSection() {
         </div>
         {error && <p className="text-center text-xs font-semibold text-red-500">{error}</p>}
       </div>
+
+      {toast && (
+        <div className="fixed inset-x-0 bottom-6 z-50 flex justify-center px-4">
+          <div className="rounded-full bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-lg">{toast}</div>
+        </div>
+      )}
     </section>
   )
 }

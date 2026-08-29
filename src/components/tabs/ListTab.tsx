@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useAppStore } from '../../store/useAppStore'
+import { useHouseholdStore } from '../../store/useHouseholdStore'
+import { useSyncStatusStore } from '../../store/useSyncStatusStore'
 import { useCategoryEmojiName } from '../../hooks/useCategoryEmojiName'
 import { useCategoryColor } from '../../hooks/useCategoryColor'
 import { useStoreIcon } from '../../hooks/useStoreIcon'
@@ -45,6 +47,9 @@ export default function ListTab() {
   const [confirmClear, setConfirmClear] = useState(false)
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null)
   const scrolled = useScrolled()
+  const activeHousehold = useHouseholdStore((s) => s.activeCode)
+  const itemsLoaded = useSyncStatusStore((s) => s.loaded.items ?? false)
+  const isLoading = !!activeHousehold && !itemsLoaded
 
   const toBuyCount = useMemo(() => items.filter((it) => it.toBuy).length, [items])
 
@@ -216,13 +221,20 @@ export default function ListTab() {
         </div>
       )}
 
-      {items.length === 0 && !filter.trim() && (
+      {isLoading && (
+        <div className="mt-10 flex flex-col items-center gap-3 text-sm text-slate-400">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-200 border-t-brand-600" />
+          Chargement de la liste…
+        </div>
+      )}
+
+      {!isLoading && items.length === 0 && !filter.trim() && (
         <p className="mt-10 text-center text-sm text-slate-400">
           Aucun article. Utilise la barre de recherche ou le bouton « + » pour en ajouter un.
         </p>
       )}
 
-      {filter.trim() && resultCount === 0 && (
+      {!isLoading && filter.trim() && resultCount === 0 && (
         <p className="mt-10 text-center text-sm text-slate-400">
           Aucun article ne correspond à « {filter.trim()} ». Utilise la barre de recherche pour l'ajouter.
         </p>
