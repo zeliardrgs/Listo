@@ -1,9 +1,9 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { doc, onSnapshot, setDoc } from 'firebase/firestore'
 import { db } from '../lib/firebase'
 import { useAppStore } from '../store/useAppStore'
 import { useHouseholdStore } from '../store/useHouseholdStore'
-import { pickSyncable, type SyncableState } from '../lib/sync'
+import { emptySyncableState, pickSyncable, type SyncableState } from '../lib/sync'
 
 const PUSH_DEBOUNCE_MS = 400
 
@@ -14,8 +14,17 @@ const PUSH_DEBOUNCE_MS = 400
 // own creates when it round-trips back through onSnapshot.
 export function useHouseholdSync() {
   const activeCode = useHouseholdStore((s) => s.activeCode)
+  // Persists across re-renders (unlike a variable inside the effect) so we
+  // can tell "switched away from a household" apart from "resumed the same
+  // household after a reload" — only the former should wipe local data.
+  const previousCode = useRef<string | null>(null)
 
   useEffect(() => {
+    if (previousCode.current !== null && previousCode.current !== activeCode) {
+      useAppStore.setState(emptySyncableState())
+    }
+    previousCode.current = activeCode
+
     if (!activeCode) return
 
     const ref = doc(db, 'households', activeCode)
@@ -29,10 +38,8 @@ export function useHouseholdSync() {
       const remote = data?.appState as SyncableState | undefined
       const remoteJSON = remote ? JSON.stringify(remote) : null
 
-      const remoteName = (data?.name as string | undefined) ?? null
-      if (remoteName !== useHouseholdStore.getState().activeName) {
-        useHouseholdStore.getState().setActiveName(remoteName)
-      }
+      const remoteName = data?.name as string | undefined
+      if (remoteName) useHouseholdStore.getState().updateName(activeCode, remoteName)
 
       if (!receivedFirstSnapshot) {
         receivedFirstSnapshot = true

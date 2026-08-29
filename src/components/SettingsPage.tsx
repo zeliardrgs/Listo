@@ -122,24 +122,30 @@ function SimpleDraftRow({
 }
 
 function HouseholdSection() {
+  const households = useHouseholdStore((s) => s.households)
   const activeCode = useHouseholdStore((s) => s.activeCode)
-  const activeName = useHouseholdStore((s) => s.activeName)
-  const setActiveCode = useHouseholdStore((s) => s.setActiveCode)
-  const setActiveName = useHouseholdStore((s) => s.setActiveName)
+  const addHousehold = useHouseholdStore((s) => s.addHousehold)
+  const switchTo = useHouseholdStore((s) => s.switchTo)
+  const leave = useHouseholdStore((s) => s.leave)
+  const updateName = useHouseholdStore((s) => s.updateName)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [createNameDraft, setCreateNameDraft] = useState('')
   const [joinCode, setJoinCode] = useState('')
   const [copied, setCopied] = useState(false)
   const [editingName, setEditingName] = useState(false)
-  const [nameLocal, setNameLocal] = useState(activeName ?? '')
+  const [nameLocal, setNameLocal] = useState('')
+
+  const active = households.find((h) => h.code === activeCode) ?? null
+  const others = households.filter((h) => h.code !== activeCode)
 
   async function handleCreate() {
     setBusy(true)
     setError(null)
     try {
       const code = await createHousehold(createNameDraft)
-      setActiveCode(code, createNameDraft.trim() || code)
+      addHousehold({ code, name: createNameDraft.trim() || code })
+      setCreateNameDraft('')
     } catch {
       setError("Impossible de créer le foyer, vérifie ta connexion et réessaie.")
     } finally {
@@ -150,6 +156,11 @@ function HouseholdSection() {
   async function handleJoin() {
     const code = joinCode.trim().toUpperCase()
     if (!code) return
+    if (households.some((h) => h.code === code)) {
+      switchTo(code)
+      setJoinCode('')
+      return
+    }
     setBusy(true)
     setError(null)
     try {
@@ -158,7 +169,7 @@ function HouseholdSection() {
         setError('Code introuvable, vérifie-le et réessaie.')
         return
       }
-      setActiveCode(code, name)
+      addHousehold({ code, name })
       setJoinCode('')
     } catch {
       setError('Impossible de vérifier ce code, vérifie ta connexion et réessaie.')
@@ -167,25 +178,24 @@ function HouseholdSection() {
     }
   }
 
-  function handleCopy() {
-    if (!activeCode) return
-    navigator.clipboard.writeText(activeCode).then(() => {
+  function handleCopy(code: string) {
+    navigator.clipboard.writeText(code).then(() => {
       setCopied(true)
       setTimeout(() => setCopied(false), 1500)
     })
   }
 
   function startEditingName() {
-    setNameLocal(activeName ?? '')
+    setNameLocal(active?.name ?? '')
     setEditingName(true)
   }
 
   function commitName() {
     setEditingName(false)
     const trimmed = nameLocal.trim()
-    if (!activeCode || !trimmed || trimmed === activeName) return
-    setActiveName(trimmed)
-    renameHousehold(activeCode, trimmed).catch(() => setError('Impossible de renommer le foyer.'))
+    if (!active || !trimmed || trimmed === active.name) return
+    updateName(active.code, trimmed)
+    renameHousehold(active.code, trimmed).catch(() => setError('Impossible de renommer le foyer.'))
   }
 
   return (
@@ -194,8 +204,8 @@ function HouseholdSection() {
         <h3 className="text-sm font-extrabold text-brand-700">Foyer</h3>
       </div>
 
-      <div className="rounded-2xl border border-slate-100 bg-white p-4">
-        {activeCode ? (
+      <div className="space-y-3 rounded-2xl border border-slate-100 bg-white p-4">
+        {active ? (
           <div className="flex flex-col items-center gap-3 py-2 text-center">
             <p className="text-sm text-slate-500">Foyer actif :</p>
             {editingName ? (
@@ -222,16 +232,16 @@ function HouseholdSection() {
                 title="Cliquer pour renommer"
                 className="text-lg font-extrabold text-brand-700 hover:text-brand-800"
               >
-                {activeName || activeCode}
+                {active.name}
               </button>
             )}
             <div className="flex items-center gap-2">
               <span className="rounded-xl bg-brand-50 px-4 py-2 text-2xl font-extrabold tracking-[0.2em] text-brand-700">
-                {activeCode}
+                {active.code}
               </span>
               <button
                 type="button"
-                onClick={handleCopy}
+                onClick={() => handleCopy(active.code)}
                 title="Copier le code"
                 className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-brand-200 text-brand-600 hover:bg-brand-50"
               >
@@ -241,70 +251,94 @@ function HouseholdSection() {
             <p className="text-xs text-slate-400">Partage ce code pour inviter quelqu'un</p>
             <button
               type="button"
-              onClick={() => setActiveCode(null)}
+              onClick={() => leave(active.code)}
               className="mt-1 text-xs font-bold text-red-500 hover:text-red-600"
             >
               Quitter ce foyer
             </button>
           </div>
         ) : (
-          <div className="space-y-4">
-            <div className="text-center">
-              <p className="mb-2 text-sm text-slate-500">Aucun foyer actif pour le moment.</p>
-              <div className="flex justify-center gap-2">
-                <input
-                  value={createNameDraft}
-                  onChange={(e) => setCreateNameDraft(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault()
-                      handleCreate()
-                    }
-                  }}
-                  placeholder="Nom du foyer"
-                  className="w-44 rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-brand-400 focus:outline-none"
-                />
+          <p className="text-center text-sm text-slate-500">Aucun foyer actif pour le moment.</p>
+        )}
+
+        {others.length > 0 && (
+          <ul className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-100">
+            {others.map((h) => (
+              <li key={h.code} className="flex items-center gap-2 px-3 py-2 text-sm">
                 <button
                   type="button"
-                  onClick={handleCreate}
-                  disabled={busy}
-                  className="rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-brand-700 disabled:opacity-50"
+                  onClick={() => switchTo(h.code)}
+                  className="flex-1 text-left font-medium text-slate-700 hover:text-brand-700"
+                  title="Basculer sur ce foyer"
                 >
-                  Créer un foyer
+                  {h.name} <span className="font-normal text-slate-400">· {h.code}</span>
                 </button>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 text-xs font-semibold text-slate-300">
-              <div className="h-px flex-1 bg-slate-100" />
-              OU
-              <div className="h-px flex-1 bg-slate-100" />
-            </div>
-            <div className="flex justify-center gap-2">
-              <input
-                value={joinCode}
-                onChange={(e) => setJoinCode(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault()
-                    handleJoin()
-                  }
-                }}
-                placeholder="Code du foyer"
-                maxLength={6}
-                className="w-36 rounded-lg border border-slate-200 px-3 py-2 text-center text-sm font-bold uppercase tracking-widest focus:border-brand-400 focus:outline-none"
-              />
-              <button
-                type="button"
-                onClick={handleJoin}
-                disabled={busy || !joinCode.trim()}
-                className="rounded-lg border border-brand-300 px-4 py-2 text-sm font-bold text-brand-600 hover:bg-brand-50 disabled:opacity-50"
-              >
-                Rejoindre
-              </button>
-            </div>
-          </div>
+                <button
+                  type="button"
+                  onClick={() => leave(h.code)}
+                  title="Quitter ce foyer"
+                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-red-400 hover:bg-red-50"
+                >
+                  <TrashIcon className="h-4 w-4" />
+                </button>
+              </li>
+            ))}
+          </ul>
         )}
-        {error && <p className="mt-3 text-center text-xs font-semibold text-red-500">{error}</p>}
+
+        <div className="space-y-3 border-t border-slate-100 pt-3">
+          <div className="flex justify-center gap-2">
+            <input
+              value={createNameDraft}
+              onChange={(e) => setCreateNameDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  handleCreate()
+                }
+              }}
+              placeholder="Nom du foyer"
+              className="w-44 rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-brand-400 focus:outline-none"
+            />
+            <button
+              type="button"
+              onClick={handleCreate}
+              disabled={busy}
+              className="rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-brand-700 disabled:opacity-50"
+            >
+              Créer un foyer
+            </button>
+          </div>
+          <div className="flex items-center gap-2 text-xs font-semibold text-slate-300">
+            <div className="h-px flex-1 bg-slate-100" />
+            OU
+            <div className="h-px flex-1 bg-slate-100" />
+          </div>
+          <div className="flex justify-center gap-2">
+            <input
+              value={joinCode}
+              onChange={(e) => setJoinCode(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  handleJoin()
+                }
+              }}
+              placeholder="Code du foyer"
+              maxLength={6}
+              className="w-36 rounded-lg border border-slate-200 px-3 py-2 text-center text-sm font-bold uppercase tracking-widest focus:border-brand-400 focus:outline-none"
+            />
+            <button
+              type="button"
+              onClick={handleJoin}
+              disabled={busy || !joinCode.trim()}
+              className="rounded-lg border border-brand-300 px-4 py-2 text-sm font-bold text-brand-600 hover:bg-brand-50 disabled:opacity-50"
+            >
+              Rejoindre
+            </button>
+          </div>
+        </div>
+        {error && <p className="text-center text-xs font-semibold text-red-500">{error}</p>}
       </div>
     </section>
   )

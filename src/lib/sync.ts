@@ -47,3 +47,26 @@ export function pickSyncable<T extends SyncableState>(state: T): SyncableState {
   })
   return out as unknown as SyncableState
 }
+
+// Used when switching the active household (including to none), so a
+// previous household's data never lingers or leaks into another one.
+export function emptySyncableState(): SyncableState {
+  return {
+    items: [],
+    recipes: [],
+    customCategories: [],
+    customStores: [],
+    customBrands: [],
+    customTags: [],
+    removedDefaultStores: [],
+    removedDefaultCategories: [],
+    removedDefaultTags: [],
+    categoryEmojiOverrides: {},
+    categoryColorOverrides: {},
+    storeIconOverrides: {},
+    defaultStore: '',
+    planningQueue: [],
+    planningSlots: {},
+    planningNotes: {}
+  }
+}
