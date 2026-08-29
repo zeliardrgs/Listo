@@ -37,12 +37,13 @@ export function useInstallPrompt() {
     }
   }, [])
 
-  async function promptInstall() {
-    if (!deferredEvent) return
+  async function promptInstall(): Promise<'accepted' | 'dismissed' | null> {
+    if (!deferredEvent) return null
     await deferredEvent.prompt()
     const choice = await deferredEvent.userChoice
     if (choice.outcome === 'accepted') setInstalled(true)
     setDeferredEvent(null)
+    return choice.outcome
   }
 
   return { installed, canPromptDirectly: !!deferredEvent, promptInstall }

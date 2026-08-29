@@ -9,12 +9,33 @@ export default function InstallBanner() {
   const { installed, canPromptDirectly, promptInstall } = useInstallPrompt()
   const [dismissed, setDismissed] = useState(() => localStorage.getItem(DISMISS_KEY) === '1')
   const [showHelp, setShowHelp] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [toast, setToast] = useState<string | null>(null)
 
   if (installed || dismissed) return null
 
   function dismiss() {
     localStorage.setItem(DISMISS_KEY, '1')
     setDismissed(true)
+  }
+
+  function showToast(message: string) {
+    setToast(message)
+    setTimeout(() => setToast(null), 2500)
+  }
+
+  async function handleInstallClick() {
+    if (!canPromptDirectly) {
+      setShowHelp(true)
+      return
+    }
+    setBusy(true)
+    try {
+      const outcome = await promptInstall()
+      showToast(outcome === 'accepted' ? 'Installation en cours…' : 'Installation annulée')
+    } finally {
+      setBusy(false)
+    }
   }
 
   return (
@@ -25,10 +46,12 @@ export default function InstallBanner() {
         </span>
         <button
           type="button"
-          onClick={() => (canPromptDirectly ? promptInstall() : setShowHelp(true))}
-          className="shrink-0 rounded-full bg-brand-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-brand-700"
+          onClick={handleInstallClick}
+          disabled={busy}
+          className="flex shrink-0 items-center gap-1.5 rounded-full bg-brand-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-brand-700 disabled:opacity-70"
         >
-          Installer
+          {busy && <span className="h-3 w-3 animate-spin rounded-full border-2 border-white/40 border-t-white" />}
+          {busy ? 'Installation…' : 'Installer'}
         </button>
         <button
           type="button"
@@ -39,6 +62,12 @@ export default function InstallBanner() {
           <CrossIcon className="h-3.5 w-3.5" />
         </button>
       </div>
+
+      {toast && (
+        <div className="fixed inset-x-0 bottom-20 z-50 flex justify-center px-4 sm:hidden">
+          <div className="rounded-full bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-lg">{toast}</div>
+        </div>
+      )}
 
       {showHelp && (
         <Modal title="Installer Listo" onClose={() => setShowHelp(false)}>

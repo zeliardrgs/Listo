@@ -8,6 +8,7 @@ import ListoLogo from './components/ListoLogo'
 import SettingsIcon from './components/SettingsIcon'
 import { ClipboardIcon, CalendarIcon, MoreIcon } from './components/icons'
 import { useScrolled } from './hooks/useScrolled'
+import { useScrollDirection } from './hooks/useScrollDirection'
 import { useHouseholdSync } from './hooks/useHouseholdSync'
 import JoinInvite from './components/JoinInvite'
 import InstallBanner from './components/InstallBanner'
@@ -74,14 +75,20 @@ function SettingsButton({
 function BottomTabBar({
   tab,
   showSettings,
+  hidden,
   onSelect
 }: {
   tab: Tab
   showSettings: boolean
+  hidden: boolean
   onSelect: (t: Tab) => void
 }) {
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-30 flex min-h-[64px] items-center justify-around bg-brand-600 px-1 pb-[env(safe-area-inset-bottom)] sm:hidden">
+    <nav
+      className={`fixed inset-x-0 bottom-0 z-30 flex min-h-[64px] items-center justify-around bg-brand-600 px-1 pb-[env(safe-area-inset-bottom)] transition-transform duration-200 sm:hidden ${
+        hidden ? 'translate-y-full' : 'translate-y-0'
+      }`}
+    >
       {TABS.map((t) => {
         const isActive = !showSettings && tab === t.key
         return (
@@ -107,6 +114,7 @@ export default function App() {
   const [tab, setTab] = useState<Tab>('list')
   const [showSettings, setShowSettings] = useState(false)
   const scrolled = useScrolled()
+  const scrollDirection = useScrollDirection()
   useHouseholdSync()
 
   return (
@@ -178,6 +186,7 @@ export default function App() {
       <BottomTabBar
         tab={tab}
         showSettings={showSettings}
+        hidden={scrollDirection === 'down' && !showSettings}
         onSelect={(t) => {
           setTab(t)
           setShowSettings(false)
