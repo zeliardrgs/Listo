@@ -8,6 +8,7 @@ import ListoLogo from './components/ListoLogo'
 import SettingsIcon from './components/SettingsIcon'
 import { ClipboardIcon, CalendarIcon } from './components/icons'
 import { useScrolled } from './hooks/useScrolled'
+import { useHouseholdSync } from './hooks/useHouseholdSync'
 
 type Tab = 'list' | 'recipes' | 'planning' | 'shopping'
 
@@ -64,6 +65,7 @@ export default function App() {
   const [tab, setTab] = useState<Tab>('list')
   const [showSettings, setShowSettings] = useState(false)
   const scrolled = useScrolled()
+  useHouseholdSync()
 
   return (
     <div className="flex h-full flex-col bg-cream">

@@ -15,4 +15,10 @@ const app = initializeApp(firebaseConfig)
 // persistentLocalCache keeps a copy of Firestore data on-device (IndexedDB) so
 // the app keeps working (read + write) without a connection; queued writes
 // sync automatically once the network comes back.
-export const db = initializeFirestore(app, { localCache: persistentLocalCache({}) })
+// ignoreUndefinedProperties: the shared app state has plenty of optional
+// fields (unit, quantity, imageUrl...) that are `undefined` rather than
+// omitted; Firestore rejects `undefined` by default.
+export const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({}),
+  ignoreUndefinedProperties: true
+})
