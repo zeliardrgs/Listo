@@ -80,7 +80,7 @@ function BottomTabBar({
   onSelect: (t: Tab) => void
 }) {
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-30 flex h-16 items-center justify-around bg-brand-600 px-1 sm:hidden">
+    <nav className="fixed inset-x-0 bottom-0 z-30 flex min-h-[64px] items-center justify-around bg-brand-600 px-1 pb-[env(safe-area-inset-bottom)] sm:hidden">
       {TABS.map((t) => {
         const isActive = !showSettings && tab === t.key
         return (
@@ -111,8 +111,8 @@ export default function App() {
   return (
     <div className="flex h-full flex-col bg-cream">
       <header
-        className={`sticky top-0 z-30 bg-brand-600 px-3 transition-all duration-200 sm:px-6 ${
-          scrolled ? 'pt-1' : 'pt-2'
+        className={`sticky top-0 z-30 bg-brand-600 px-3 pt-[calc(env(safe-area-inset-top)+0.5rem)] transition-all duration-200 sm:px-6 ${
+          scrolled ? 'sm:pt-1' : 'sm:pt-2'
         }`}
       >
         <div className="flex flex-col gap-2 sm:flex-row sm:items-stretch sm:justify-between">
