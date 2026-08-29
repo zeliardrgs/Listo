@@ -110,7 +110,11 @@ export default function RecipesTab() {
   }
 
   return (
-    <div className="mx-auto flex max-w-lg flex-col px-3 pt-4 pb-36 sm:pb-4 lg:max-w-6xl">
+    <div
+      className={`mx-auto flex max-w-lg flex-col px-3 pt-4 pb-36 sm:pb-4 ${
+        isDesktop && selection ? 'lg:h-full lg:max-w-[1700px] lg:overflow-hidden lg:pb-4' : 'lg:max-w-6xl'
+      }`}
+    >
       <div
         className={`order-2 fixed inset-x-0 bottom-16 z-20 bg-cream px-3 py-2 transition-transform duration-200 sm:static sm:z-auto sm:order-none sm:mb-3 sm:translate-y-0 sm:bg-transparent sm:px-0 sm:py-0 ${
           scrollDirection === 'down' ? 'translate-y-[calc(100%+4rem)]' : 'translate-y-0'
@@ -193,13 +197,17 @@ export default function RecipesTab() {
         </p>
       )}
 
-      <div className={`order-3 sm:order-none ${isDesktop && selection ? 'lg:flex lg:items-start lg:gap-6' : ''}`}>
-        <div className={isDesktop && selection ? 'lg:w-[380px] lg:shrink-0' : 'min-w-0 flex-1'}>
-          <div
-            className={`grid grid-cols-2 gap-3 sm:grid-cols-3 ${
-              isDesktop && selection ? 'lg:grid-cols-2' : 'lg:grid-cols-4 xl:grid-cols-5'
-            }`}
-          >
+      <div
+        className={`order-3 sm:order-none ${
+          isDesktop && selection ? 'lg:flex lg:min-h-0 lg:flex-1 lg:items-stretch lg:gap-6' : ''
+        }`}
+      >
+        <div
+          className={`min-w-0 flex-1 ${
+            isDesktop && selection ? 'lg:h-full lg:overflow-y-auto lg:pr-1' : ''
+          }`}
+        >
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {filtered.map((r) => (
               <RecipeCard
                 key={r.id}
@@ -215,7 +223,7 @@ export default function RecipesTab() {
         </div>
 
         {isDesktop && selection && (
-          <div className="lg:sticky lg:top-4 lg:h-[calc(100vh-6rem)] lg:flex-1">
+          <div className="lg:h-full lg:w-[440px] lg:shrink-0">
             <RecipeDetailPane
               key={selection}
               variant="pane"
