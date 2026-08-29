@@ -5,7 +5,7 @@ import { useCategoryEmojiName } from '../hooks/useCategoryEmojiName'
 import { useStoreIcon } from '../hooks/useStoreIcon'
 import { DEFAULT_CATEGORY_EMOJI, DEFAULT_STORE_EMOJI } from '../data/fluentEmoji'
 import { categoryColorKey } from '../data/categoryColors'
-import { createHousehold, householdExists } from '../lib/household'
+import { createHousehold, fetchHouseholdName, renameHousehold } from '../lib/household'
 import CategoryIconPicker from './CategoryIconPicker'
 import StoreIconPicker from './StoreIconPicker'
 import { CheckIcon, CopyIcon, CrossIcon, PlusIcon, TrashIcon } from './icons'
@@ -123,18 +123,23 @@ function SimpleDraftRow({
 
 function HouseholdSection() {
   const activeCode = useHouseholdStore((s) => s.activeCode)
+  const activeName = useHouseholdStore((s) => s.activeName)
   const setActiveCode = useHouseholdStore((s) => s.setActiveCode)
+  const setActiveName = useHouseholdStore((s) => s.setActiveName)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [createNameDraft, setCreateNameDraft] = useState('')
   const [joinCode, setJoinCode] = useState('')
   const [copied, setCopied] = useState(false)
+  const [editingName, setEditingName] = useState(false)
+  const [nameLocal, setNameLocal] = useState(activeName ?? '')
 
   async function handleCreate() {
     setBusy(true)
     setError(null)
     try {
-      const code = await createHousehold()
-      setActiveCode(code)
+      const code = await createHousehold(createNameDraft)
+      setActiveCode(code, createNameDraft.trim() || code)
     } catch {
       setError("Impossible de créer le foyer, vérifie ta connexion et réessaie.")
     } finally {
@@ -148,12 +153,12 @@ function HouseholdSection() {
     setBusy(true)
     setError(null)
     try {
-      const exists = await householdExists(code)
-      if (!exists) {
+      const name = await fetchHouseholdName(code)
+      if (name == null) {
         setError('Code introuvable, vérifie-le et réessaie.')
         return
       }
-      setActiveCode(code)
+      setActiveCode(code, name)
       setJoinCode('')
     } catch {
       setError('Impossible de vérifier ce code, vérifie ta connexion et réessaie.')
@@ -170,6 +175,19 @@ function HouseholdSection() {
     })
   }
 
+  function startEditingName() {
+    setNameLocal(activeName ?? '')
+    setEditingName(true)
+  }
+
+  function commitName() {
+    setEditingName(false)
+    const trimmed = nameLocal.trim()
+    if (!activeCode || !trimmed || trimmed === activeName) return
+    setActiveName(trimmed)
+    renameHousehold(activeCode, trimmed).catch(() => setError('Impossible de renommer le foyer.'))
+  }
+
   return (
     <section id="settings-household" className="scroll-mt-4">
       <div className="mb-2 rounded-2xl bg-[#FFF1DC] px-4 py-3">
@@ -179,7 +197,34 @@ function HouseholdSection() {
       <div className="rounded-2xl border border-slate-100 bg-white p-4">
         {activeCode ? (
           <div className="flex flex-col items-center gap-3 py-2 text-center">
-            <p className="text-sm text-slate-500">Foyer actif — partage ce code pour inviter quelqu'un :</p>
+            <p className="text-sm text-slate-500">Foyer actif :</p>
+            {editingName ? (
+              <input
+                autoFocus
+                value={nameLocal}
+                onChange={(e) => setNameLocal(e.target.value)}
+                onFocus={(e) => e.currentTarget.select()}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    commitName()
+                  } else if (e.key === 'Escape') {
+                    setEditingName(false)
+                  }
+                }}
+                onBlur={commitName}
+                className="rounded-lg border border-brand-300 px-3 py-1.5 text-center text-lg font-extrabold text-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-200"
+              />
+            ) : (
+              <button
+                type="button"
+                onClick={startEditingName}
+                title="Cliquer pour renommer"
+                className="text-lg font-extrabold text-brand-700 hover:text-brand-800"
+              >
+                {activeName || activeCode}
+              </button>
+            )}
             <div className="flex items-center gap-2">
               <span className="rounded-xl bg-brand-50 px-4 py-2 text-2xl font-extrabold tracking-[0.2em] text-brand-700">
                 {activeCode}
@@ -193,6 +238,7 @@ function HouseholdSection() {
                 {copied ? <CheckIcon className="h-4 w-4" /> : <CopyIcon className="h-4 w-4" />}
               </button>
             </div>
+            <p className="text-xs text-slate-400">Partage ce code pour inviter quelqu'un</p>
             <button
               type="button"
               onClick={() => setActiveCode(null)}
@@ -205,14 +251,28 @@ function HouseholdSection() {
           <div className="space-y-4">
             <div className="text-center">
               <p className="mb-2 text-sm text-slate-500">Aucun foyer actif pour le moment.</p>
-              <button
-                type="button"
-                onClick={handleCreate}
-                disabled={busy}
-                className="rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-brand-700 disabled:opacity-50"
-              >
-                Créer un foyer
-              </button>
+              <div className="flex justify-center gap-2">
+                <input
+                  value={createNameDraft}
+                  onChange={(e) => setCreateNameDraft(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      handleCreate()
+                    }
+                  }}
+                  placeholder="Nom du foyer"
+                  className="w-44 rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-brand-400 focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={handleCreate}
+                  disabled={busy}
+                  className="rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-brand-700 disabled:opacity-50"
+                >
+                  Créer un foyer
+                </button>
+              </div>
             </div>
             <div className="flex items-center gap-2 text-xs font-semibold text-slate-300">
               <div className="h-px flex-1 bg-slate-100" />

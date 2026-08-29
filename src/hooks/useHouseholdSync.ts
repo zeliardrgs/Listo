@@ -25,8 +25,14 @@ export function useHouseholdSync() {
     let pushTimer: ReturnType<typeof setTimeout> | undefined
 
     const unsubscribeSnapshot = onSnapshot(ref, (snap) => {
-      const remote = snap.data()?.appState as SyncableState | undefined
+      const data = snap.data()
+      const remote = data?.appState as SyncableState | undefined
       const remoteJSON = remote ? JSON.stringify(remote) : null
+
+      const remoteName = (data?.name as string | undefined) ?? null
+      if (remoteName !== useHouseholdStore.getState().activeName) {
+        useHouseholdStore.getState().setActiveName(remoteName)
+      }
 
       if (!receivedFirstSnapshot) {
         receivedFirstSnapshot = true
