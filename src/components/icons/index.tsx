@@ -193,6 +193,28 @@ export function ShareIcon({ className }: IconProps) {
   )
 }
 
+export function EditIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+      <path
+        d="M17 3.5C17.2626 3.23735 17.5744 3.02922 17.9176 2.88748C18.2608 2.74573 18.6286 2.67316 19 2.67316C19.3714 2.67316 19.7392 2.74573 20.0824 2.88748C20.4256 3.02922 20.7374 3.23735 21 3.5C21.2626 3.76264 21.4708 4.07444 21.6125 4.41762C21.7543 4.7608 21.8268 5.12856 21.8268 5.5C21.8268 5.87143 21.7543 6.2392 21.6125 6.58238C21.4708 6.92556 21.2626 7.23735 21 7.5L7.5 21L2 22.5L3.5 17L17 3.5Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+export function MinusIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+      <path d="M5 12H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
 export function ClipboardIcon({ className }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>

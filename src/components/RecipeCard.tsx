@@ -5,12 +5,14 @@ import type { Recipe } from '../types'
 export default function RecipeCard({
   recipe,
   planned,
+  selected,
   onOpen,
   onQuickAdd,
   onPlan
 }: {
   recipe: Recipe
   planned: boolean
+  selected?: boolean
   onOpen: () => void
   onQuickAdd: () => void
   onPlan: () => void
@@ -28,7 +30,9 @@ export default function RecipeCard({
   return (
     <div
       onClick={onOpen}
-      className="flex cursor-pointer gap-3 overflow-hidden rounded-2xl border border-brand-100 bg-white shadow-sm transition-shadow hover:shadow-md sm:block sm:gap-0"
+      className={`flex cursor-pointer gap-3 overflow-hidden rounded-2xl border bg-white shadow-sm transition-shadow hover:shadow-md sm:block sm:gap-0 ${
+        selected ? 'border-brand-500 ring-2 ring-brand-200' : 'border-brand-100'
+      }`}
     >
       <div className="relative h-24 w-24 shrink-0 sm:aspect-[4/3] sm:h-auto sm:w-full">
         {recipe.imageUrl ? (
@@ -36,13 +40,6 @@ export default function RecipeCard({
         ) : (
           <RecipeIllustration category={recipe.category} className="h-full w-full" />
         )}
-        <button
-          onClick={quickAdd}
-          title="Ajouter les ingrédients à la liste"
-          className="absolute right-1 top-1 flex h-7 w-7 items-center justify-center rounded-full bg-white text-brand-600 shadow-md hover:bg-brand-50 sm:right-2 sm:top-2 sm:h-8 sm:w-8"
-        >
-          <PlusIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-        </button>
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col justify-center gap-1 py-2 pr-3 sm:justify-start sm:px-3 sm:py-2.5">
@@ -56,17 +53,27 @@ export default function RecipeCard({
             ))}
           </div>
         )}
-        <button
-          type="button"
-          onClick={plan}
-          title={planned ? 'Retirer du planning' : 'Planifier'}
-          className={`mt-1 flex w-full items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-bold transition-colors sm:mt-2.5 ${
-            planned ? 'bg-brand-50 text-brand-700 hover:bg-red-50 hover:text-red-500' : 'bg-brand-600 text-white hover:bg-brand-700'
-          }`}
-        >
-          {planned ? <CheckIcon className="h-3.5 w-3.5" /> : <CalendarIcon className="h-3.5 w-3.5" />}
-          {planned ? 'Planifié' : 'Planifier'}
-        </button>
+        <div className="mt-1 flex items-center gap-1.5 sm:mt-2.5">
+          <button
+            type="button"
+            onClick={plan}
+            title={planned ? 'Retirer du planning' : 'Planifier'}
+            className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-bold transition-colors ${
+              planned ? 'bg-brand-50 text-brand-700 hover:bg-red-50 hover:text-red-500' : 'bg-brand-600 text-white hover:bg-brand-700'
+            }`}
+          >
+            {planned ? <CheckIcon className="h-3.5 w-3.5" /> : <CalendarIcon className="h-3.5 w-3.5" />}
+            {planned ? 'Planifié' : 'Planifier'}
+          </button>
+          <button
+            type="button"
+            onClick={quickAdd}
+            title="Ajouter les ingrédients à la liste"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600 hover:bg-brand-100"
+          >
+            <PlusIcon className="h-3.5 w-3.5" />
+          </button>
+        </div>
       </div>
     </div>
   )

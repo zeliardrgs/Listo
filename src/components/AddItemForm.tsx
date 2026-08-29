@@ -1,13 +1,12 @@
 import { useMemo, useState } from 'react'
 import { useAppStore } from '../store/useAppStore'
-import { CATEGORIES, PRODUCT_SUGGESTIONS, UNITS } from '../data/constants'
+import { CATEGORIES, PRODUCT_SUGGESTIONS } from '../data/constants'
 import { useCategoryEmojiName } from '../hooks/useCategoryEmojiName'
 import { useCategoryColor } from '../hooks/useCategoryColor'
 import { CheckIcon, PlusIcon, CrossIcon, ListCheckIcon } from './icons'
 import CategorySelect from './CategorySelect'
 import StoreSelect from './StoreSelect'
 import Emoji from './Emoji'
-import type { Unit } from '../types'
 
 const emptyForm = {
   name: '',
@@ -15,9 +14,7 @@ const emptyForm = {
   brand: '',
   store: '',
   recurring: false,
-  toBuy: true,
-  quantity: '',
-  unit: '' as Unit | ''
+  toBuy: true
 }
 
 export default function AddItemForm({
@@ -41,10 +38,10 @@ export default function AddItemForm({
   const [nameOpen, setNameOpen] = useState(false)
 
   const learnedProducts = useMemo(() => {
-    const seen = new Map<string, { name: string; category: string; brand?: string; store?: string; unit?: Unit }>()
+    const seen = new Map<string, { name: string; category: string; brand?: string; store?: string }>()
     items.forEach((it) => {
       if (!seen.has(it.name.toLowerCase())) {
-        seen.set(it.name.toLowerCase(), { name: it.name, category: it.category, brand: it.brand, store: it.store, unit: it.unit })
+        seen.set(it.name.toLowerCase(), { name: it.name, category: it.category, brand: it.brand, store: it.store })
       }
     })
     PRODUCT_SUGGESTIONS.forEach((p) => {
@@ -64,8 +61,7 @@ export default function AddItemForm({
       name: p.name,
       category: p.category || f.category,
       brand: p.brand || f.brand,
-      store: p.store || f.store,
-      unit: p.unit || f.unit
+      store: p.store || f.store
     }))
     setNameOpen(false)
   }
@@ -79,9 +75,7 @@ export default function AddItemForm({
       brand: form.brand.trim(),
       store: form.store.trim() || getDefaultStore(),
       recurring: form.recurring,
-      toBuy: form.toBuy,
-      quantity: form.quantity.trim() === '' ? undefined : Number(form.quantity),
-      unit: form.unit === '' ? undefined : form.unit
+      toBuy: form.toBuy
     })
     if (form.store.trim()) registerStore(form.store.trim())
     if (form.brand.trim()) registerBrand(form.brand.trim())
@@ -151,27 +145,6 @@ export default function AddItemForm({
                 placeholder="Marque"
                 className="min-w-[100px] flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm"
               />
-              <input
-                type="number"
-                min={0}
-                step="any"
-                value={form.quantity}
-                onChange={(e) => setForm((f) => ({ ...f, quantity: e.target.value }))}
-                placeholder="Qté"
-                className="w-16 rounded-lg border border-slate-200 px-2 py-2 text-sm"
-              />
-              <select
-                value={form.unit}
-                onChange={(e) => setForm((f) => ({ ...f, unit: e.target.value as Unit | '' }))}
-                className="w-24 rounded-lg border border-slate-200 bg-white px-1 py-2 text-sm"
-              >
-                <option value="">Unité</option>
-                {UNITS.map((u) => (
-                  <option key={u} value={u}>
-                    {u}
-                  </option>
-                ))}
-              </select>
             </div>
           </div>
           <button

@@ -3,14 +3,23 @@ import { useAppStore } from '../../store/useAppStore'
 import { useHouseholdStore } from '../../store/useHouseholdStore'
 import { useSyncStatusStore } from '../../store/useSyncStatusStore'
 import { useScrollDirection } from '../../hooks/useScrollDirection'
+import { useIsDesktop } from '../../hooks/useIsDesktop'
 import RecipeCard from '../RecipeCard'
-import RecipeDetailModal from '../RecipeDetailModal'
+import RecipeDetailPane from '../RecipeDetailPane'
 import { SearchIcon, PlusIcon, CrossIcon, RecipeIcon } from '../icons'
 import type { Recipe, ShoppingItem } from '../../types'
 
 interface Toast {
   message: string
   snapshot?: ShoppingItem[]
+}
+
+function sectionId(letter: string) {
+  return `recipe-group-${letter}`
+}
+
+function scrollToSection(letter: string) {
+  document.getElementById(sectionId(letter))?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
 export default function RecipesTab() {
@@ -26,16 +35,17 @@ export default function RecipesTab() {
   const recipesLoaded = useSyncStatusStore((s) => s.loaded.recipes ?? false)
   const isLoading = !!activeHousehold && !recipesLoaded
   const scrollDirection = useScrollDirection()
+  const isDesktop = useIsDesktop(1024)
   const [search, setSearch] = useState('')
   const [searchOpen, setSearchOpen] = useState(false)
   const [tagFilter, setTagFilter] = useState<string | null>(null)
-  const [showAdd, setShowAdd] = useState(false)
   const [addPrefillName, setAddPrefillName] = useState('')
-  const [openRecipeId, setOpenRecipeId] = useState<string | null>(null)
+  const [selection, setSelection] = useState<string | 'new' | null>(null)
   const [toast, setToast] = useState<Toast | null>(null)
+  const [activeSectionId, setActiveSectionId] = useState<string | null>(null)
   const toastTimer = useRef<ReturnType<typeof setTimeout>>()
   const searchRef = useRef<HTMLDivElement>(null)
-  const openRecipe = recipes.find((r) => r.id === openRecipeId) || null
+  const selectedRecipe = selection && selection !== 'new' ? recipes.find((r) => r.id === selection) ?? null : null
 
   useEffect(() => () => clearTimeout(toastTimer.current), [])
 
@@ -56,6 +66,53 @@ export default function RecipesTab() {
     })
   }, [recipes, search, tagFilter])
 
+  const groups = useMemo(() => {
+    const map = new Map<string, Recipe[]>()
+    filtered.forEach((r) => {
+      const letter = r.name.trim().charAt(0).toUpperCase() || '#'
+      if (!map.has(letter)) map.set(letter, [])
+      map.get(letter)!.push(r)
+    })
+    return Array.from(map.entries())
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([letter, list]) => ({ letter, list: list.sort((a, b) => a.name.localeCompare(b.name)) }))
+  }, [filtered])
+
+  useEffect(() => {
+    if (groups.length === 0) {
+      setActiveSectionId(null)
+      return
+    }
+    const ids = groups.map((g) => sectionId(g.letter))
+    const elements = ids.map((id) => document.getElementById(id)).filter((el): el is HTMLElement => !!el)
+    if (elements.length === 0) return
+
+    setActiveSectionId((current) => (current && ids.includes(current) ? current : ids[0]))
+
+    const intersecting = new Map<string, number>()
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) intersecting.set(e.target.id, e.boundingClientRect.top)
+          else intersecting.delete(e.target.id)
+        })
+        if (intersecting.size === 0) return
+        let bestId: string | null = null
+        let bestTop = -Infinity
+        intersecting.forEach((top, id) => {
+          if (top > bestTop) {
+            bestTop = top
+            bestId = id
+          }
+        })
+        if (bestId) setActiveSectionId(bestId)
+      },
+      { rootMargin: '-72px 0px -70% 0px', threshold: 0 }
+    )
+    elements.forEach((el) => observer.observe(el))
+    return () => observer.disconnect()
+  }, [groups])
+
   const plannedRecipeIds = useMemo(() => {
     const ids = new Set(planningQueue.map((i) => i.recipeId))
     Object.values(planningSlots).forEach((list) => list.forEach((i) => ids.add(i.recipeId)))
@@ -70,7 +127,7 @@ export default function RecipesTab() {
 
   function quickAdd(recipe: Recipe) {
     const snapshot = useAppStore.getState().items
-    addIngredientsToList(recipe.id, recipe.servings)
+    addIngredientsToList(recipe.id)
     showToast(`Ingrédients de « ${recipe.name} » ajoutés à la liste`, snapshot)
   }
 
@@ -91,9 +148,13 @@ export default function RecipesTab() {
     setToast(null)
   }
 
+  function handleCardClick(recipe: Recipe) {
+    setSelection((s) => (s === recipe.id ? null : recipe.id))
+  }
+
   function openNewRecipe(prefillName = '') {
     setAddPrefillName(prefillName)
-    setShowAdd(true)
+    setSelection('new')
     setSearchOpen(false)
   }
 
@@ -188,22 +249,87 @@ export default function RecipesTab() {
         </p>
       )}
 
-      <div className="order-3 flex flex-col gap-3 pb-4 sm:order-none sm:grid sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-        {filtered.map((r) => (
-          <RecipeCard
-            key={r.id}
-            recipe={r}
-            planned={plannedRecipeIds.has(r.id)}
-            onOpen={() => setOpenRecipeId(r.id)}
-            onQuickAdd={() => quickAdd(r)}
-            onPlan={() => planRecipe(r)}
-          />
-        ))}
+      <div className="order-3 lg:flex lg:items-start lg:gap-6 sm:order-none">
+        <div className="lg:w-[380px] lg:shrink-0">
+          <div className="flex gap-2">
+            {groups.length > 0 && (
+              <aside className="hidden shrink-0 lg:block lg:w-7">
+                <div className="sticky top-4 flex flex-col gap-0.5">
+                  {groups.map((g) => (
+                    <button
+                      key={g.letter}
+                      type="button"
+                      onClick={() => scrollToSection(g.letter)}
+                      className={`flex items-center justify-center rounded-lg py-0.5 text-xs font-bold transition-colors ${
+                        activeSectionId === sectionId(g.letter)
+                          ? 'bg-brand-100 text-brand-700'
+                          : 'text-slate-600 hover:bg-brand-50 hover:text-brand-700'
+                      }`}
+                    >
+                      {g.letter}
+                    </button>
+                  ))}
+                </div>
+              </aside>
+            )}
+
+            <div className="min-w-0 flex-1 space-y-4">
+              {groups.map((g) => (
+                <div key={g.letter} id={sectionId(g.letter)} className="scroll-mt-4">
+                  <p className="mb-1.5 hidden px-1 text-xs font-bold uppercase tracking-wide text-slate-400 lg:block">{g.letter}</p>
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-2">
+                    {g.list.map((r) => (
+                      <RecipeCard
+                        key={r.id}
+                        recipe={r}
+                        planned={plannedRecipeIds.has(r.id)}
+                        selected={selection === r.id}
+                        onOpen={() => handleCardClick(r)}
+                        onQuickAdd={() => quickAdd(r)}
+                        onPlan={() => planRecipe(r)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {isDesktop && (
+          <div className="hidden lg:sticky lg:top-4 lg:block lg:h-[calc(100vh-6rem)] lg:flex-1">
+            {selection ? (
+              <RecipeDetailPane
+                key={selection}
+                variant="pane"
+                recipe={selectedRecipe ?? undefined}
+                initialName={addPrefillName}
+                planned={selectedRecipe ? plannedRecipeIds.has(selectedRecipe.id) : false}
+                onClose={() => setSelection(null)}
+                onQuickAdd={selectedRecipe ? () => quickAdd(selectedRecipe) : undefined}
+                onPlan={selectedRecipe ? () => planRecipe(selectedRecipe) : undefined}
+              />
+            ) : (
+              <div className="flex h-full items-center justify-center rounded-2xl border border-dashed border-brand-200 px-6 text-center text-sm text-slate-400">
+                Sélectionne une recette pour la consulter, ou clique sur « + » pour en créer une.
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
-      {showAdd && <RecipeDetailModal initialName={addPrefillName} onClose={() => setShowAdd(false)} />}
-
-      {openRecipe && <RecipeDetailModal recipe={openRecipe} onClose={() => setOpenRecipeId(null)} />}
+      {!isDesktop && selection && (
+        <RecipeDetailPane
+          key={selection}
+          variant="modal"
+          recipe={selectedRecipe ?? undefined}
+          initialName={addPrefillName}
+          planned={selectedRecipe ? plannedRecipeIds.has(selectedRecipe.id) : false}
+          onClose={() => setSelection(null)}
+          onQuickAdd={selectedRecipe ? () => quickAdd(selectedRecipe) : undefined}
+          onPlan={selectedRecipe ? () => planRecipe(selectedRecipe) : undefined}
+        />
+      )}
 
       {toast && (
         <div className="fixed inset-x-0 bottom-32 z-50 flex justify-center px-4 sm:bottom-6">

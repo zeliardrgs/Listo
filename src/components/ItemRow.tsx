@@ -1,16 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { useAppStore } from '../store/useAppStore'
-import { UNITS } from '../data/constants'
 import { useCategoryEmojiName } from '../hooks/useCategoryEmojiName'
 import { useCategoryColor } from '../hooks/useCategoryColor'
 import { useStoreIcon } from '../hooks/useStoreIcon'
-import { pluralizeUnit } from '../utils/pluralizeUnit'
 import { CheckIcon, PlusIcon, CrossIcon, TrashIcon, ListCheckIcon } from './icons'
 import CategorySelect from './CategorySelect'
 import StoreSelect from './StoreSelect'
 import Emoji from './Emoji'
 import StoreIconView from './StoreIconView'
-import type { ShoppingItem, Unit } from '../types'
+import type { ShoppingItem } from '../types'
 
 interface Draft {
   name: string
@@ -19,8 +17,6 @@ interface Draft {
   store: string
   recurring: boolean
   toBuy: boolean
-  quantity: string
-  unit: Unit | ''
 }
 
 function toDraft(item: ShoppingItem): Draft {
@@ -30,9 +26,7 @@ function toDraft(item: ShoppingItem): Draft {
     brand: item.brand,
     store: item.store,
     recurring: item.recurring,
-    toBuy: item.toBuy,
-    quantity: item.quantity != null ? String(item.quantity) : '',
-    unit: item.unit ?? ''
+    toBuy: item.toBuy
   }
 }
 
@@ -73,9 +67,7 @@ export default function ItemRow({ item }: { item: ShoppingItem }) {
       brand: draft.brand.trim(),
       store: draft.store,
       recurring: draft.recurring,
-      toBuy: draft.toBuy,
-      quantity: draft.quantity.trim() === '' ? undefined : Number(draft.quantity),
-      unit: draft.unit === '' ? undefined : draft.unit
+      toBuy: draft.toBuy
     })
     setExpanded(false)
   }
@@ -95,11 +87,6 @@ export default function ItemRow({ item }: { item: ShoppingItem }) {
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline gap-2">
             <span className="truncate font-bold text-slate-800">{item.name}</span>
-            {(item.quantity != null || item.unit) && (
-              <span className="shrink-0 text-sm font-medium text-slate-400">
-                • {item.quantity ?? ''} {pluralizeUnit(item.unit, item.quantity)}
-              </span>
-            )}
             {item.recurring && (
               <span className="shrink-0 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-700">↻</span>
             )}
@@ -164,27 +151,6 @@ export default function ItemRow({ item }: { item: ShoppingItem }) {
                 placeholder="Marque"
                 className="min-w-[100px] flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm"
               />
-              <input
-                type="number"
-                min={0}
-                step="any"
-                value={draft.quantity}
-                onChange={(e) => setDraft((d) => ({ ...d, quantity: e.target.value }))}
-                placeholder="Qté"
-                className="w-16 rounded-lg border border-slate-200 px-2 py-2 text-sm"
-              />
-              <select
-                value={draft.unit}
-                onChange={(e) => setDraft((d) => ({ ...d, unit: e.target.value as Unit | '' }))}
-                className="w-24 rounded-lg border border-slate-200 bg-white px-1 py-2 text-sm"
-              >
-                <option value="">Unité</option>
-                {UNITS.map((u) => (
-                  <option key={u} value={u}>
-                    {u}
-                  </option>
-                ))}
-              </select>
             </div>
           </div>
           <button

@@ -59,7 +59,7 @@ interface AppStore {
   addRecipe: (recipe: Omit<Recipe, 'id' | 'createdAt'>) => string
   updateRecipe: (id: string, patch: Partial<Recipe>) => void
   removeRecipe: (id: string) => void
-  addIngredientsToList: (recipeId: string, servingsWanted: number) => void
+  addIngredientsToList: (recipeId: string) => void
 
   addToPlanningQueue: (recipeId: string) => void
   removeFromPlanningQueue: (id: string) => void
@@ -127,11 +127,6 @@ export const useAppStore = create<AppStore>()(
             return { items: [...s.items, { ...item, store, id: makeId(), checked: false, updatedAt: Date.now() }] }
           }
           const existing = s.items[dupIdx]
-          const sameUnit = existing.unit === item.unit
-          const quantity =
-            item.quantity != null && existing.quantity != null && sameUnit
-              ? Math.round((existing.quantity + item.quantity) * 100) / 100
-              : item.quantity ?? existing.quantity
           const merged: ShoppingItem = {
             ...existing,
             category: item.category || existing.category,
@@ -139,8 +134,6 @@ export const useAppStore = create<AppStore>()(
             store: item.store || existing.store,
             recurring: item.recurring || existing.recurring,
             toBuy: item.toBuy || existing.toBuy,
-            quantity,
-            unit: item.unit ?? existing.unit,
             fromRecipes:
               item.fromRecipes && item.fromRecipes.length > 0
                 ? Array.from(new Set([...(existing.fromRecipes || []), ...item.fromRecipes]))
@@ -192,12 +185,7 @@ export const useAppStore = create<AppStore>()(
               (it) => it.id !== id && it.name.trim().toLowerCase() === updated.name.trim().toLowerCase()
             )
             if (dup) {
-              const sameUnit = dup.unit === updated.unit
-              const quantity =
-                updated.quantity != null && dup.quantity != null && sameUnit
-                  ? Math.round((dup.quantity + updated.quantity) * 100) / 100
-                  : updated.quantity ?? dup.quantity
-              const merged: ShoppingItem = { ...dup, ...updated, id: dup.id, quantity, updatedAt: Date.now() }
+              const merged: ShoppingItem = { ...dup, ...updated, id: dup.id, updatedAt: Date.now() }
               return { items: s.items.filter((it) => it.id !== id && it.id !== dup.id).concat(merged), recipes }
             }
           }
@@ -251,47 +239,38 @@ export const useAppStore = create<AppStore>()(
           )
         })),
 
-      addIngredientsToList: (recipeId, servingsWanted) => {
+      addIngredientsToList: (recipeId) => {
         const recipe = get().recipes.find((r) => r.id === recipeId)
         if (!recipe) return
-        const factor = servingsWanted / (recipe.servings || 1)
         set((s) => {
           const items = [...s.items]
-          recipe.ingredients.forEach((ing: RecipeIngredient) => {
-            const scaledQty = ing.quantity != null ? Math.round(ing.quantity * factor * 100) / 100 : undefined
-            const idx = items.findIndex((it) => it.name.trim().toLowerCase() === ing.name.trim().toLowerCase())
-            if (idx !== -1) {
-              const existing = items[idx]
-              const sameUnit = existing.unit === ing.unit
-              const quantity =
-                sameUnit && existing.quantity != null && scaledQty != null
-                  ? Math.round((existing.quantity + scaledQty) * 100) / 100
-                  : scaledQty ?? existing.quantity
-              items[idx] = {
-                ...existing,
-                quantity,
-                unit: ing.unit ?? existing.unit,
-                toBuy: true,
-                fromRecipes: Array.from(new Set([...(existing.fromRecipes || []), recipeId])),
-                updatedAt: Date.now()
+          recipe.ingredients
+            .filter((ing: RecipeIngredient) => !ing.inStock)
+            .forEach((ing: RecipeIngredient) => {
+              const idx = items.findIndex((it) => it.name.trim().toLowerCase() === ing.name.trim().toLowerCase())
+              if (idx !== -1) {
+                const existing = items[idx]
+                items[idx] = {
+                  ...existing,
+                  toBuy: true,
+                  fromRecipes: Array.from(new Set([...(existing.fromRecipes || []), recipeId])),
+                  updatedAt: Date.now()
+                }
+              } else {
+                items.push({
+                  id: makeId(),
+                  name: ing.name,
+                  category: ing.category || 'Autre',
+                  brand: '',
+                  store: pickDefaultStore(s),
+                  recurring: false,
+                  toBuy: true,
+                  fromRecipes: [recipeId],
+                  checked: false,
+                  updatedAt: Date.now()
+                })
               }
-            } else {
-              items.push({
-                id: makeId(),
-                name: ing.name,
-                category: ing.category || 'Autre',
-                brand: '',
-                store: pickDefaultStore(s),
-                recurring: false,
-                toBuy: true,
-                fromRecipes: [recipeId],
-                quantity: scaledQty,
-                unit: ing.unit,
-                checked: false,
-                updatedAt: Date.now()
-              })
-            }
-          })
+            })
           return { items }
         })
       },

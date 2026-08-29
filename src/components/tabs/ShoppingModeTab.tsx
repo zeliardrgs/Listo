@@ -4,7 +4,6 @@ import { groupByCategory, copyListToClipboard, exportListAsImage } from '../../u
 import { useCategoryEmojiName } from '../../hooks/useCategoryEmojiName'
 import { useCategoryColor } from '../../hooks/useCategoryColor'
 import { useStoreIcon } from '../../hooks/useStoreIcon'
-import { pluralizeUnit } from '../../utils/pluralizeUnit'
 import { CheckIcon, CopyIcon, ImageIcon, TrashIcon } from '../icons'
 import StoreIconView from '../StoreIconView'
 import Emoji from '../Emoji'
@@ -246,11 +245,6 @@ export default function ShoppingModeTab() {
                         >
                           {it.name}
                         </span>
-                        {(it.quantity != null || it.unit) && (
-                          <span className="shrink-0 text-xs font-medium text-slate-400">
-                            • {it.quantity ?? ''} {pluralizeUnit(it.unit, it.quantity)}
-                          </span>
-                        )}
                       </div>
                       {(it.brand || recipesUsing(it).length > 0) && (
                         <p className="truncate text-xs text-slate-400">

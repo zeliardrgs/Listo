@@ -96,7 +96,7 @@ export default function PlanningTab() {
           ;(planningSlots[key] || []).forEach((item) => {
             const recipe = recipesById.get(item.recipeId)
             if (recipe) {
-              addIngredientsToList(recipe.id, recipe.servings)
+              addIngredientsToList(recipe.id)
               count++
             }
           })

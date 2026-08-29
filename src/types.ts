@@ -13,8 +13,6 @@ export interface ShoppingItem {
   store: string
   recurring: boolean
   toBuy: boolean
-  quantity?: number
-  unit?: Unit
   checked: boolean
   updatedAt: number
   fromRecipes?: string[]
@@ -34,6 +32,10 @@ export interface RecipeIngredient {
   quantity?: number
   unit?: Unit
   category?: string
+  // Pantry staples the user already has on hand (oil, salt...): shown apart
+  // from the rest of the ingredients, and skipped when bulk-adding a
+  // recipe's ingredients to the shopping list (still addable one by one).
+  inStock?: boolean
 }
 
 export interface Recipe {

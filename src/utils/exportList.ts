@@ -1,5 +1,4 @@
 import { categoryEmoji } from '../data/constants'
-import { pluralizeUnit } from './pluralizeUnit'
 import type { ShoppingItem } from '../types'
 
 export function groupByCategory(items: ShoppingItem[]): [string, ShoppingItem[]][] {
@@ -20,9 +19,8 @@ export function buildListText(store: string, items: ShoppingItem[]): string {
   groups.forEach(([cat, list]) => {
     lines.push(`${categoryEmoji(cat)} ${cat.toUpperCase()}`)
     list.forEach((it) => {
-      const qty = it.quantity != null || it.unit ? ` — ${it.quantity ?? ''} ${pluralizeUnit(it.unit, it.quantity)}`.trimEnd() : ''
       const brand = it.brand ? ` (${it.brand})` : ''
-      lines.push(`- ${it.name}${brand}${qty}`)
+      lines.push(`- ${it.name}${brand}`)
     })
     lines.push('')
   })
