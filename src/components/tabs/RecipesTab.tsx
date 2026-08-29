@@ -14,14 +14,6 @@ interface Toast {
   snapshot?: ShoppingItem[]
 }
 
-function sectionId(letter: string) {
-  return `recipe-group-${letter}`
-}
-
-function scrollToSection(letter: string) {
-  document.getElementById(sectionId(letter))?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-}
-
 export default function RecipesTab() {
   const recipes = useAppStore((s) => s.recipes)
   const tags = useAppStore((s) => s.allTags())
@@ -42,7 +34,6 @@ export default function RecipesTab() {
   const [addPrefillName, setAddPrefillName] = useState('')
   const [selection, setSelection] = useState<string | 'new' | null>(null)
   const [toast, setToast] = useState<Toast | null>(null)
-  const [activeSectionId, setActiveSectionId] = useState<string | null>(null)
   const toastTimer = useRef<ReturnType<typeof setTimeout>>()
   const searchRef = useRef<HTMLDivElement>(null)
   const selectedRecipe = selection && selection !== 'new' ? recipes.find((r) => r.id === selection) ?? null : null
@@ -65,53 +56,6 @@ export default function RecipesTab() {
       return true
     })
   }, [recipes, search, tagFilter])
-
-  const groups = useMemo(() => {
-    const map = new Map<string, Recipe[]>()
-    filtered.forEach((r) => {
-      const letter = r.name.trim().charAt(0).toUpperCase() || '#'
-      if (!map.has(letter)) map.set(letter, [])
-      map.get(letter)!.push(r)
-    })
-    return Array.from(map.entries())
-      .sort((a, b) => a[0].localeCompare(b[0]))
-      .map(([letter, list]) => ({ letter, list: list.sort((a, b) => a.name.localeCompare(b.name)) }))
-  }, [filtered])
-
-  useEffect(() => {
-    if (groups.length === 0) {
-      setActiveSectionId(null)
-      return
-    }
-    const ids = groups.map((g) => sectionId(g.letter))
-    const elements = ids.map((id) => document.getElementById(id)).filter((el): el is HTMLElement => !!el)
-    if (elements.length === 0) return
-
-    setActiveSectionId((current) => (current && ids.includes(current) ? current : ids[0]))
-
-    const intersecting = new Map<string, number>()
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) intersecting.set(e.target.id, e.boundingClientRect.top)
-          else intersecting.delete(e.target.id)
-        })
-        if (intersecting.size === 0) return
-        let bestId: string | null = null
-        let bestTop = -Infinity
-        intersecting.forEach((top, id) => {
-          if (top > bestTop) {
-            bestTop = top
-            bestId = id
-          }
-        })
-        if (bestId) setActiveSectionId(bestId)
-      },
-      { rootMargin: '-72px 0px -70% 0px', threshold: 0 }
-    )
-    elements.forEach((el) => observer.observe(el))
-    return () => observer.disconnect()
-  }, [groups])
 
   const plannedRecipeIds = useMemo(() => {
     const ids = new Set(planningQueue.map((i) => i.recipeId))
@@ -250,53 +194,23 @@ export default function RecipesTab() {
       )}
 
       <div className={`order-3 sm:order-none ${isDesktop && selection ? 'lg:flex lg:items-start lg:gap-6' : ''}`}>
-        <div className={isDesktop && selection ? 'lg:w-[380px] lg:shrink-0' : ''}>
-          <div className="flex gap-2">
-            {groups.length > 0 && (
-              <aside className="hidden shrink-0 lg:block lg:w-7">
-                <div className="sticky top-4 flex flex-col gap-0.5">
-                  {groups.map((g) => (
-                    <button
-                      key={g.letter}
-                      type="button"
-                      onClick={() => scrollToSection(g.letter)}
-                      className={`flex items-center justify-center rounded-lg py-0.5 text-xs font-bold transition-colors ${
-                        activeSectionId === sectionId(g.letter)
-                          ? 'bg-brand-100 text-brand-700'
-                          : 'text-slate-600 hover:bg-brand-50 hover:text-brand-700'
-                      }`}
-                    >
-                      {g.letter}
-                    </button>
-                  ))}
-                </div>
-              </aside>
-            )}
-
-            <div className="min-w-0 flex-1 space-y-4">
-              {groups.map((g) => (
-                <div key={g.letter} id={sectionId(g.letter)} className="scroll-mt-4">
-                  <p className="mb-1.5 hidden px-1 text-xs font-bold uppercase tracking-wide text-slate-400 lg:block">{g.letter}</p>
-                  <div
-                    className={`grid grid-cols-2 gap-3 sm:grid-cols-3 ${
-                      isDesktop && selection ? 'lg:grid-cols-2' : 'lg:grid-cols-4 xl:grid-cols-5'
-                    }`}
-                  >
-                    {g.list.map((r) => (
-                      <RecipeCard
-                        key={r.id}
-                        recipe={r}
-                        planned={plannedRecipeIds.has(r.id)}
-                        selected={selection === r.id}
-                        onOpen={() => handleCardClick(r)}
-                        onQuickAdd={() => quickAdd(r)}
-                        onPlan={() => planRecipe(r)}
-                      />
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
+        <div className={isDesktop && selection ? 'lg:w-[380px] lg:shrink-0' : 'min-w-0 flex-1'}>
+          <div
+            className={`grid grid-cols-2 gap-3 sm:grid-cols-3 ${
+              isDesktop && selection ? 'lg:grid-cols-2' : 'lg:grid-cols-4 xl:grid-cols-5'
+            }`}
+          >
+            {filtered.map((r) => (
+              <RecipeCard
+                key={r.id}
+                recipe={r}
+                planned={plannedRecipeIds.has(r.id)}
+                selected={selection === r.id}
+                onOpen={() => handleCardClick(r)}
+                onQuickAdd={() => quickAdd(r)}
+                onPlan={() => planRecipe(r)}
+              />
+            ))}
           </div>
         </div>
 
