@@ -58,6 +58,7 @@ export default function PlanningTab() {
 
   const [viewMode, setViewMode] = useState<ViewMode>('1w')
   const [queueDragOver, setQueueDragOver] = useState(false)
+  const [armedItemId, setArmedItemId] = useState<string | null>(null)
   const [confirmClearPlanning, setConfirmClearPlanning] = useState(false)
   const [toast, setToast] = useState<Toast | null>(null)
   const toastTimer = useRef<ReturnType<typeof setTimeout>>()
@@ -68,7 +69,7 @@ export default function PlanningTab() {
   const recipesById = useMemo(() => new Map(recipes.map((r) => [r.id, r])), [recipes])
   const weekBlocks = useMemo(() => buildWeekBlocks(viewMode), [viewMode])
   const totalColumns = weekBlocks.reduce((n, b) => n + b.days.length, 0)
-  const columnTemplate = viewMode === '2w' ? 'minmax(120px, 1fr)' : 'minmax(0, 1fr)'
+  const columnTemplate = viewMode === '2w' ? 'minmax(120px, 1fr)' : 'minmax(104px, 1fr)'
   const hasPlanningContent =
     Object.values(planningSlots).some((list) => list.length > 0) || Object.keys(planningNotes).length > 0
 
@@ -136,11 +137,16 @@ export default function PlanningTab() {
 
   return (
     <div className="mx-auto max-w-[1800px] px-3 pt-4 pb-10 lg:px-6">
-      <div className="flex items-start gap-4">
-        <aside className="w-72 shrink-0">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+        <aside className="w-full sm:w-72 sm:shrink-0">
           <div className="mb-2 rounded-2xl bg-[#FFF1DC] px-4 py-3">
             <h3 className="text-sm font-extrabold text-brand-700">Recettes</h3>
           </div>
+          {planningQueue.length > 0 && (
+            <p className="mb-2 text-xs text-slate-400 sm:hidden">
+              Touche une recette puis touche un créneau pour la placer.
+            </p>
+          )}
           <ul
             onDragOver={(e) => {
               e.preventDefault()
@@ -165,6 +171,8 @@ export default function PlanningTab() {
                   key={item.id}
                   itemId={item.id}
                   recipe={recipe}
+                  armed={armedItemId === item.id}
+                  onSelect={() => setArmedItemId((id) => (id === item.id ? null : item.id))}
                   onRemove={() => removeFromPlanningQueue(item.id)}
                 />
               )
@@ -187,9 +195,9 @@ export default function PlanningTab() {
         </aside>
 
         <div className="min-w-0 flex-1">
-          <div className="mb-2 flex items-center justify-between rounded-2xl bg-[#FFF1DC] px-4 py-3">
+          <div className="mb-2 flex flex-col gap-2 rounded-2xl bg-[#FFF1DC] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
             <h3 className="text-sm font-extrabold text-brand-700">Planning</h3>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               {VIEW_MODES.map((m) => (
                 <button
                   key={m.key}
@@ -267,7 +275,13 @@ export default function PlanningTab() {
                             items={planningSlots[key] || []}
                             note={planningNotes[key]}
                             recipesById={recipesById}
+                            armed={!!armedItemId}
                             onDropItem={(itemId) => placeInPlanningSlot(itemId, block.week, day, slot)}
+                            onTapPlace={() => {
+                              if (!armedItemId) return
+                              placeInPlanningSlot(armedItemId, block.week, day, slot)
+                              setArmedItemId(null)
+                            }}
                             onRemoveItem={(itemId) => removeFromPlanningSlot(block.week, day, slot, itemId)}
                             onSetNote={(note) => setPlanningNote(block.week, day, slot, note)}
                           />

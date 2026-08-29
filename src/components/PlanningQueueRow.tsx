@@ -5,10 +5,14 @@ import type { Recipe } from '../types'
 export default function PlanningQueueRow({
   itemId,
   recipe,
+  armed,
+  onSelect,
   onRemove
 }: {
   itemId: string
   recipe: Recipe
+  armed: boolean
+  onSelect: () => void
   onRemove: () => void
 }) {
   function onDragStart(e: React.DragEvent) {
@@ -20,7 +24,11 @@ export default function PlanningQueueRow({
     <li
       draggable
       onDragStart={onDragStart}
-      className="group flex cursor-grab items-start gap-2 rounded-xl border border-brand-100 bg-white p-2 shadow-sm active:cursor-grabbing"
+      onClick={onSelect}
+      title="Toucher pour sélectionner, puis toucher un créneau pour la placer"
+      className={`group flex cursor-grab items-start gap-2 rounded-xl border p-2 shadow-sm transition-colors active:cursor-grabbing ${
+        armed ? 'border-brand-400 bg-brand-50 ring-2 ring-brand-300' : 'border-brand-100 bg-white'
+      }`}
     >
       <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-brand-50">
         {recipe.imageUrl ? (
@@ -43,9 +51,12 @@ export default function PlanningQueueRow({
       </div>
       <button
         type="button"
-        onClick={onRemove}
+        onClick={(e) => {
+          e.stopPropagation()
+          onRemove()
+        }}
         title="Retirer"
-        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-slate-300 opacity-0 hover:bg-red-50 hover:text-red-400 group-hover:opacity-100"
+        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-slate-300 opacity-100 hover:bg-red-50 hover:text-red-400 sm:opacity-0 sm:group-hover:opacity-100"
       >
         <CrossIcon className="h-3 w-3" />
       </button>
