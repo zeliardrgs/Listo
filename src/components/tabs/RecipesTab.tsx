@@ -249,8 +249,8 @@ export default function RecipesTab() {
         </p>
       )}
 
-      <div className="order-3 lg:flex lg:items-start lg:gap-6 sm:order-none">
-        <div className="lg:w-[380px] lg:shrink-0">
+      <div className={`order-3 sm:order-none ${isDesktop && selection ? 'lg:flex lg:items-start lg:gap-6' : ''}`}>
+        <div className={isDesktop && selection ? 'lg:w-[380px] lg:shrink-0' : ''}>
           <div className="flex gap-2">
             {groups.length > 0 && (
               <aside className="hidden shrink-0 lg:block lg:w-7">
@@ -277,7 +277,11 @@ export default function RecipesTab() {
               {groups.map((g) => (
                 <div key={g.letter} id={sectionId(g.letter)} className="scroll-mt-4">
                   <p className="mb-1.5 hidden px-1 text-xs font-bold uppercase tracking-wide text-slate-400 lg:block">{g.letter}</p>
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-2">
+                  <div
+                    className={`grid grid-cols-2 gap-3 sm:grid-cols-3 ${
+                      isDesktop && selection ? 'lg:grid-cols-2' : 'lg:grid-cols-4 xl:grid-cols-5'
+                    }`}
+                  >
                     {g.list.map((r) => (
                       <RecipeCard
                         key={r.id}
@@ -296,24 +300,18 @@ export default function RecipesTab() {
           </div>
         </div>
 
-        {isDesktop && (
-          <div className="hidden lg:sticky lg:top-4 lg:block lg:h-[calc(100vh-6rem)] lg:flex-1">
-            {selection ? (
-              <RecipeDetailPane
-                key={selection}
-                variant="pane"
-                recipe={selectedRecipe ?? undefined}
-                initialName={addPrefillName}
-                planned={selectedRecipe ? plannedRecipeIds.has(selectedRecipe.id) : false}
-                onClose={() => setSelection(null)}
-                onQuickAdd={selectedRecipe ? () => quickAdd(selectedRecipe) : undefined}
-                onPlan={selectedRecipe ? () => planRecipe(selectedRecipe) : undefined}
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center rounded-2xl border border-dashed border-brand-200 px-6 text-center text-sm text-slate-400">
-                Sélectionne une recette pour la consulter, ou clique sur « + » pour en créer une.
-              </div>
-            )}
+        {isDesktop && selection && (
+          <div className="lg:sticky lg:top-4 lg:h-[calc(100vh-6rem)] lg:flex-1">
+            <RecipeDetailPane
+              key={selection}
+              variant="pane"
+              recipe={selectedRecipe ?? undefined}
+              initialName={addPrefillName}
+              planned={selectedRecipe ? plannedRecipeIds.has(selectedRecipe.id) : false}
+              onClose={() => setSelection(null)}
+              onQuickAdd={selectedRecipe ? () => quickAdd(selectedRecipe) : undefined}
+              onPlan={selectedRecipe ? () => planRecipe(selectedRecipe) : undefined}
+            />
           </div>
         )}
       </div>
