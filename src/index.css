@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  font-family: 'Nunito', system-ui, sans-serif;
+  background: #fff9f2;
+  color: #40311f;
+  -webkit-tap-highlight-color: transparent;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: #ffd9a8;
+  border-radius: 8px;
+}
+
+input[type='checkbox'].check-lg {
+  width: 22px;
+  height: 22px;
+  accent-color: #f5841f;
+}

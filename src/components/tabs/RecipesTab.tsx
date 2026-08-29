@@ -1,0 +1,215 @@
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useAppStore } from '../../store/useAppStore'
+import RecipeCard from '../RecipeCard'
+import RecipeDetailModal from '../RecipeDetailModal'
+import { SearchIcon, PlusIcon, CrossIcon, RecipeIcon } from '../icons'
+import type { Recipe, ShoppingItem } from '../../types'
+
+interface Toast {
+  message: string
+  snapshot?: ShoppingItem[]
+}
+
+export default function RecipesTab() {
+  const recipes = useAppStore((s) => s.recipes)
+  const tags = useAppStore((s) => s.allTags())
+  const addIngredientsToList = useAppStore((s) => s.addIngredientsToList)
+  const replaceItems = useAppStore((s) => s.replaceItems)
+  const addToPlanningQueue = useAppStore((s) => s.addToPlanningQueue)
+  const removeRecipeFromPlanning = useAppStore((s) => s.removeRecipeFromPlanning)
+  const planningQueue = useAppStore((s) => s.planningQueue)
+  const planningSlots = useAppStore((s) => s.planningSlots)
+  const [search, setSearch] = useState('')
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [tagFilter, setTagFilter] = useState<string | null>(null)
+  const [showAdd, setShowAdd] = useState(false)
+  const [addPrefillName, setAddPrefillName] = useState('')
+  const [openRecipeId, setOpenRecipeId] = useState<string | null>(null)
+  const [toast, setToast] = useState<Toast | null>(null)
+  const toastTimer = useRef<ReturnType<typeof setTimeout>>()
+  const searchRef = useRef<HTMLDivElement>(null)
+  const openRecipe = recipes.find((r) => r.id === openRecipeId) || null
+
+  useEffect(() => () => clearTimeout(toastTimer.current), [])
+
+  useEffect(() => {
+    if (!searchOpen) return
+    function onMouseDown(e: MouseEvent) {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) setSearchOpen(false)
+    }
+    document.addEventListener('mousedown', onMouseDown)
+    return () => document.removeEventListener('mousedown', onMouseDown)
+  }, [searchOpen])
+
+  const filtered = useMemo(() => {
+    return recipes.filter((r) => {
+      if (search.trim() && !r.name.toLowerCase().includes(search.trim().toLowerCase())) return false
+      if (tagFilter && !r.tags.includes(tagFilter)) return false
+      return true
+    })
+  }, [recipes, search, tagFilter])
+
+  const plannedRecipeIds = useMemo(() => {
+    const ids = new Set(planningQueue.map((i) => i.recipeId))
+    Object.values(planningSlots).forEach((list) => list.forEach((i) => ids.add(i.recipeId)))
+    return ids
+  }, [planningQueue, planningSlots])
+
+  function showToast(message: string, snapshot?: ShoppingItem[]) {
+    clearTimeout(toastTimer.current)
+    setToast({ message, snapshot })
+    toastTimer.current = setTimeout(() => setToast(null), snapshot ? 6000 : 2200)
+  }
+
+  function quickAdd(recipe: Recipe) {
+    const snapshot = useAppStore.getState().items
+    addIngredientsToList(recipe.id, recipe.servings)
+    showToast(`Ingrédients de « ${recipe.name} » ajoutés à la liste`, snapshot)
+  }
+
+  function planRecipe(recipe: Recipe) {
+    if (plannedRecipeIds.has(recipe.id)) {
+      removeRecipeFromPlanning(recipe.id)
+      showToast(`« ${recipe.name} » retiré du planning`)
+    } else {
+      addToPlanningQueue(recipe.id)
+      showToast(`« ${recipe.name} » ajouté au planning`)
+    }
+  }
+
+  function undoQuickAdd() {
+    if (!toast?.snapshot) return
+    replaceItems(toast.snapshot)
+    clearTimeout(toastTimer.current)
+    setToast(null)
+  }
+
+  function openNewRecipe(prefillName = '') {
+    setAddPrefillName(prefillName)
+    setShowAdd(true)
+    setSearchOpen(false)
+  }
+
+  function quickCreateRecipeFromSearch() {
+    const trimmed = search.trim()
+    if (!trimmed) return
+    openNewRecipe(trimmed)
+    setSearch('')
+  }
+
+  return (
+    <div className="mx-auto max-w-lg px-3 pt-4 lg:max-w-6xl">
+      <div className="mb-3 flex items-center gap-3">
+        <div ref={searchRef} className="relative flex-1">
+          <div className="flex items-center gap-2 rounded-full bg-white px-4 py-3 shadow-sm">
+            <SearchIcon className="h-5 w-5 shrink-0 text-slate-300" />
+            <input
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value)
+                setSearchOpen(true)
+              }}
+              onFocus={() => setSearchOpen(true)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && search.trim()) {
+                  e.preventDefault()
+                  quickCreateRecipeFromSearch()
+                }
+              }}
+              placeholder="Rechercher une recette"
+              className="w-full bg-transparent text-sm text-slate-700 focus:outline-none"
+            />
+          </div>
+
+          {searchOpen && search.trim() && (
+            <div className="absolute z-30 mt-2 w-full overflow-hidden rounded-2xl border border-brand-100 bg-white shadow-lg">
+              <button
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={quickCreateRecipeFromSearch}
+                className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm font-semibold text-slate-500 hover:bg-brand-50"
+              >
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600">
+                  <RecipeIcon className="h-4 w-4" />
+                </span>
+                Créer la recette « {search.trim()} »
+              </button>
+            </div>
+          )}
+        </div>
+        <button
+          onClick={() => openNewRecipe()}
+          className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white shadow-sm transition-colors hover:bg-brand-700"
+          title="Ajouter une recette"
+        >
+          <PlusIcon className="h-6 w-6" />
+        </button>
+      </div>
+
+      {tags.length > 0 && (
+        <div className="mb-4 flex flex-wrap gap-1.5">
+          {tags.map((tag) => (
+            <button
+              key={tag}
+              onClick={() => setTagFilter((t) => (t === tag ? null : tag))}
+              className={`rounded-full px-2.5 py-1 text-[11px] font-semibold transition-colors ${
+                tagFilter === tag ? 'bg-brand-800 text-white' : 'bg-brand-50 text-brand-700 hover:bg-brand-100'
+              }`}
+            >
+              {tag}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {filtered.length === 0 && (
+        <p className="mt-10 text-center text-sm text-slate-400">
+          {recipes.length === 0 ? 'Aucune recette. Appuie sur « + » pour en ajouter une.' : 'Aucune recette ne correspond.'}
+        </p>
+      )}
+
+      <div className="grid grid-cols-2 gap-3 pb-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        {filtered.map((r) => (
+          <RecipeCard
+            key={r.id}
+            recipe={r}
+            planned={plannedRecipeIds.has(r.id)}
+            onOpen={() => setOpenRecipeId(r.id)}
+            onQuickAdd={() => quickAdd(r)}
+            onPlan={() => planRecipe(r)}
+          />
+        ))}
+      </div>
+
+      {showAdd && <RecipeDetailModal initialName={addPrefillName} onClose={() => setShowAdd(false)} />}
+
+      {openRecipe && <RecipeDetailModal recipe={openRecipe} onClose={() => setOpenRecipeId(null)} />}
+
+      {toast && (
+        <div className="fixed inset-x-0 bottom-6 z-50 flex justify-center px-4">
+          <div className="flex items-center gap-3 rounded-full bg-slate-900 py-2.5 pl-4 pr-2 text-sm text-white shadow-lg">
+            <span>{toast.message}</span>
+            {toast.snapshot && (
+              <button
+                onClick={undoQuickAdd}
+                className="rounded-full bg-white/10 px-3 py-1.5 text-xs font-bold text-brand-200 hover:bg-white/20"
+              >
+                Annuler
+              </button>
+            )}
+            <button
+              onClick={() => {
+                clearTimeout(toastTimer.current)
+                setToast(null)
+              }}
+              title="Fermer"
+              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-slate-400 hover:bg-white/10 hover:text-white"
+            >
+              <CrossIcon className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
