@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useAppStore } from '../../store/useAppStore'
 import { useHouseholdStore } from '../../store/useHouseholdStore'
 import { useSyncStatusStore } from '../../store/useSyncStatusStore'
+import { useScrollDirection } from '../../hooks/useScrollDirection'
 import RecipeCard from '../RecipeCard'
 import RecipeDetailModal from '../RecipeDetailModal'
 import { SearchIcon, PlusIcon, CrossIcon, RecipeIcon } from '../icons'
@@ -24,6 +25,7 @@ export default function RecipesTab() {
   const activeHousehold = useHouseholdStore((s) => s.activeCode)
   const recipesLoaded = useSyncStatusStore((s) => s.loaded.recipes ?? false)
   const isLoading = !!activeHousehold && !recipesLoaded
+  const scrollDirection = useScrollDirection()
   const [search, setSearch] = useState('')
   const [searchOpen, setSearchOpen] = useState(false)
   const [tagFilter, setTagFilter] = useState<string | null>(null)
@@ -104,7 +106,11 @@ export default function RecipesTab() {
 
   return (
     <div className="mx-auto flex max-w-lg flex-col px-3 pt-4 pb-36 sm:pb-4 lg:max-w-6xl">
-      <div className="order-2 fixed inset-x-0 bottom-16 z-20 bg-cream px-3 py-2 sm:static sm:z-auto sm:order-none sm:mb-3 sm:bg-transparent sm:px-0 sm:py-0">
+      <div
+        className={`order-2 fixed inset-x-0 bottom-16 z-20 bg-cream px-3 py-2 transition-transform duration-200 sm:static sm:z-auto sm:order-none sm:mb-3 sm:translate-y-0 sm:bg-transparent sm:px-0 sm:py-0 ${
+          scrollDirection === 'down' ? 'translate-y-[calc(100%+4rem)]' : 'translate-y-0'
+        }`}
+      >
         <div className="flex items-center gap-3">
           <div ref={searchRef} className="relative flex-1">
             <div className="flex items-center gap-2 rounded-full bg-white px-4 py-3 shadow-sm">

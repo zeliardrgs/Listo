@@ -12,6 +12,7 @@ import ItemRow from '../ItemRow'
 import Emoji from '../Emoji'
 import SearchOmnibox from '../SearchOmnibox'
 import { useScrolled } from '../../hooks/useScrolled'
+import { useScrollDirection } from '../../hooks/useScrollDirection'
 import { PlusIcon, CrossIcon, TrashIcon } from '../icons'
 import type { ShoppingItem } from '../../types'
 
@@ -47,6 +48,7 @@ export default function ListTab() {
   const [confirmClear, setConfirmClear] = useState(false)
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null)
   const scrolled = useScrolled()
+  const scrollDirection = useScrollDirection()
   const activeHousehold = useHouseholdStore((s) => s.activeCode)
   const itemsLoaded = useSyncStatusStore((s) => s.loaded.items ?? false)
   const isLoading = !!activeHousehold && !itemsLoaded
@@ -170,7 +172,11 @@ export default function ListTab() {
         </div>
       </div>
 
-      <div className="order-2 fixed inset-x-0 bottom-16 z-20 bg-cream px-3 py-2 sm:static sm:z-auto sm:order-none sm:mb-3 sm:bg-transparent sm:px-0 sm:py-0">
+      <div
+        className={`order-2 fixed inset-x-0 bottom-16 z-20 bg-cream px-3 py-2 transition-transform duration-200 sm:static sm:z-auto sm:order-none sm:mb-3 sm:translate-y-0 sm:bg-transparent sm:px-0 sm:py-0 ${
+          scrollDirection === 'down' ? 'translate-y-[calc(100%+4rem)]' : 'translate-y-0'
+        }`}
+      >
         <div className="flex items-center gap-2 sm:gap-3">
           <SearchOmnibox value={filter} onChange={setFilter} onQuickCreate={handleQuickCreate} />
           <button
