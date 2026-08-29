@@ -66,7 +66,7 @@ export default function SearchOmnibox({ value, onChange, onQuickCreate }: Props)
       </div>
 
       {open && trimmed && (
-        <div className="absolute z-30 mt-2 w-full overflow-hidden rounded-2xl border border-brand-100 bg-white shadow-lg">
+        <div className="absolute bottom-full z-30 mb-2 w-full overflow-hidden rounded-2xl border border-brand-100 bg-white shadow-lg sm:bottom-auto sm:top-full sm:mb-0 sm:mt-2">
           <button
             type="button"
             onMouseDown={(e) => e.preventDefault()}

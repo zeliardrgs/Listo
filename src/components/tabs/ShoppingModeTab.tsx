@@ -160,7 +160,7 @@ export default function ShoppingModeTab() {
   }
 
   return (
-    <div className="mx-auto max-w-lg px-3 pt-4 lg:max-w-3xl">
+    <div className="mx-auto max-w-lg px-3 pb-24 pt-4 sm:pb-4 lg:max-w-3xl">
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <div className="flex min-w-0 flex-1 items-center gap-2 rounded-full bg-white px-4 py-3 shadow-sm">
           <button
@@ -271,7 +271,7 @@ export default function ShoppingModeTab() {
       {checkedCount > 0 && (
         <button
           onClick={finishShopping}
-          className="fixed bottom-4 left-1/2 z-10 flex w-[calc(100%-1.5rem)] max-w-lg -translate-x-1/2 items-center justify-center gap-2 rounded-xl bg-brand-700 py-3 text-sm font-bold text-white shadow-lg lg:max-w-3xl"
+          className="fixed bottom-20 left-1/2 z-10 flex w-[calc(100%-1.5rem)] max-w-lg -translate-x-1/2 items-center justify-center gap-2 rounded-xl bg-brand-700 py-3 text-sm font-bold text-white shadow-lg sm:bottom-4 lg:max-w-3xl"
         >
           <CheckIcon className="h-4 w-4" />
           Terminer les courses ({checkedCount}/{storeItems.length})

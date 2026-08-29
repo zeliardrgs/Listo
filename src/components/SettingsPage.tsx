@@ -374,7 +374,7 @@ function HouseholdSection() {
       </div>
 
       {toast && (
-        <div className="fixed inset-x-0 bottom-6 z-50 flex justify-center px-4">
+        <div className="fixed inset-x-0 bottom-20 z-50 flex justify-center px-4 sm:bottom-6">
           <div className="rounded-full bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-lg">{toast}</div>
         </div>
       )}
@@ -631,7 +631,7 @@ export default function SettingsPage({ onClose }: { onClose: () => void }) {
     'w-full rounded-lg px-3 py-2 text-left text-sm font-semibold text-slate-600 hover:bg-brand-50 hover:text-brand-700'
 
   return (
-    <div className="mx-auto max-w-5xl px-3 pb-28 pt-4 sm:px-6 sm:pb-6">
+    <div className="mx-auto max-w-5xl px-3 pb-44 pt-4 sm:px-6 sm:pb-6">
       <div className="mb-4 flex items-center gap-2">
         <button
           type="button"
@@ -796,7 +796,7 @@ export default function SettingsPage({ onClose }: { onClose: () => void }) {
         </div>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-30 flex gap-2 border-t border-brand-100 bg-white p-3 sm:hidden">
+      <div className="fixed inset-x-0 bottom-16 z-30 flex gap-2 border-t border-brand-100 bg-white p-3 sm:hidden">
         <button
           type="button"
           onClick={onClose}

@@ -110,9 +110,9 @@ export default function ItemRow({ item }: { item: ShoppingItem }) {
           </p>
         </div>
         {item.store && (
-          <span className="hidden shrink-0 items-center gap-1 text-sm font-medium text-slate-400 sm:flex">
+          <span className="flex shrink-0 items-center gap-1 text-sm font-medium text-slate-400">
             <StoreIconView icon={storeIconFor(item.store)} size={15} />
-            {item.store}
+            <span className="hidden sm:inline">{item.store}</span>
           </span>
         )}
         <button

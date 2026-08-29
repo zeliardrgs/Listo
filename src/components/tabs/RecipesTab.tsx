@@ -103,56 +103,58 @@ export default function RecipesTab() {
   }
 
   return (
-    <div className="mx-auto max-w-lg px-3 pt-4 lg:max-w-6xl">
-      <div className="mb-3 flex items-center gap-3">
-        <div ref={searchRef} className="relative flex-1">
-          <div className="flex items-center gap-2 rounded-full bg-white px-4 py-3 shadow-sm">
-            <SearchIcon className="h-5 w-5 shrink-0 text-slate-300" />
-            <input
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value)
-                setSearchOpen(true)
-              }}
-              onFocus={() => setSearchOpen(true)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && search.trim()) {
-                  e.preventDefault()
-                  quickCreateRecipeFromSearch()
-                }
-              }}
-              placeholder="Rechercher une recette"
-              className="w-full bg-transparent text-sm text-slate-700 focus:outline-none"
-            />
-          </div>
-
-          {searchOpen && search.trim() && (
-            <div className="absolute z-30 mt-2 w-full overflow-hidden rounded-2xl border border-brand-100 bg-white shadow-lg">
-              <button
-                type="button"
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={quickCreateRecipeFromSearch}
-                className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm font-semibold text-slate-500 hover:bg-brand-50"
-              >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600">
-                  <RecipeIcon className="h-4 w-4" />
-                </span>
-                Créer la recette « {search.trim()} »
-              </button>
+    <div className="mx-auto flex max-w-lg flex-col px-3 pt-4 pb-36 sm:pb-4 lg:max-w-6xl">
+      <div className="order-2 fixed inset-x-0 bottom-16 z-20 bg-cream px-3 py-2 sm:static sm:z-auto sm:order-none sm:mb-3 sm:bg-transparent sm:px-0 sm:py-0">
+        <div className="flex items-center gap-3">
+          <div ref={searchRef} className="relative flex-1">
+            <div className="flex items-center gap-2 rounded-full bg-white px-4 py-3 shadow-sm">
+              <SearchIcon className="h-5 w-5 shrink-0 text-slate-300" />
+              <input
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value)
+                  setSearchOpen(true)
+                }}
+                onFocus={() => setSearchOpen(true)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && search.trim()) {
+                    e.preventDefault()
+                    quickCreateRecipeFromSearch()
+                  }
+                }}
+                placeholder="Rechercher une recette"
+                className="w-full bg-transparent text-sm text-slate-700 focus:outline-none"
+              />
             </div>
-          )}
+
+            {searchOpen && search.trim() && (
+              <div className="absolute bottom-full z-30 mb-2 w-full overflow-hidden rounded-2xl border border-brand-100 bg-white shadow-lg sm:bottom-auto sm:top-full sm:mb-0 sm:mt-2">
+                <button
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={quickCreateRecipeFromSearch}
+                  className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm font-semibold text-slate-500 hover:bg-brand-50"
+                >
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600">
+                    <RecipeIcon className="h-4 w-4" />
+                  </span>
+                  Créer la recette « {search.trim()} »
+                </button>
+              </div>
+            )}
+          </div>
+          <button
+            onClick={() => openNewRecipe()}
+            className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white shadow-sm transition-colors hover:bg-brand-700"
+            title="Ajouter une recette"
+          >
+            <PlusIcon className="h-6 w-6" />
+          </button>
         </div>
-        <button
-          onClick={() => openNewRecipe()}
-          className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white shadow-sm transition-colors hover:bg-brand-700"
-          title="Ajouter une recette"
-        >
-          <PlusIcon className="h-6 w-6" />
-        </button>
       </div>
 
       {tags.length > 0 && (
-        <div className="mb-4 flex flex-wrap gap-1.5">
+        <div className="order-1 mb-4 flex flex-wrap gap-1.5 sm:order-none">
           {tags.map((tag) => (
             <button
               key={tag}
@@ -168,19 +170,19 @@ export default function RecipesTab() {
       )}
 
       {isLoading && (
-        <div className="mt-10 flex flex-col items-center gap-3 text-sm text-slate-400">
+        <div className="order-3 mt-10 flex flex-col items-center gap-3 text-sm text-slate-400 sm:order-none">
           <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-200 border-t-brand-600" />
           Chargement des recettes…
         </div>
       )}
 
       {!isLoading && filtered.length === 0 && (
-        <p className="mt-10 text-center text-sm text-slate-400">
+        <p className="order-3 mt-10 text-center text-sm text-slate-400 sm:order-none">
           {recipes.length === 0 ? 'Aucune recette. Appuie sur « + » pour en ajouter une.' : 'Aucune recette ne correspond.'}
         </p>
       )}
 
-      <div className="grid grid-cols-2 gap-3 pb-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+      <div className="order-3 flex flex-col gap-3 pb-4 sm:order-none sm:grid sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         {filtered.map((r) => (
           <RecipeCard
             key={r.id}
@@ -198,7 +200,7 @@ export default function RecipesTab() {
       {openRecipe && <RecipeDetailModal recipe={openRecipe} onClose={() => setOpenRecipeId(null)} />}
 
       {toast && (
-        <div className="fixed inset-x-0 bottom-6 z-50 flex justify-center px-4">
+        <div className="fixed inset-x-0 bottom-32 z-50 flex justify-center px-4 sm:bottom-6">
           <div className="flex items-center gap-3 rounded-full bg-slate-900 py-2.5 pl-4 pr-2 text-sm text-white shadow-lg">
             <span>{toast.message}</span>
             {toast.snapshot && (

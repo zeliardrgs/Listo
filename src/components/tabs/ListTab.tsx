@@ -150,10 +150,10 @@ export default function ListTab() {
   }, [groups, sortMode])
 
   return (
-    <div className="mx-auto max-w-6xl px-3 pt-4 pb-8">
+    <div className="mx-auto flex max-w-6xl flex-col px-3 pt-4 pb-36 sm:block sm:pb-8">
       <div
-        className={`sticky top-0 z-30 -mx-3 overflow-hidden bg-cream px-3 transition-all duration-200 ${
-          scrolled ? 'max-h-20 py-2 opacity-100' : 'pointer-events-none max-h-0 py-0 opacity-0'
+        className={`hidden sm:sticky sm:top-0 sm:z-30 sm:-mx-3 sm:block sm:overflow-hidden sm:bg-cream sm:px-3 sm:transition-all sm:duration-200 ${
+          scrolled ? 'sm:max-h-20 sm:py-2 sm:opacity-100' : 'sm:pointer-events-none sm:max-h-0 sm:py-0 sm:opacity-0'
         }`}
       >
         <div className="flex items-center gap-2">
@@ -170,27 +170,29 @@ export default function ListTab() {
         </div>
       </div>
 
-      <div className="mb-3 flex items-center gap-3">
-        <SearchOmnibox value={filter} onChange={setFilter} onQuickCreate={handleQuickCreate} />
-        <button
-          onClick={toggleForm}
-          className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full shadow-sm transition-colors ${
-            showForm ? 'bg-slate-200 text-slate-600' : 'bg-brand-600 text-white hover:bg-brand-700'
-          }`}
-          title="Ajouter un article"
-        >
-          {showForm ? <CrossIcon className="h-6 w-6" /> : <PlusIcon className="h-6 w-6" />}
-        </button>
+      <div className="order-2 fixed inset-x-0 bottom-16 z-20 bg-cream px-3 py-2 sm:static sm:z-auto sm:order-none sm:mb-3 sm:bg-transparent sm:px-0 sm:py-0">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <SearchOmnibox value={filter} onChange={setFilter} onQuickCreate={handleQuickCreate} />
+          <button
+            onClick={toggleForm}
+            className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full shadow-sm transition-colors ${
+              showForm ? 'bg-slate-200 text-slate-600' : 'bg-brand-600 text-white hover:bg-brand-700'
+            }`}
+            title="Ajouter un article"
+          >
+            {showForm ? <CrossIcon className="h-6 w-6" /> : <PlusIcon className="h-6 w-6" />}
+          </button>
+        </div>
       </div>
 
-      <div className="mb-4 flex items-center justify-between gap-2 text-xs">
+      <div className="order-1 mb-4 flex flex-col gap-2 sm:order-none sm:flex-row sm:items-center sm:justify-between sm:gap-2">
         {toBuyCount > 0 ? (
           <button
             type="button"
             onClick={handleClearAll}
             onBlur={() => setConfirmClear(false)}
             title={confirmClear ? 'Cliquer à nouveau pour confirmer' : 'Vider la liste de course'}
-            className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 font-bold transition-colors ${
+            className={`flex items-center gap-1.5 self-start rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${
               confirmClear ? 'bg-red-500 text-white' : 'bg-red-50 text-red-500 hover:bg-red-100'
             }`}
           >
@@ -205,7 +207,7 @@ export default function ListTab() {
             <button
               key={m}
               onClick={() => setSortMode(m)}
-              className={`rounded-full px-3 py-1.5 font-semibold transition-colors ${
+              className={`flex-1 rounded-full px-3 py-2 text-sm font-semibold transition-colors sm:flex-none sm:py-1.5 sm:text-xs ${
                 sortMode === m ? 'bg-brand-600 text-white' : 'bg-brand-100 text-brand-700 hover:bg-brand-200'
               }`}
             >
@@ -216,31 +218,31 @@ export default function ListTab() {
       </div>
 
       {showForm && (
-        <div className="mb-4">
+        <div className="order-3 mb-4 sm:order-none">
           <AddItemForm initialName={prefillName} onAdded={() => setShowForm(false)} onCancel={() => setShowForm(false)} />
         </div>
       )}
 
       {isLoading && (
-        <div className="mt-10 flex flex-col items-center gap-3 text-sm text-slate-400">
+        <div className="order-4 mt-10 flex flex-col items-center gap-3 text-sm text-slate-400 sm:order-none">
           <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-200 border-t-brand-600" />
           Chargement de la liste…
         </div>
       )}
 
       {!isLoading && items.length === 0 && !filter.trim() && (
-        <p className="mt-10 text-center text-sm text-slate-400">
+        <p className="order-4 mt-10 text-center text-sm text-slate-400 sm:order-none">
           Aucun article. Utilise la barre de recherche ou le bouton « + » pour en ajouter un.
         </p>
       )}
 
       {!isLoading && filter.trim() && resultCount === 0 && (
-        <p className="mt-10 text-center text-sm text-slate-400">
+        <p className="order-4 mt-10 text-center text-sm text-slate-400 sm:order-none">
           Aucun article ne correspond à « {filter.trim()} ». Utilise la barre de recherche pour l'ajouter.
         </p>
       )}
 
-      <div className={`flex ${sortMode === 'name' ? 'gap-2' : 'gap-6'}`}>
+      <div className={`order-5 flex sm:order-none ${sortMode === 'name' ? 'gap-2' : 'gap-6'}`}>
         {groups.length > 0 && (
           <aside className={`hidden shrink-0 sm:block ${sortMode === 'name' ? 'sm:w-7' : 'sm:w-44'}`}>
             <div
