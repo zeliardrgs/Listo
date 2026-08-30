@@ -199,7 +199,7 @@ export default function RecipesTab() {
 
       <div
         className={`order-3 sm:order-none ${
-          isDesktop && selection ? 'lg:flex lg:min-h-0 lg:flex-1 lg:items-stretch lg:gap-6' : ''
+          isDesktop && selection ? 'lg:grid lg:min-h-0 lg:flex-1 lg:grid-cols-2 lg:gap-6' : ''
         }`}
       >
         <div
@@ -223,7 +223,7 @@ export default function RecipesTab() {
         </div>
 
         {isDesktop && selection && (
-          <div className="lg:h-full lg:w-[440px] lg:shrink-0">
+          <div className="lg:h-full lg:min-w-0">
             <RecipeDetailPane
               key={selection}
               variant="pane"

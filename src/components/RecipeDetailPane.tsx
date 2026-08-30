@@ -293,22 +293,22 @@ export default function RecipeDetailPane({
     return (
       <li
         key={ing.id}
-        className={`flex items-center gap-3 rounded-2xl px-4 py-3 shadow-sm ring-1 ring-slate-100 ${
+        className={`flex items-center gap-2.5 rounded-xl px-3 py-1.5 shadow-sm ring-1 ring-slate-100 ${
           deemphasized ? 'bg-slate-50' : 'bg-white'
         }`}
       >
         <div
-          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
+          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${
             deemphasized ? 'bg-slate-100' : colorFor(ing.category || 'Autre').iconBg
           }`}
         >
-          <Emoji name={emojiFor(ing.category || 'Autre')} size={22} />
+          <Emoji name={emojiFor(ing.category || 'Autre')} size={16} />
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline gap-2">
-            <span className={`truncate font-bold ${deemphasized ? 'text-slate-500' : 'text-slate-800'}`}>{ing.name}</span>
+            <span className={`truncate text-sm font-bold ${deemphasized ? 'text-slate-500' : 'text-slate-800'}`}>{ing.name}</span>
             {qty != null && (
-              <span className="shrink-0 text-sm font-medium text-slate-400">
+              <span className="shrink-0 text-xs font-medium text-slate-400">
                 • {qty} {pluralizeUnit(ing.unit, qty)}
               </span>
             )}
@@ -318,8 +318,8 @@ export default function RecipeDetailPane({
           type="button"
           onClick={() => toggleIngredientInList(ing)}
           title={inList ? 'Retirer de la liste à acheter' : 'Ajouter à la liste à acheter'}
-          className={`flex shrink-0 items-center justify-center rounded-full transition-colors ${
-            deemphasized ? 'h-7 w-7 text-slate-400 hover:bg-white' : 'h-9 w-9'
+          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-colors ${
+            deemphasized ? 'text-slate-400 hover:bg-white' : ''
           } ${!deemphasized && (inList ? 'bg-brand-600 text-white' : 'border border-brand-200 bg-brand-50 text-brand-600')}`}
         >
           {inList ? <ListCheckIcon className="h-3.5 w-3.5" /> : <PlusIcon className="h-3.5 w-3.5" />}
@@ -452,8 +452,8 @@ export default function RecipeDetailPane({
             </div>
 
             {tab === 'ingredients' ? (
-              <div className="space-y-4">
-                <ul className="space-y-2">
+              <div className="space-y-3">
+                <ul className="space-y-1.5">
                   {activeIngredients.map((ing) => ingredientRow(ing, false))}
                   {activeIngredients.length === 0 && (
                     <p className="py-4 text-center text-xs text-slate-400">Aucun ingrédient.</p>
@@ -461,8 +461,8 @@ export default function RecipeDetailPane({
                 </ul>
                 {inStockIngredients.length > 0 && (
                   <div>
-                    <p className="mb-2 px-1 text-xs font-bold uppercase tracking-wide text-slate-400">En réserve</p>
-                    <ul className="space-y-2">{inStockIngredients.map((ing) => ingredientRow(ing, true))}</ul>
+                    <p className="mb-1.5 px-1 text-xs font-bold uppercase tracking-wide text-slate-400">En réserve</p>
+                    <ul className="space-y-1.5">{inStockIngredients.map((ing) => ingredientRow(ing, true))}</ul>
                   </div>
                 )}
               </div>
@@ -631,11 +631,11 @@ export default function RecipeDetailPane({
                   )}
                 </div>
 
-                <ul className="space-y-2">
+                <ul className="space-y-1.5">
                   {ingredients.map((ing) => (
                     <li
                       key={ing.id}
-                      className="flex flex-wrap items-center gap-2 rounded-2xl bg-white px-3 py-2.5 shadow-sm ring-1 ring-slate-100"
+                      className="flex flex-wrap items-center gap-2 rounded-2xl bg-white px-3 py-2 shadow-sm ring-1 ring-slate-100"
                     >
                       <div
                         className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${colorFor(ing.category || 'Autre').iconBg}`}

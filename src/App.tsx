@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import ListTab from './components/tabs/ListTab'
 import RecipesTab from './components/tabs/RecipesTab'
 import PlanningTab from './components/tabs/PlanningTab'
@@ -14,6 +14,14 @@ import JoinInvite from './components/JoinInvite'
 import InstallBanner from './components/InstallBanner'
 
 type Tab = 'list' | 'recipes' | 'planning' | 'shopping'
+
+const ACTIVE_TAB_KEY = 'listo-active-tab'
+const VALID_TABS: Tab[] = ['list', 'recipes', 'planning', 'shopping']
+
+function loadActiveTab(): Tab {
+  const stored = localStorage.getItem(ACTIVE_TAB_KEY)
+  return VALID_TABS.includes(stored as Tab) ? (stored as Tab) : 'list'
+}
 
 const TABS: { key: Tab; label: string; icon: JSX.Element }[] = [
   {
@@ -111,11 +119,15 @@ function BottomTabBar({
 }
 
 export default function App() {
-  const [tab, setTab] = useState<Tab>('list')
+  const [tab, setTab] = useState<Tab>(loadActiveTab)
   const [showSettings, setShowSettings] = useState(false)
   const scrolled = useScrolled()
   const scrollDirection = useScrollDirection()
   useHouseholdSync()
+
+  useEffect(() => {
+    localStorage.setItem(ACTIVE_TAB_KEY, tab)
+  }, [tab])
 
   return (
     <div className="flex h-full flex-col bg-cream">
