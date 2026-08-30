@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { useAppStore } from '../store/useAppStore'
 import { PRODUCT_SUGGESTIONS, UNITS } from '../data/constants'
 import { useCategoryEmojiName } from '../hooks/useCategoryEmojiName'
@@ -135,6 +135,23 @@ export default function RecipeDetailPane({
 
   useEffect(() => () => clearTimeout(unsavedHintTimer.current), [])
 
+  const [flipping, setFlipping] = useState(false)
+  const pendingModeRef = useRef<'view' | 'edit'>(mode)
+  const flipTimer = useRef<ReturnType<typeof setTimeout>>()
+
+  function switchMode(newMode: 'view' | 'edit') {
+    if (newMode === mode) return
+    pendingModeRef.current = newMode
+    setFlipping(true)
+    clearTimeout(flipTimer.current)
+    flipTimer.current = setTimeout(() => {
+      setMode(pendingModeRef.current)
+      setFlipping(false)
+    }, 150)
+  }
+
+  useEffect(() => () => clearTimeout(flipTimer.current), [])
+
   useEffect(() => {
     if (!ingredientSearchOpen) return
     function onMouseDown(e: MouseEvent) {
@@ -226,6 +243,18 @@ export default function RecipeDetailPane({
     setIngredients((list) => list.filter((i) => i.id !== id))
   }
 
+  function isIngredientChanged(ing: RecipeIngredient): boolean {
+    if (!recipe) return true
+    const original = recipe.ingredients.find((o) => o.id === ing.id)
+    if (!original) return true
+    return (
+      original.name !== ing.name ||
+      original.quantity !== ing.quantity ||
+      original.unit !== ing.unit ||
+      !!original.inStock !== !!ing.inStock
+    )
+  }
+
   function toggleIngredientInList(ing: RecipeIngredient) {
     const existing = findShoppingItem(ing.name)
     if (existing) {
@@ -287,7 +316,7 @@ export default function RecipeDetailPane({
     }
     if (recipe) {
       updateRecipe(recipe.id, payload)
-      setMode('view')
+      switchMode('view')
     } else {
       addRecipe(payload)
       onClose()
@@ -305,7 +334,7 @@ export default function RecipeDetailPane({
       setEditServings(recipe.servings)
       setShowImagePopover(false)
       setConfirmDelete(false)
-      setMode('view')
+      switchMode('view')
     } else {
       onClose()
     }
@@ -401,7 +430,7 @@ export default function RecipeDetailPane({
             )}
             <button
               type="button"
-              onClick={() => setMode('edit')}
+              onClick={() => switchMode('edit')}
               title="Modifier"
               className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-brand-600 shadow-md hover:bg-white"
             >
@@ -686,7 +715,11 @@ export default function RecipeDetailPane({
                   {ingredients.map((ing) => (
                     <li
                       key={ing.id}
-                      className="flex flex-wrap items-center gap-2 rounded-2xl bg-white px-3 py-2 shadow-sm ring-1 ring-slate-100"
+                      className={`flex flex-wrap items-center gap-2 rounded-2xl px-3 py-2 shadow-sm transition-colors ${
+                        isIngredientChanged(ing)
+                          ? 'bg-brand-50 ring-2 ring-brand-400'
+                          : 'bg-white ring-1 ring-slate-100'
+                      }`}
                     >
                       <div
                         className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${colorFor(ing.category || 'Autre').iconBg}`}
@@ -824,13 +857,21 @@ export default function RecipeDetailPane({
     </>
   )
 
+  const flipStyle: CSSProperties = {
+    transform: flipping ? 'rotateY(90deg)' : 'rotateY(0deg)',
+    transition: 'transform 150ms ease-in-out'
+  }
+
   if (variant === 'pane') {
     return (
       <div
         ref={paneRef}
         className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-brand-100 bg-white shadow-sm"
+        style={{ perspective: 1000 }}
       >
-        {content}
+        <div className="flex h-full flex-col" style={flipStyle}>
+          {content}
+        </div>
       </div>
     )
   }
@@ -840,8 +881,11 @@ export default function RecipeDetailPane({
       <div
         onClick={(e) => e.stopPropagation()}
         className="relative flex h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl bg-white shadow-xl sm:rounded-2xl lg:max-w-2xl"
+        style={{ perspective: 1000 }}
       >
-        {content}
+        <div className="flex h-full flex-col" style={flipStyle}>
+          {content}
+        </div>
       </div>
     </div>
   )
