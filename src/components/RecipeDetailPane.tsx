@@ -459,7 +459,7 @@ export default function RecipeDetailPane({
         )}
       </div>
 
-      <div className="flex-1 space-y-3 overflow-y-auto p-4">
+      <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
         {mode === 'view' && recipe ? (
           <>
             <h2 className="text-lg font-bold text-slate-800">{recipe.name}</h2>

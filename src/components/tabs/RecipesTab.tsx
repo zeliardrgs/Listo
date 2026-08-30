@@ -223,7 +223,7 @@ export default function RecipesTab() {
         </div>
 
         {isDesktop && selection && (
-          <div className="lg:h-full lg:min-w-0">
+          <div className="lg:h-full lg:min-h-0 lg:min-w-0">
             <RecipeDetailPane
               key={selection}
               variant="pane"
