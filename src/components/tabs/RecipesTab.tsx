@@ -207,7 +207,7 @@ export default function RecipesTab() {
             isDesktop && selection ? 'lg:h-full lg:overflow-y-auto lg:pr-1' : ''
           }`}
         >
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             {filtered.map((r) => (
               <RecipeCard
                 key={r.id}
