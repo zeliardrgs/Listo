@@ -128,9 +128,10 @@ export default function RecipesTab() {
 
   return (
     <div
-      className={`mx-auto flex max-w-lg flex-col px-3 pt-4 pb-36 sm:pb-4 ${
-        isDesktop && hasValidSelection ? 'lg:h-full lg:max-w-[1700px] lg:overflow-hidden lg:pb-4' : 'lg:max-w-6xl'
+      className={`mx-auto flex max-w-lg flex-col px-3 pt-4 pb-36 sm:pb-4 lg:max-w-6xl ${
+        isDesktop && hasValidSelection ? 'lg:h-full lg:overflow-hidden lg:pb-4' : ''
       }`}
+      style={isDesktop ? { maxWidth: hasValidSelection ? '1700px' : undefined, transition: 'max-width 300ms ease' } : undefined}
     >
       <div
         className={`order-2 fixed inset-x-0 bottom-16 z-20 bg-cream px-3 py-2 transition-transform duration-200 sm:static sm:z-auto sm:order-none sm:mb-3 sm:translate-y-0 sm:bg-transparent sm:px-0 sm:py-0 ${
@@ -215,9 +216,16 @@ export default function RecipesTab() {
       )}
 
       <div
-        className={`order-3 sm:order-none ${
-          isDesktop && hasValidSelection ? 'lg:grid lg:min-h-0 lg:flex-1 lg:grid-cols-2 lg:gap-6' : ''
-        }`}
+        className={`order-3 sm:order-none ${isDesktop ? 'lg:grid lg:min-h-0 lg:flex-1' : ''}`}
+        style={
+          isDesktop
+            ? {
+                gridTemplateColumns: hasValidSelection ? '1fr 1fr' : '1fr 0fr',
+                gap: hasValidSelection ? '1.5rem' : '0px',
+                transition: 'grid-template-columns 300ms ease, gap 300ms ease'
+              }
+            : undefined
+        }
       >
         <div
           className={`min-w-0 flex-1 ${
@@ -239,18 +247,20 @@ export default function RecipesTab() {
           </div>
         </div>
 
-        {isDesktop && hasValidSelection && (
-          <div className="lg:h-full lg:min-h-0 lg:min-w-0">
-            <RecipeDetailPane
-              key={selection}
-              variant="pane"
-              recipe={selectedRecipe ?? undefined}
-              initialName={addPrefillName}
-              planned={selectedRecipe ? plannedRecipeIds.has(selectedRecipe.id) : false}
-              onClose={() => setSelection(null)}
-              onQuickAdd={selectedRecipe ? () => quickAdd(selectedRecipe) : undefined}
-              onPlan={selectedRecipe ? () => planRecipe(selectedRecipe) : undefined}
-            />
+        {isDesktop && (
+          <div className="overflow-hidden lg:h-full lg:min-h-0 lg:min-w-0">
+            {hasValidSelection && (
+              <RecipeDetailPane
+                key={selection}
+                variant="pane"
+                recipe={selectedRecipe ?? undefined}
+                initialName={addPrefillName}
+                planned={selectedRecipe ? plannedRecipeIds.has(selectedRecipe.id) : false}
+                onClose={() => setSelection(null)}
+                onQuickAdd={selectedRecipe ? () => quickAdd(selectedRecipe) : undefined}
+                onPlan={selectedRecipe ? () => planRecipe(selectedRecipe) : undefined}
+              />
+            )}
           </div>
         )}
       </div>

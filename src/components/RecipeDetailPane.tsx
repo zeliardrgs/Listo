@@ -135,7 +135,9 @@ export default function RecipeDetailPane({
 
   useEffect(() => () => clearTimeout(unsavedHintTimer.current), [])
 
-  const [transitionPhase, setTransitionPhase] = useState<'idle' | 'out' | 'in-instant' | 'in'>('idle')
+  const [transitionPhase, setTransitionPhase] = useState<'entering' | 'idle' | 'out' | 'in-instant' | 'in'>(
+    variant === 'pane' ? 'entering' : 'idle'
+  )
   const pendingModeRef = useRef<'view' | 'edit'>(mode)
 
   function switchMode(newMode: 'view' | 'edit') {
@@ -145,6 +147,10 @@ export default function RecipeDetailPane({
   }
 
   useEffect(() => {
+    if (transitionPhase === 'entering') {
+      const t = setTimeout(() => setTransitionPhase('idle'), 20)
+      return () => clearTimeout(t)
+    }
     if (transitionPhase === 'out') {
       const t = setTimeout(() => {
         setMode(pendingModeRef.current)
@@ -153,8 +159,8 @@ export default function RecipeDetailPane({
       return () => clearTimeout(t)
     }
     if (transitionPhase === 'in-instant') {
-      const raf = requestAnimationFrame(() => setTransitionPhase('in'))
-      return () => cancelAnimationFrame(raf)
+      const t = setTimeout(() => setTransitionPhase('in'), 20)
+      return () => clearTimeout(t)
     }
     if (transitionPhase === 'in') {
       const t = setTimeout(() => setTransitionPhase('idle'), 150)
@@ -868,11 +874,13 @@ export default function RecipeDetailPane({
   )
 
   const tiltStyle: CSSProperties =
-    transitionPhase === 'out'
-      ? { transform: 'rotateY(40deg)', opacity: 0.3, transition: 'transform 150ms ease, opacity 150ms ease' }
-      : transitionPhase === 'in-instant'
-        ? { transform: 'rotateY(-40deg)', opacity: 0.3, transition: 'none' }
-        : { transform: 'rotateY(0deg)', opacity: 1, transition: 'transform 150ms ease, opacity 150ms ease' }
+    transitionPhase === 'entering'
+      ? { transform: 'translateX(24px)', opacity: 0, transition: 'none' }
+      : transitionPhase === 'out'
+        ? { transform: 'rotateY(40deg)', opacity: 0.3, transition: 'transform 150ms ease, opacity 150ms ease' }
+        : transitionPhase === 'in-instant'
+          ? { transform: 'rotateY(-40deg)', opacity: 0.3, transition: 'none' }
+          : { transform: 'rotateY(0deg)', opacity: 1, transition: 'transform 200ms ease, opacity 200ms ease' }
 
   if (variant === 'pane') {
     return (
