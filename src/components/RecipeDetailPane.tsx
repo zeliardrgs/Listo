@@ -83,6 +83,57 @@ export default function RecipeDetailPane({
   const [ingredientSearch, setIngredientSearch] = useState('')
   const [ingredientSearchOpen, setIngredientSearchOpen] = useState(false)
   const ingredientSearchRef = useRef<HTMLDivElement>(null)
+  const paneRef = useRef<HTMLDivElement>(null)
+  const [unsavedHint, setUnsavedHint] = useState(false)
+  const unsavedHintTimer = useRef<ReturnType<typeof setTimeout>>()
+
+  const isDirty = useMemo(() => {
+    if (mode !== 'edit') return false
+    if (recipe) {
+      return (
+        name !== recipe.name ||
+        editServings !== recipe.servings ||
+        instructions !== recipe.instructions ||
+        (imageUrl || undefined) !== recipe.imageUrl ||
+        JSON.stringify(tags) !== JSON.stringify(recipe.tags) ||
+        JSON.stringify(ingredients) !== JSON.stringify(recipe.ingredients)
+      )
+    }
+    return name.trim() !== '' || tags.length > 0 || imageUrl.trim() !== '' || instructions.trim() !== '' || ingredients.length > 0
+  }, [mode, recipe, name, editServings, instructions, imageUrl, tags, ingredients])
+
+  function flashUnsavedHint() {
+    setUnsavedHint(true)
+    clearTimeout(unsavedHintTimer.current)
+    unsavedHintTimer.current = setTimeout(() => setUnsavedHint(false), 2500)
+  }
+
+  function attemptClose() {
+    if (isDirty) {
+      flashUnsavedHint()
+      return
+    }
+    onClose()
+  }
+
+  useEffect(() => {
+    if (variant !== 'pane') return
+    function onDocClick(e: MouseEvent) {
+      if (paneRef.current && !paneRef.current.contains(e.target as Node)) {
+        if (isDirty) {
+          e.preventDefault()
+          e.stopPropagation()
+          flashUnsavedHint()
+        } else {
+          onClose()
+        }
+      }
+    }
+    document.addEventListener('click', onDocClick, true)
+    return () => document.removeEventListener('click', onDocClick, true)
+  }, [variant, isDirty, onClose])
+
+  useEffect(() => () => clearTimeout(unsavedHintTimer.current), [])
 
   useEffect(() => {
     if (!ingredientSearchOpen) return
@@ -764,22 +815,31 @@ export default function RecipeDetailPane({
           </>
         )}
       </div>
+
+      {unsavedHint && (
+        <div className="absolute inset-x-4 bottom-[4.5rem] z-20 rounded-lg bg-slate-900 px-3 py-2 text-center text-xs font-bold text-white shadow-lg">
+          Sauvegarde ou annule tes modifications d'abord
+        </div>
+      )}
     </>
   )
 
   if (variant === 'pane') {
     return (
-      <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-brand-100 bg-white shadow-sm">
+      <div
+        ref={paneRef}
+        className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-brand-100 bg-white shadow-sm"
+      >
         {content}
       </div>
     )
   }
 
   return (
-    <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/40 sm:items-center" onClick={onClose}>
+    <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/40 sm:items-center" onClick={attemptClose}>
       <div
         onClick={(e) => e.stopPropagation()}
-        className="flex h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl bg-white shadow-xl sm:rounded-2xl lg:max-w-2xl"
+        className="relative flex h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl bg-white shadow-xl sm:rounded-2xl lg:max-w-2xl"
       >
         {content}
       </div>
