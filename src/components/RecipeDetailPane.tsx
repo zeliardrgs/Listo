@@ -472,18 +472,6 @@ export default function RecipeDetailPane({
                 </div>
               )}
             </div>
-            {recipe && (
-              <button
-                type="button"
-                onClick={handleDelete}
-                title={confirmDelete ? 'Cliquer à nouveau pour confirmer' : 'Supprimer'}
-                className={`absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full shadow-md transition-colors ${
-                  confirmDelete ? 'bg-red-500 text-white' : 'bg-white/90 text-red-500 hover:bg-white'
-                }`}
-              >
-                <TrashIcon className="h-4 w-4" />
-              </button>
-            )}
           </>
         )}
       </div>
@@ -817,16 +805,28 @@ export default function RecipeDetailPane({
           </>
         ) : (
           <>
-            <div>
+            <div className="flex items-center gap-2">
               {recipe && (
-                <button
-                  type="button"
-                  onClick={handleDuplicate}
-                  className="flex items-center gap-1.5 rounded-lg border border-brand-200 bg-brand-50 px-3 py-2 text-sm font-bold text-brand-600 hover:bg-brand-100"
-                >
-                  <CopyIcon className="h-4 w-4" />
-                  Dupliquer
-                </button>
+                <>
+                  <button
+                    type="button"
+                    onClick={handleDuplicate}
+                    className="flex items-center gap-1.5 rounded-lg border border-brand-200 bg-brand-50 px-3 py-2 text-sm font-bold text-brand-600 hover:bg-brand-100"
+                  >
+                    <CopyIcon className="h-4 w-4" />
+                    Dupliquer
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDelete}
+                    title={confirmDelete ? 'Cliquer à nouveau pour confirmer' : 'Supprimer'}
+                    className={`flex h-9 w-9 items-center justify-center rounded-lg border transition-colors ${
+                      confirmDelete ? 'border-red-500 bg-red-500 text-white' : 'border-red-200 bg-red-50 text-red-500 hover:bg-red-100'
+                    }`}
+                  >
+                    <TrashIcon className="h-4 w-4" />
+                  </button>
+                </>
               )}
             </div>
             <div className="flex items-center gap-2">
