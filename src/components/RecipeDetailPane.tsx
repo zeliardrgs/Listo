@@ -135,22 +135,32 @@ export default function RecipeDetailPane({
 
   useEffect(() => () => clearTimeout(unsavedHintTimer.current), [])
 
-  const [flipping, setFlipping] = useState(false)
+  const [tiltPhase, setTiltPhase] = useState<'idle' | 'out' | 'in-instant' | 'in'>('idle')
   const pendingModeRef = useRef<'view' | 'edit'>(mode)
-  const flipTimer = useRef<ReturnType<typeof setTimeout>>()
 
   function switchMode(newMode: 'view' | 'edit') {
     if (newMode === mode) return
     pendingModeRef.current = newMode
-    setFlipping(true)
-    clearTimeout(flipTimer.current)
-    flipTimer.current = setTimeout(() => {
-      setMode(pendingModeRef.current)
-      setFlipping(false)
-    }, 150)
+    setTiltPhase('out')
   }
 
-  useEffect(() => () => clearTimeout(flipTimer.current), [])
+  useEffect(() => {
+    if (tiltPhase === 'out') {
+      const t = setTimeout(() => {
+        setMode(pendingModeRef.current)
+        setTiltPhase('in-instant')
+      }, 160)
+      return () => clearTimeout(t)
+    }
+    if (tiltPhase === 'in-instant') {
+      const raf = requestAnimationFrame(() => setTiltPhase('in'))
+      return () => cancelAnimationFrame(raf)
+    }
+    if (tiltPhase === 'in') {
+      const t = setTimeout(() => setTiltPhase('idle'), 160)
+      return () => clearTimeout(t)
+    }
+  }, [tiltPhase])
 
   useEffect(() => {
     if (!ingredientSearchOpen) return
@@ -857,10 +867,12 @@ export default function RecipeDetailPane({
     </>
   )
 
-  const flipStyle: CSSProperties = {
-    transform: flipping ? 'rotateY(90deg)' : 'rotateY(0deg)',
-    transition: 'transform 150ms ease-in-out'
-  }
+  const tiltStyle: CSSProperties =
+    tiltPhase === 'out'
+      ? { transform: 'rotateX(40deg)', opacity: 0.3, transition: 'transform 160ms ease, opacity 160ms ease' }
+      : tiltPhase === 'in-instant'
+        ? { transform: 'rotateX(-40deg)', opacity: 0.3, transition: 'none' }
+        : { transform: 'rotateX(0deg)', opacity: 1, transition: 'transform 160ms ease, opacity 160ms ease' }
 
   if (variant === 'pane') {
     return (
@@ -869,7 +881,7 @@ export default function RecipeDetailPane({
         className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-brand-100 bg-white shadow-sm"
         style={{ perspective: 1000 }}
       >
-        <div className="flex h-full flex-col" style={flipStyle}>
+        <div className="flex h-full flex-col" style={tiltStyle}>
           {content}
         </div>
       </div>
@@ -883,7 +895,7 @@ export default function RecipeDetailPane({
         className="relative flex h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl bg-white shadow-xl sm:rounded-2xl lg:max-w-2xl"
         style={{ perspective: 1000 }}
       >
-        <div className="flex h-full flex-col" style={flipStyle}>
+        <div className="flex h-full flex-col" style={tiltStyle}>
           {content}
         </div>
       </div>
