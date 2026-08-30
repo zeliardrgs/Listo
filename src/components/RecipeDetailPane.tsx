@@ -135,32 +135,32 @@ export default function RecipeDetailPane({
 
   useEffect(() => () => clearTimeout(unsavedHintTimer.current), [])
 
-  const [zoomPhase, setZoomPhase] = useState<'idle' | 'out' | 'in-instant' | 'in'>('idle')
+  const [transitionPhase, setTransitionPhase] = useState<'idle' | 'out' | 'in-instant' | 'in'>('idle')
   const pendingModeRef = useRef<'view' | 'edit'>(mode)
 
   function switchMode(newMode: 'view' | 'edit') {
     if (newMode === mode) return
     pendingModeRef.current = newMode
-    setZoomPhase('out')
+    setTransitionPhase('out')
   }
 
   useEffect(() => {
-    if (zoomPhase === 'out') {
+    if (transitionPhase === 'out') {
       const t = setTimeout(() => {
         setMode(pendingModeRef.current)
-        setZoomPhase('in-instant')
+        setTransitionPhase('in-instant')
       }, 150)
       return () => clearTimeout(t)
     }
-    if (zoomPhase === 'in-instant') {
-      const raf = requestAnimationFrame(() => setZoomPhase('in'))
+    if (transitionPhase === 'in-instant') {
+      const raf = requestAnimationFrame(() => setTransitionPhase('in'))
       return () => cancelAnimationFrame(raf)
     }
-    if (zoomPhase === 'in') {
-      const t = setTimeout(() => setZoomPhase('idle'), 150)
+    if (transitionPhase === 'in') {
+      const t = setTimeout(() => setTransitionPhase('idle'), 150)
       return () => clearTimeout(t)
     }
-  }, [zoomPhase])
+  }, [transitionPhase])
 
   useEffect(() => {
     if (!ingredientSearchOpen) return
@@ -867,31 +867,37 @@ export default function RecipeDetailPane({
     </>
   )
 
-  const zoomStyle: CSSProperties =
-    zoomPhase === 'out'
-      ? { transform: 'scale(0.85)', opacity: 0, transition: 'transform 150ms ease, opacity 150ms ease' }
-      : zoomPhase === 'in-instant'
-        ? { transform: 'scale(0.85)', opacity: 0, transition: 'none' }
-        : { transform: 'scale(1)', opacity: 1, transition: 'transform 150ms ease, opacity 150ms ease' }
+  const tiltStyle: CSSProperties =
+    transitionPhase === 'out'
+      ? { transform: 'rotateX(40deg)', opacity: 0.3, transition: 'transform 150ms ease, opacity 150ms ease' }
+      : transitionPhase === 'in-instant'
+        ? { transform: 'rotateX(-40deg)', opacity: 0.3, transition: 'none' }
+        : { transform: 'rotateX(0deg)', opacity: 1, transition: 'transform 150ms ease, opacity 150ms ease' }
 
   if (variant === 'pane') {
     return (
-      <div
-        ref={paneRef}
-        className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-brand-100 bg-white shadow-sm"
-        style={zoomStyle}
-      >
-        {content}
+      <div className="h-full" style={{ perspective: 1000 }}>
+        <div
+          ref={paneRef}
+          className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-brand-100 bg-white shadow-sm"
+          style={tiltStyle}
+        >
+          {content}
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/40 sm:items-center" onClick={attemptClose}>
+    <div
+      className="fixed inset-0 z-40 flex items-end justify-center bg-black/40 sm:items-center"
+      style={{ perspective: 1000 }}
+      onClick={attemptClose}
+    >
       <div
         onClick={(e) => e.stopPropagation()}
         className="relative flex h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl bg-white shadow-xl sm:rounded-2xl lg:max-w-2xl"
-        style={zoomStyle}
+        style={tiltStyle}
       >
         {content}
       </div>
