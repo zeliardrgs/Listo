@@ -14,6 +14,8 @@ interface Toast {
   snapshot?: ShoppingItem[]
 }
 
+const SELECTION_KEY = 'listo-recipes-selection'
+
 export default function RecipesTab() {
   const recipes = useAppStore((s) => s.recipes)
   const tags = useAppStore((s) => s.allTags())
@@ -32,13 +34,28 @@ export default function RecipesTab() {
   const [searchOpen, setSearchOpen] = useState(false)
   const [tagFilter, setTagFilter] = useState<string | null>(null)
   const [addPrefillName, setAddPrefillName] = useState('')
-  const [selection, setSelection] = useState<string | 'new' | null>(null)
+  const [selection, setSelection] = useState<string | 'new' | null>(() => localStorage.getItem(SELECTION_KEY))
   const [toast, setToast] = useState<Toast | null>(null)
   const toastTimer = useRef<ReturnType<typeof setTimeout>>()
   const searchRef = useRef<HTMLDivElement>(null)
   const selectedRecipe = selection && selection !== 'new' ? recipes.find((r) => r.id === selection) ?? null : null
+  const hasValidSelection = selection === 'new' || !!selectedRecipe
 
   useEffect(() => () => clearTimeout(toastTimer.current), [])
+
+  useEffect(() => {
+    if (selection && selection !== 'new') {
+      localStorage.setItem(SELECTION_KEY, selection)
+    } else {
+      localStorage.removeItem(SELECTION_KEY)
+    }
+  }, [selection])
+
+  useEffect(() => {
+    if (!isLoading && selection && selection !== 'new' && !recipes.find((r) => r.id === selection)) {
+      setSelection(null)
+    }
+  }, [isLoading, selection, recipes])
 
   useEffect(() => {
     if (!searchOpen) return
@@ -112,7 +129,7 @@ export default function RecipesTab() {
   return (
     <div
       className={`mx-auto flex max-w-lg flex-col px-3 pt-4 pb-36 sm:pb-4 ${
-        isDesktop && selection ? 'lg:h-full lg:max-w-[1700px] lg:overflow-hidden lg:pb-4' : 'lg:max-w-6xl'
+        isDesktop && hasValidSelection ? 'lg:h-full lg:max-w-[1700px] lg:overflow-hidden lg:pb-4' : 'lg:max-w-6xl'
       }`}
     >
       <div
@@ -199,12 +216,12 @@ export default function RecipesTab() {
 
       <div
         className={`order-3 sm:order-none ${
-          isDesktop && selection ? 'lg:grid lg:min-h-0 lg:flex-1 lg:grid-cols-2 lg:gap-6' : ''
+          isDesktop && hasValidSelection ? 'lg:grid lg:min-h-0 lg:flex-1 lg:grid-cols-2 lg:gap-6' : ''
         }`}
       >
         <div
           className={`min-w-0 flex-1 ${
-            isDesktop && selection ? 'lg:h-full lg:overflow-y-auto lg:pr-1' : ''
+            isDesktop && hasValidSelection ? 'lg:h-full lg:overflow-y-auto lg:pr-1' : ''
           }`}
         >
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
@@ -222,7 +239,7 @@ export default function RecipesTab() {
           </div>
         </div>
 
-        {isDesktop && selection && (
+        {isDesktop && hasValidSelection && (
           <div className="lg:h-full lg:min-h-0 lg:min-w-0">
             <RecipeDetailPane
               key={selection}
@@ -238,7 +255,7 @@ export default function RecipesTab() {
         )}
       </div>
 
-      {!isDesktop && selection && (
+      {!isDesktop && hasValidSelection && (
         <RecipeDetailPane
           key={selection}
           variant="modal"

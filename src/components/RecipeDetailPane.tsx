@@ -869,10 +869,10 @@ export default function RecipeDetailPane({
 
   const tiltStyle: CSSProperties =
     transitionPhase === 'out'
-      ? { transform: 'rotateX(40deg)', opacity: 0.3, transition: 'transform 150ms ease, opacity 150ms ease' }
+      ? { transform: 'rotateY(40deg)', opacity: 0.3, transition: 'transform 150ms ease, opacity 150ms ease' }
       : transitionPhase === 'in-instant'
-        ? { transform: 'rotateX(-40deg)', opacity: 0.3, transition: 'none' }
-        : { transform: 'rotateX(0deg)', opacity: 1, transition: 'transform 150ms ease, opacity 150ms ease' }
+        ? { transform: 'rotateY(-40deg)', opacity: 0.3, transition: 'none' }
+        : { transform: 'rotateY(0deg)', opacity: 1, transition: 'transform 150ms ease, opacity 150ms ease' }
 
   if (variant === 'pane') {
     return (
