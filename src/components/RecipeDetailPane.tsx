@@ -135,32 +135,32 @@ export default function RecipeDetailPane({
 
   useEffect(() => () => clearTimeout(unsavedHintTimer.current), [])
 
-  const [tiltPhase, setTiltPhase] = useState<'idle' | 'out' | 'in-instant' | 'in'>('idle')
+  const [zoomPhase, setZoomPhase] = useState<'idle' | 'out' | 'in-instant' | 'in'>('idle')
   const pendingModeRef = useRef<'view' | 'edit'>(mode)
 
   function switchMode(newMode: 'view' | 'edit') {
     if (newMode === mode) return
     pendingModeRef.current = newMode
-    setTiltPhase('out')
+    setZoomPhase('out')
   }
 
   useEffect(() => {
-    if (tiltPhase === 'out') {
+    if (zoomPhase === 'out') {
       const t = setTimeout(() => {
         setMode(pendingModeRef.current)
-        setTiltPhase('in-instant')
-      }, 160)
+        setZoomPhase('in-instant')
+      }, 150)
       return () => clearTimeout(t)
     }
-    if (tiltPhase === 'in-instant') {
-      const raf = requestAnimationFrame(() => setTiltPhase('in'))
+    if (zoomPhase === 'in-instant') {
+      const raf = requestAnimationFrame(() => setZoomPhase('in'))
       return () => cancelAnimationFrame(raf)
     }
-    if (tiltPhase === 'in') {
-      const t = setTimeout(() => setTiltPhase('idle'), 160)
+    if (zoomPhase === 'in') {
+      const t = setTimeout(() => setZoomPhase('idle'), 150)
       return () => clearTimeout(t)
     }
-  }, [tiltPhase])
+  }, [zoomPhase])
 
   useEffect(() => {
     if (!ingredientSearchOpen) return
@@ -867,23 +867,21 @@ export default function RecipeDetailPane({
     </>
   )
 
-  const tiltStyle: CSSProperties =
-    tiltPhase === 'out'
-      ? { transform: 'rotateX(40deg)', opacity: 0.3, transition: 'transform 160ms ease, opacity 160ms ease' }
-      : tiltPhase === 'in-instant'
-        ? { transform: 'rotateX(-40deg)', opacity: 0.3, transition: 'none' }
-        : { transform: 'rotateX(0deg)', opacity: 1, transition: 'transform 160ms ease, opacity 160ms ease' }
+  const zoomStyle: CSSProperties =
+    zoomPhase === 'out'
+      ? { transform: 'scale(0.85)', opacity: 0, transition: 'transform 150ms ease, opacity 150ms ease' }
+      : zoomPhase === 'in-instant'
+        ? { transform: 'scale(0.85)', opacity: 0, transition: 'none' }
+        : { transform: 'scale(1)', opacity: 1, transition: 'transform 150ms ease, opacity 150ms ease' }
 
   if (variant === 'pane') {
     return (
       <div
         ref={paneRef}
         className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-brand-100 bg-white shadow-sm"
-        style={{ perspective: 1000 }}
+        style={zoomStyle}
       >
-        <div className="flex h-full flex-col" style={tiltStyle}>
-          {content}
-        </div>
+        {content}
       </div>
     )
   }
@@ -893,11 +891,9 @@ export default function RecipeDetailPane({
       <div
         onClick={(e) => e.stopPropagation()}
         className="relative flex h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl bg-white shadow-xl sm:rounded-2xl lg:max-w-2xl"
-        style={{ perspective: 1000 }}
+        style={zoomStyle}
       >
-        <div className="flex h-full flex-col" style={tiltStyle}>
-          {content}
-        </div>
+        {content}
       </div>
     </div>
   )
