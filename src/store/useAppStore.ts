@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type {
+  IngredientMatchResult,
   PlanningItem,
   Recipe,
   RecipeIngredient,
@@ -19,6 +20,7 @@ import {
   type MealSlot,
   type PlanningWeek
 } from '../data/constants'
+import { namesMatch } from '../utils/matchItem'
 
 function planningKey(week: PlanningWeek, day: DayOfWeek, slot: MealSlot) {
   return `${week}__${day}__${slot}`
@@ -52,25 +54,49 @@ function mergeRecipeQuantities(
   return [...kept, ...incoming]
 }
 
-// Combines a single recipe's ingredient lines that map to the same shopping
-// item into per-unit contributions (summing quantities that share a unit),
-// so e.g. "2 c. à soupe d'huile" + "15 cl d'huile" both survive instead of
-// the second silently overwriting the first.
-function buildItemContributions(ings: RecipeIngredient[], recipeId: string): RecipeQuantityContribution[] {
-  const byUnit = new Map<string, { quantity?: number; unit?: Unit }>()
-  ings.forEach((ing) => {
-    const key = ing.unit || ''
-    const prev = byUnit.get(key)
-    if (!prev) {
-      byUnit.set(key, { quantity: ing.quantity, unit: ing.unit })
-    } else {
-      byUnit.set(key, {
-        quantity: prev.quantity != null && ing.quantity != null ? prev.quantity + ing.quantity : (prev.quantity ?? ing.quantity),
-        unit: ing.unit ?? prev.unit
-      })
-    }
+// Combines two sets of contributions into one, summing quantities that
+// share both a recipe and a unit rather than letting one side clobber the
+// other — used both to fold a single recipe's multiple ingredient lines for
+// the same item (e.g. "2 c. à soupe d'huile" + "15 cl d'huile") and to
+// combine two previously-separate items' histories when the user merges a
+// mistakenly-created "new" item into an existing one.
+function combineContributions(
+  a: RecipeQuantityContribution[] | undefined,
+  b: RecipeQuantityContribution[] | undefined
+): RecipeQuantityContribution[] | undefined {
+  const all = [...(a || []), ...(b || [])]
+  if (all.length === 0) return undefined
+  const byRecipe = new Map<string, RecipeQuantityContribution[]>()
+  all.forEach((c) => {
+    const list = byRecipe.get(c.recipeId)
+    if (list) list.push(c)
+    else byRecipe.set(c.recipeId, [c])
   })
-  return Array.from(byUnit.values()).map((v) => ({ recipeId, quantity: v.quantity, unit: v.unit }))
+  const result: RecipeQuantityContribution[] = []
+  byRecipe.forEach((list, recipeId) => {
+    const byUnit = new Map<string, { quantity?: number; unit?: Unit }>()
+    list.forEach((c) => {
+      const key = c.unit || ''
+      const prev = byUnit.get(key)
+      if (!prev) {
+        byUnit.set(key, { quantity: c.quantity, unit: c.unit })
+      } else {
+        byUnit.set(key, {
+          quantity: prev.quantity != null && c.quantity != null ? prev.quantity + c.quantity : (prev.quantity ?? c.quantity),
+          unit: c.unit ?? prev.unit
+        })
+      }
+    })
+    byUnit.forEach((v) => result.push({ recipeId, quantity: v.quantity, unit: v.unit }))
+  })
+  return result
+}
+
+function buildItemContributions(ings: RecipeIngredient[], recipeId: string): RecipeQuantityContribution[] {
+  return combineContributions(
+    undefined,
+    ings.map((ing) => ({ recipeId, quantity: ing.quantity, unit: ing.unit }))
+  )!
 }
 
 interface AppStore {
@@ -104,7 +130,10 @@ interface AppStore {
   addRecipe: (recipe: Omit<Recipe, 'id' | 'createdAt'>) => string
   updateRecipe: (id: string, patch: Partial<Recipe>) => void
   removeRecipe: (id: string) => void
-  addIngredientsToList: (recipeId: string) => void
+  addIngredientsToList: (recipeId: string) => IngredientMatchResult[]
+  // Folds a mistakenly-created item (e.g. a plural/singular mismatch the
+  // fuzzy matcher missed) into an existing one the user picks instead.
+  mergeItemInto: (sourceId: string, targetId: string) => void
 
   addToPlanningQueue: (recipeId: string) => void
   removeFromPlanningQueue: (id: string) => void
@@ -166,7 +195,7 @@ export const useAppStore = create<AppStore>()(
 
       addItem: (item) =>
         set((s) => {
-          const dupIdx = s.items.findIndex((it) => it.name.trim().toLowerCase() === item.name.trim().toLowerCase())
+          const dupIdx = s.items.findIndex((it) => namesMatch(it.name, item.name))
           if (dupIdx === -1) {
             const store = item.store || pickDefaultStore(s)
             return { items: [...s.items, { ...item, store, id: makeId(), checked: false, updatedAt: Date.now() }] }
@@ -292,7 +321,8 @@ export const useAppStore = create<AppStore>()(
 
       addIngredientsToList: (recipeId) => {
         const recipe = get().recipes.find((r) => r.id === recipeId)
-        if (!recipe) return
+        if (!recipe) return []
+        const results: IngredientMatchResult[] = []
         set((s) => {
           const items = [...s.items]
           const groups = new Map<string, RecipeIngredient[]>()
@@ -306,7 +336,7 @@ export const useAppStore = create<AppStore>()(
             })
           groups.forEach((ings) => {
             const contributions = buildItemContributions(ings, recipeId)
-            const idx = items.findIndex((it) => it.name.trim().toLowerCase() === ings[0].name.trim().toLowerCase())
+            const idx = items.findIndex((it) => namesMatch(it.name, ings[0].name))
             if (idx !== -1) {
               const existing = items[idx]
               items[idx] = {
@@ -316,9 +346,16 @@ export const useAppStore = create<AppStore>()(
                 recipeQuantities: mergeRecipeQuantities(existing.recipeQuantities, contributions),
                 updatedAt: Date.now()
               }
+              results.push({
+                ingredientName: ings[0].name,
+                matchedItemId: existing.id,
+                matchedItemName: existing.name,
+                createdItemId: null
+              })
             } else {
+              const newId = makeId()
               items.push({
-                id: makeId(),
+                id: newId,
                 name: ings[0].name,
                 category: ings[0].category || 'Autre',
                 brand: '',
@@ -330,11 +367,30 @@ export const useAppStore = create<AppStore>()(
                 checked: false,
                 updatedAt: Date.now()
               })
+              results.push({ ingredientName: ings[0].name, matchedItemId: null, matchedItemName: null, createdItemId: newId })
             }
           })
           return { items }
         })
+        return results
       },
+
+      mergeItemInto: (sourceId, targetId) =>
+        set((s) => {
+          if (sourceId === targetId) return s
+          const source = s.items.find((it) => it.id === sourceId)
+          const target = s.items.find((it) => it.id === targetId)
+          if (!source || !target) return s
+          const merged: ShoppingItem = {
+            ...target,
+            toBuy: true,
+            fromRecipes: Array.from(new Set([...(target.fromRecipes || []), ...(source.fromRecipes || [])])),
+            recipeQuantities: combineContributions(target.recipeQuantities, source.recipeQuantities),
+            updatedAt: Date.now()
+          }
+          const items = s.items.filter((it) => it.id !== sourceId).map((it) => (it.id === targetId ? merged : it))
+          return { items }
+        }),
 
       addToPlanningQueue: (recipeId) =>
         set((s) => ({ planningQueue: [...s.planningQueue, { id: makeId(), recipeId }] })),

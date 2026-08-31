@@ -28,10 +28,10 @@ export default function HouseholdSwitcher({ onOpenSettings }: { onOpenSettings: 
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex max-w-[10rem] items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 text-xs font-bold text-white hover:bg-white/25"
+        className="flex w-[10rem] shrink-0 items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 text-xs font-bold text-white hover:bg-white/25"
         title="Changer de foyer"
       >
-        <span className="truncate">{active.name}</span>
+        <span className="min-w-0 flex-1 truncate text-left">{active.name}</span>
         <ChevronDownIcon className="h-3 w-3 shrink-0" />
       </button>
 

@@ -7,6 +7,7 @@ import { useStoreIcon } from '../hooks/useStoreIcon'
 import StoreIconView from './StoreIconView'
 import { pluralizeUnit } from '../utils/pluralizeUnit'
 import { importRecipeFromUrl } from '../utils/importRecipe'
+import { matchExistingItem } from '../utils/matchItem'
 import RecipeIllustration from './RecipeIllustration'
 import Emoji from './Emoji'
 import {
@@ -20,7 +21,8 @@ import {
   CopyIcon,
   EditIcon,
   CalendarIcon,
-  CheckIcon
+  CheckIcon,
+  LinkIcon
 } from './icons'
 import type { Recipe, RecipeIngredient, RecipeQuantityContribution, Unit } from '../types'
 
@@ -186,6 +188,8 @@ export default function RecipeDetailPane({
   const [importing, setImporting] = useState(false)
   const [importError, setImportError] = useState('')
   const [showImport, setShowImport] = useState(false)
+  const importAbortRef = useRef<AbortController | null>(null)
+  const importCancelledRef = useRef(false)
 
   const category = recipe?.category ?? 'Plat'
 
@@ -211,7 +215,7 @@ export default function RecipeDetailPane({
     : []
 
   function findShoppingItem(ingName: string) {
-    return items.find((it) => it.name.toLowerCase() === ingName.toLowerCase())
+    return matchExistingItem(ingName, items)
   }
 
   function learnedStoreFor(ingName: string): string {
@@ -307,8 +311,11 @@ export default function RecipeDetailPane({
     if (!importUrl.trim()) return
     setImporting(true)
     setImportError('')
+    importCancelledRef.current = false
+    const controller = new AbortController()
+    importAbortRef.current = controller
     try {
-      const imported = await importRecipeFromUrl(importUrl.trim())
+      const imported = await importRecipeFromUrl(importUrl.trim(), controller.signal)
       setName(imported.name)
       setIngredients(imported.ingredients)
       setInstructions(imported.instructions)
@@ -316,11 +323,28 @@ export default function RecipeDetailPane({
       setImageUrlDraft(imported.imageUrl || '')
       setShowImport(false)
     } catch (err: any) {
-      setImportError(err?.message || "Échec de l'import. Renseigne la recette manuellement.")
+      if (!importCancelledRef.current) {
+        setImportError(err?.message || "Échec de l'import. Renseigne la recette manuellement.")
+      }
     } finally {
       setImporting(false)
+      importAbortRef.current = null
     }
   }
+
+  function cancelImport() {
+    importCancelledRef.current = true
+    importAbortRef.current?.abort()
+    setImporting(false)
+  }
+
+  const importHostHint = (() => {
+    try {
+      return new URL(importUrl.trim()).hostname.replace(/^www\./, '')
+    } catch {
+      return ''
+    }
+  })()
 
   function handleSave() {
     const trimmedName = name.trim()
@@ -562,16 +586,21 @@ export default function RecipeDetailPane({
         ) : (
           <>
             {!recipe && (
-              <div>
+              <div className="space-y-2">
                 <button
                   type="button"
                   onClick={() => setShowImport((v) => !v)}
-                  className="text-xs font-bold text-brand-600 hover:text-brand-700"
+                  className={`flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed px-4 py-3 text-sm font-bold transition-colors ${
+                    showImport
+                      ? 'border-brand-400 bg-brand-50 text-brand-700'
+                      : 'border-brand-200 bg-brand-50/60 text-brand-600 hover:border-brand-300 hover:bg-brand-50'
+                  }`}
                 >
+                  <LinkIcon className="h-4 w-4" />
                   Importer depuis un lien
                 </button>
                 {showImport && (
-                  <div className="relative mt-2 space-y-2 rounded-lg border border-brand-100 bg-brand-50/60 p-3">
+                  <div className="space-y-2 rounded-lg border border-brand-100 bg-brand-50/60 p-3">
                     <div className="flex gap-2">
                       <input
                         value={importUrl}
@@ -591,13 +620,6 @@ export default function RecipeDetailPane({
                       </button>
                     </div>
                     {importError && <p className="text-xs font-semibold text-red-500">{importError}</p>}
-
-                    {importing && (
-                      <div className="absolute inset-0 flex items-center justify-center gap-2 rounded-lg bg-white/80 text-sm font-bold text-brand-700">
-                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-brand-200 border-t-brand-600" />
-                        Récupération de la recette…
-                      </div>
-                    )}
                   </div>
                 )}
               </div>
@@ -886,6 +908,22 @@ export default function RecipeDetailPane({
       {unsavedHint && (
         <div className="absolute inset-x-4 bottom-[4.5rem] z-20 rounded-lg bg-slate-900 px-3 py-2 text-center text-xs font-bold text-white shadow-lg">
           Sauvegarde ou annule tes modifications d'abord
+        </div>
+      )}
+
+      {importing && (
+        <div className="absolute inset-0 z-40 flex flex-col items-center justify-center gap-3 bg-white/95 px-6 text-center">
+          <span className="h-8 w-8 animate-spin rounded-full border-[3px] border-brand-200 border-t-brand-600" />
+          <p className="text-sm font-bold text-brand-700">
+            Importation{importHostHint ? ` depuis ${importHostHint}` : ' de la recette'}…
+          </p>
+          <button
+            type="button"
+            onClick={cancelImport}
+            className="rounded-lg border border-slate-200 px-4 py-2 text-xs font-bold text-slate-500 hover:bg-slate-50"
+          >
+            Annuler l'import
+          </button>
         </div>
       )}
     </>

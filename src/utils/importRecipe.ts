@@ -17,14 +17,16 @@ const CORS_PROXIES: { url: (url: string) => string; headers?: Record<string, str
   { url: (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}` }
 ]
 
-async function fetchHtml(url: string): Promise<string> {
+async function fetchHtml(url: string, externalSignal?: AbortSignal): Promise<string> {
   let lastError: unknown
   for (const proxy of CORS_PROXIES) {
+    if (externalSignal?.aborted) throw new DOMException('Aborted', 'AbortError')
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 12000)
+    const onExternalAbort = () => controller.abort()
+    externalSignal?.addEventListener('abort', onExternalAbort)
     try {
-      const controller = new AbortController()
-      const timeout = setTimeout(() => controller.abort(), 12000)
       const res = await fetch(proxy.url(url), { signal: controller.signal, headers: proxy.headers })
-      clearTimeout(timeout)
       if (!res.ok) {
         lastError = new Error(`HTTP ${res.status}`)
         continue
@@ -33,7 +35,11 @@ async function fetchHtml(url: string): Promise<string> {
       if (html.trim().length > 0) return html
       lastError = new Error('Réponse vide')
     } catch (err) {
+      if (externalSignal?.aborted) throw err
       lastError = err
+    } finally {
+      clearTimeout(timeout)
+      externalSignal?.removeEventListener('abort', onExternalAbort)
     }
   }
   throw lastError instanceof Error ? lastError : new Error('Échec de la récupération de la page')
@@ -49,7 +55,7 @@ function makeId() {
 // "2 cuillères à café de câpres" doesn't keep "cuillères à café" glued to
 // "câpres"), they just don't map onto our fixed Unit vocabulary — the
 // quantity is kept, the unit is simply left blank.
-const UNIT_PHRASES: { words: string[]; unit?: Unit; scale?: number }[] = [
+const UNIT_PHRASES: { words: string[]; unit?: Unit }[] = [
   { words: ['cuillères à café', 'cuillère à café', 'c. à café', 'càc'] },
   { words: ['cuillères à soupe', 'cuillère à soupe', 'c. à soupe', 'càs'] },
   { words: ['gousses', 'gousse'] },
@@ -67,9 +73,7 @@ const UNIT_PHRASES: { words: string[]; unit?: Unit; scale?: number }[] = [
   { words: ['pièces', 'pieces', 'pièce', 'piece'], unit: 'pièce' },
   { words: ['grammes', 'gramme', 'gr', 'g'], unit: 'g' },
   { words: ['kg'], unit: 'kg' },
-  // A centiliter isn't one of our units, so fold it into ml (×10) rather
-  // than mislabeling "15 cl" as "15 ml".
-  { words: ['cl'], unit: 'ml', scale: 10 },
+  { words: ['cl'], unit: 'cl' },
   { words: ['ml'], unit: 'ml' },
   { words: ['litres', 'litre', 'l'], unit: 'l' }
 ]
@@ -106,7 +110,6 @@ function parseQuantityAndUnit(raw: string): { quantity?: number; unit?: Unit; na
   const matchedWord = matchedPhrase.words.find((w) => lowerRemainder === w || lowerRemainder.startsWith(`${w} `))!
   const afterUnit = remainder.slice(matchedWord.length).trim()
   const name = stripLeadingArticle(afterUnit) || text
-  if (matchedPhrase.scale && quantity != null) quantity *= matchedPhrase.scale
 
   return { quantity, unit: matchedPhrase.unit, name }
 }
@@ -134,11 +137,12 @@ function extractJsonLdRecipe(doc: Document): any | null {
   return null
 }
 
-export async function importRecipeFromUrl(url: string): Promise<ImportedRecipe> {
+export async function importRecipeFromUrl(url: string, signal?: AbortSignal): Promise<ImportedRecipe> {
   let html: string
   try {
-    html = await fetchHtml(url)
-  } catch {
+    html = await fetchHtml(url, signal)
+  } catch (err) {
+    if (signal?.aborted) throw err
     throw new Error('Impossible de récupérer la page. Vérifie le lien ou ajoute la recette manuellement.')
   }
   const doc = new DOMParser().parseFromString(html, 'text/html')

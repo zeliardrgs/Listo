@@ -6,8 +6,9 @@ import { useScrollDirection } from '../../hooks/useScrollDirection'
 import { useIsDesktop } from '../../hooks/useIsDesktop'
 import RecipeCard from '../RecipeCard'
 import RecipeDetailPane from '../RecipeDetailPane'
+import IngredientMatchModal from '../IngredientMatchModal'
 import { SearchIcon, PlusIcon, CrossIcon, RecipeIcon } from '../icons'
-import type { Recipe, ShoppingItem } from '../../types'
+import type { IngredientMatchResult, Recipe, ShoppingItem } from '../../types'
 
 interface Toast {
   message: string
@@ -36,6 +37,7 @@ export default function RecipesTab() {
   const [addPrefillName, setAddPrefillName] = useState('')
   const [selection, setSelection] = useState<string | 'new' | null>(() => localStorage.getItem(SELECTION_KEY))
   const [toast, setToast] = useState<Toast | null>(null)
+  const [matchModal, setMatchModal] = useState<{ recipeName: string; results: IngredientMatchResult[] } | null>(null)
   const toastTimer = useRef<ReturnType<typeof setTimeout>>()
   const searchRef = useRef<HTMLDivElement>(null)
   const selectedRecipe = selection && selection !== 'new' ? recipes.find((r) => r.id === selection) ?? null : null
@@ -88,8 +90,11 @@ export default function RecipesTab() {
 
   function quickAdd(recipe: Recipe) {
     const snapshot = useAppStore.getState().items
-    addIngredientsToList(recipe.id)
+    const results = addIngredientsToList(recipe.id)
     showToast(`Ingrédients de « ${recipe.name} » ajoutés à la liste`, snapshot)
+    if (results.some((r) => r.createdItemId)) {
+      setMatchModal({ recipeName: recipe.name, results })
+    }
   }
 
   function planRecipe(recipe: Recipe) {
@@ -302,6 +307,14 @@ export default function RecipesTab() {
             </button>
           </div>
         </div>
+      )}
+
+      {matchModal && (
+        <IngredientMatchModal
+          results={matchModal.results}
+          recipeName={matchModal.recipeName}
+          onClose={() => setMatchModal(null)}
+        />
       )}
     </div>
   )

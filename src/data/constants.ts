@@ -65,7 +65,7 @@ export const RECIPE_TAGS = [
   'Enfants'
 ] as const
 
-export const UNITS: Unit[] = ['pièce', 'g', 'kg', 'ml', 'l', 'paquet', 'boîte', 'botte', 'tranche', 'barquette']
+export const UNITS: Unit[] = ['pièce', 'g', 'kg', 'ml', 'cl', 'l', 'paquet', 'boîte', 'botte', 'tranche', 'barquette']
 
 export const DEFAULT_STORES = ['Supermarché', 'Marché', 'Boulangerie', 'Boucherie', 'Pharmacie'] as const
 

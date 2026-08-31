@@ -1,4 +1,4 @@
-export type Unit = 'pièce' | 'g' | 'kg' | 'ml' | 'l' | 'paquet' | 'boîte' | 'botte' | 'tranche' | 'barquette'
+export type Unit = 'pièce' | 'g' | 'kg' | 'ml' | 'cl' | 'l' | 'paquet' | 'boîte' | 'botte' | 'tranche' | 'barquette'
 
 export interface StoreIconValue {
   type: 'emoji' | 'image'
@@ -69,6 +69,17 @@ export interface Recipe {
 export interface PlanningItem {
   id: string
   recipeId: string
+}
+
+// Outcome of matching one recipe ingredient against the shopping list when
+// bulk-adding a recipe's ingredients — either it merged into an existing
+// item, or a brand new one was created (shown to the user for review, with
+// a chance to re-point it at an existing item after the fact).
+export interface IngredientMatchResult {
+  ingredientName: string
+  matchedItemId: string | null
+  matchedItemName: string | null
+  createdItemId: string | null
 }
 
 export interface AppState {

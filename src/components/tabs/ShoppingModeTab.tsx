@@ -34,7 +34,7 @@ interface Particle {
 function makeParticles(count: number): Particle[] {
   return Array.from({ length: count }, () => {
     const angle = Math.random() * Math.PI * 2
-    const distance = 90 + Math.random() * 110
+    const distance = 130 + Math.random() * 190
     return {
       emoji: CONFETTI_EMOJI[Math.floor(Math.random() * CONFETTI_EMOJI.length)],
       tx: Math.cos(angle) * distance,
@@ -326,7 +326,7 @@ export default function ShoppingModeTab() {
 
       {celebration && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-brand-900/40 px-6">
-          <div className="celebration-card relative flex flex-col items-center gap-3 rounded-3xl bg-white px-10 py-8 text-center shadow-xl">
+          <div className="pointer-events-none absolute inset-0 overflow-hidden">
             {celebration.particles.map((p, i) => (
               <span
                 key={i}
@@ -344,6 +344,8 @@ export default function ShoppingModeTab() {
                 {p.emoji}
               </span>
             ))}
+          </div>
+          <div className="celebration-card relative z-10 flex flex-col items-center gap-3 rounded-3xl bg-white px-10 py-8 text-center shadow-xl">
             <span className="text-5xl">🎉</span>
             <p className="text-xl font-extrabold text-brand-700">{celebration.message}</p>
           </div>
