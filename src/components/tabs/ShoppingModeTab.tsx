@@ -8,6 +8,7 @@ import { CheckIcon, CopyIcon, ImageIcon, TrashIcon } from '../icons'
 import StoreIconView from '../StoreIconView'
 import Emoji from '../Emoji'
 import ShoppingListPrintable from '../ShoppingListPrintable'
+import { formatRecipeQuantity } from '../../utils/formatRecipeQuantity'
 import type { ShoppingItem } from '../../types'
 
 const CELEBRATIONS = [
@@ -262,6 +263,11 @@ export default function ShoppingModeTab() {
                         >
                           {it.name}
                         </span>
+                        {formatRecipeQuantity(it.recipeQuantities) && (
+                          <span className="shrink-0 text-xs font-medium text-slate-400">
+                            • {formatRecipeQuantity(it.recipeQuantities)}
+                          </span>
+                        )}
                       </div>
                       {(it.brand || recipesUsing(it).length > 0) && (
                         <p className="truncate text-xs text-slate-400">

@@ -1,6 +1,14 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { PlanningItem, Recipe, RecipeIngredient, ShoppingItem, StoreIconValue, Unit } from '../types'
+import type {
+  PlanningItem,
+  Recipe,
+  RecipeIngredient,
+  RecipeQuantityContribution,
+  ShoppingItem,
+  StoreIconValue,
+  Unit
+} from '../types'
 import {
   CATEGORIES,
   DAYS_OF_WEEK,
@@ -26,6 +34,18 @@ function pickDefaultStore(s: { defaultStore: string; customStores: string[]; rem
 
 function makeId() {
   return Math.random().toString(36).slice(2) + Date.now().toString(36)
+}
+
+// Replaces one recipe's prior contribution to an item (its quantities
+// changed, or it's being re-added) while leaving other recipes' untouched.
+function mergeRecipeQuantities(
+  existing: RecipeQuantityContribution[] | undefined,
+  incoming: RecipeQuantityContribution[] | undefined
+): RecipeQuantityContribution[] | undefined {
+  if (!incoming || incoming.length === 0) return existing
+  const byRecipe = new Map((existing || []).map((c) => [c.recipeId, c] as const))
+  incoming.forEach((c) => byRecipe.set(c.recipeId, c))
+  return Array.from(byRecipe.values())
 }
 
 interface AppStore {
@@ -141,6 +161,7 @@ export const useAppStore = create<AppStore>()(
                 : item.toBuy && !existing.toBuy
                   ? undefined
                   : existing.fromRecipes,
+            recipeQuantities: mergeRecipeQuantities(existing.recipeQuantities, item.recipeQuantities),
             updatedAt: Date.now()
           }
           const items = [...s.items]
@@ -153,6 +174,9 @@ export const useAppStore = create<AppStore>()(
           const current = s.items.find((it) => it.id === id)
           if (!current) return s
           const updated: ShoppingItem = { ...current, ...patch, updatedAt: Date.now() }
+          if (patch.recipeQuantities !== undefined) {
+            updated.recipeQuantities = mergeRecipeQuantities(current.recipeQuantities, patch.recipeQuantities)
+          }
 
           // Manually re-adding an item to the shopping list (outside of a
           // recipe/planning quick-add, which always passes fromRecipes
@@ -160,6 +184,7 @@ export const useAppStore = create<AppStore>()(
           // add, so the Courses tab doesn't keep showing it as recipe-driven.
           if (patch.toBuy === true && !current.toBuy && patch.fromRecipes === undefined) {
             updated.fromRecipes = undefined
+            updated.recipeQuantities = undefined
           }
 
           const oldNameKey = current.name.trim().toLowerCase()
@@ -248,6 +273,7 @@ export const useAppStore = create<AppStore>()(
           recipe.ingredients
             .filter((ing: RecipeIngredient) => !ing.inStock)
             .forEach((ing: RecipeIngredient) => {
+              const contribution: RecipeQuantityContribution = { recipeId, quantity: ing.quantity, unit: ing.unit }
               const idx = items.findIndex((it) => it.name.trim().toLowerCase() === ing.name.trim().toLowerCase())
               if (idx !== -1) {
                 const existing = items[idx]
@@ -255,6 +281,7 @@ export const useAppStore = create<AppStore>()(
                   ...existing,
                   toBuy: true,
                   fromRecipes: Array.from(new Set([...(existing.fromRecipes || []), recipeId])),
+                  recipeQuantities: mergeRecipeQuantities(existing.recipeQuantities, [contribution]),
                   updatedAt: Date.now()
                 }
               } else {
@@ -267,6 +294,7 @@ export const useAppStore = create<AppStore>()(
                   recurring: false,
                   toBuy: true,
                   fromRecipes: [recipeId],
+                  recipeQuantities: [contribution],
                   checked: false,
                   updatedAt: Date.now()
                 })

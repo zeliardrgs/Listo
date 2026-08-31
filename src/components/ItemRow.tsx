@@ -8,6 +8,7 @@ import CategorySelect from './CategorySelect'
 import StoreSelect from './StoreSelect'
 import Emoji from './Emoji'
 import StoreIconView from './StoreIconView'
+import { formatRecipeQuantity } from '../utils/formatRecipeQuantity'
 import type { ShoppingItem } from '../types'
 
 interface Draft {
@@ -76,6 +77,7 @@ export default function ItemRow({ item }: { item: ShoppingItem }) {
   }
 
   const iconBg = colorFor(item.category).iconBg
+  const recipeQty = formatRecipeQuantity(item.recipeQuantities)
 
   if (!expanded) {
     return (
@@ -90,6 +92,7 @@ export default function ItemRow({ item }: { item: ShoppingItem }) {
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline gap-2">
             <span className="truncate font-bold text-slate-800">{item.name}</span>
+            {recipeQty && <span className="shrink-0 text-sm font-medium text-slate-400">• {recipeQty}</span>}
             {item.recurring && (
               <span className="shrink-0 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-700">↻</span>
             )}

@@ -22,7 +22,7 @@ import {
   CalendarIcon,
   CheckIcon
 } from './icons'
-import type { Recipe, RecipeIngredient, Unit } from '../types'
+import type { Recipe, RecipeIngredient, RecipeQuantityContribution, Unit } from '../types'
 
 function makeId() {
   return Math.random().toString(36).slice(2) + Date.now().toString(36)
@@ -271,14 +271,18 @@ export default function RecipeDetailPane({
     )
   }
 
-  function toggleIngredientInList(ing: RecipeIngredient) {
+  function toggleIngredientInList(ing: RecipeIngredient, displayQty?: number) {
     const existing = findShoppingItem(ing.name)
+    const contribution: RecipeQuantityContribution | undefined = recipe
+      ? { recipeId: recipe.id, quantity: displayQty ?? ing.quantity, unit: ing.unit }
+      : undefined
     if (existing) {
       const turningOn = !existing.toBuy
       updateItem(existing.id, {
         toBuy: turningOn,
         fromRecipes:
-          turningOn && recipe ? Array.from(new Set([...(existing.fromRecipes || []), recipe.id])) : existing.fromRecipes
+          turningOn && recipe ? Array.from(new Set([...(existing.fromRecipes || []), recipe.id])) : existing.fromRecipes,
+        recipeQuantities: turningOn && contribution ? [contribution] : existing.recipeQuantities
       })
     } else {
       addItem({
@@ -288,7 +292,8 @@ export default function RecipeDetailPane({
         store: learnedStoreFor(ing.name),
         recurring: false,
         toBuy: true,
-        fromRecipes: recipe ? [recipe.id] : undefined
+        fromRecipes: recipe ? [recipe.id] : undefined,
+        recipeQuantities: contribution ? [contribution] : undefined
       })
     }
   }
@@ -412,7 +417,7 @@ export default function RecipeDetailPane({
         </div>
         <button
           type="button"
-          onClick={() => toggleIngredientInList(ing)}
+          onClick={() => toggleIngredientInList(ing, qty)}
           title={inList ? 'Retirer de la liste à acheter' : 'Ajouter à la liste à acheter'}
           className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-colors ${
             deemphasized ? 'text-slate-400 hover:bg-white' : ''

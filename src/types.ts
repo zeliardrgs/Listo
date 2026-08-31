@@ -5,6 +5,15 @@ export interface StoreIconValue {
   value: string
 }
 
+// Quantity a single recipe contributes to a shopping item, keyed by recipe so
+// it can be replaced (recipe edited) or dropped (recipe un-added) without
+// disturbing what other recipes contributed to the same item.
+export interface RecipeQuantityContribution {
+  recipeId: string
+  quantity?: number
+  unit?: Unit
+}
+
 export interface ShoppingItem {
   id: string
   name: string
@@ -19,6 +28,9 @@ export interface ShoppingItem {
   checked: boolean
   updatedAt: number
   fromRecipes?: string[]
+  // Only ever set for recipe-linked items — a manually added article has no
+  // quantity, matching one recipe's contribution per entry.
+  recipeQuantities?: RecipeQuantityContribution[]
 }
 
 export interface ProductSuggestion {

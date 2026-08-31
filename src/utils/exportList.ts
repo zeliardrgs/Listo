@@ -1,4 +1,5 @@
 import { categoryEmoji } from '../data/constants'
+import { formatRecipeQuantity } from './formatRecipeQuantity'
 import type { ShoppingItem } from '../types'
 
 export function groupByCategory(items: ShoppingItem[]): [string, ShoppingItem[]][] {
@@ -20,7 +21,8 @@ export function buildListText(store: string, items: ShoppingItem[]): string {
     lines.push(`${categoryEmoji(cat)} ${cat.toUpperCase()}`)
     list.forEach((it) => {
       const brand = it.brand ? ` (${it.brand})` : ''
-      lines.push(`- ${it.name}${brand}`)
+      const qty = formatRecipeQuantity(it.recipeQuantities)
+      lines.push(`- ${it.name}${brand}${qty ? ` — ${qty}` : ''}`)
     })
     lines.push('')
   })

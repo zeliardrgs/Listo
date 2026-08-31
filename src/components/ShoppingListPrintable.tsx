@@ -6,6 +6,7 @@ import { useCategoryEmojiName } from '../hooks/useCategoryEmojiName'
 import { useCategoryColor } from '../hooks/useCategoryColor'
 import { useStoreIcon } from '../hooks/useStoreIcon'
 import ListoLogo from './ListoLogo'
+import { formatRecipeQuantity } from '../utils/formatRecipeQuantity'
 import type { ShoppingItem } from '../types'
 
 function hexFrom(cls: string): string {
@@ -148,6 +149,11 @@ const ShoppingListPrintable = forwardRef<HTMLDivElement, { store: string; items:
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
                           <span style={{ fontSize: 16, fontWeight: 800, color: '#1e293b' }}>{it.name}</span>
+                          {formatRecipeQuantity(it.recipeQuantities) && (
+                            <span style={{ fontSize: 13, fontWeight: 600, color: '#94a3b8' }}>
+                              • {formatRecipeQuantity(it.recipeQuantities)}
+                            </span>
+                          )}
                         </div>
                         {(it.brand || usedIn.length > 0) && (
                           <div style={{ fontSize: 13, fontWeight: 600, color: '#94a3b8' }}>
