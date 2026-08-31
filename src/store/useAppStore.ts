@@ -133,6 +133,7 @@ export const useAppStore = create<AppStore>()(
             brand: item.brand || existing.brand,
             store: item.store || existing.store,
             recurring: item.recurring || existing.recurring,
+            onceOnly: item.onceOnly ?? existing.onceOnly,
             toBuy: item.toBuy || existing.toBuy,
             fromRecipes:
               item.fromRecipes && item.fromRecipes.length > 0
@@ -216,9 +217,9 @@ export const useAppStore = create<AppStore>()(
 
       resetCheckedForStore: (store) =>
         set((s) => ({
-          items: s.items.map((it) =>
-            it.store === store && it.checked ? { ...it, toBuy: it.recurring, checked: false } : it
-          )
+          items: s.items
+            .filter((it) => !(it.store === store && it.checked && it.onceOnly))
+            .map((it) => (it.store === store && it.checked ? { ...it, toBuy: it.recurring, checked: false } : it))
         })),
 
       addRecipe: (recipe) => {

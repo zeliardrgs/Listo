@@ -14,15 +14,20 @@ const emptyForm = {
   brand: '',
   store: '',
   recurring: false,
+  onceOnly: false,
   toBuy: true
 }
 
 export default function AddItemForm({
   initialName,
+  initialCategory,
+  initialStore,
   onAdded,
   onCancel
 }: {
   initialName?: string
+  initialCategory?: string
+  initialStore?: string
   onAdded?: () => void
   onCancel?: () => void
 }) {
@@ -34,7 +39,12 @@ export default function AddItemForm({
   const emojiFor = useCategoryEmojiName()
   const colorFor = useCategoryColor()
 
-  const [form, setForm] = useState(() => (initialName ? { ...emptyForm, name: initialName } : emptyForm))
+  const [form, setForm] = useState(() => ({
+    ...emptyForm,
+    name: initialName || '',
+    category: initialCategory || emptyForm.category,
+    store: initialStore || emptyForm.store
+  }))
   const [nameOpen, setNameOpen] = useState(false)
 
   const learnedProducts = useMemo(() => {
@@ -75,6 +85,7 @@ export default function AddItemForm({
       brand: form.brand.trim(),
       store: form.store.trim() || getDefaultStore(),
       recurring: form.recurring,
+      onceOnly: form.onceOnly,
       toBuy: form.toBuy
     })
     if (form.store.trim()) registerStore(form.store.trim())
@@ -164,10 +175,19 @@ export default function AddItemForm({
             <input
               type="checkbox"
               checked={form.recurring}
-              onChange={(e) => setForm((f) => ({ ...f, recurring: e.target.checked }))}
+              onChange={(e) => setForm((f) => ({ ...f, recurring: e.target.checked, onceOnly: e.target.checked ? false : f.onceOnly }))}
               className="check-lg rounded"
             />
             Récurrent
+          </label>
+          <label className="flex items-center gap-2 text-sm font-medium text-slate-600">
+            <input
+              type="checkbox"
+              checked={form.onceOnly}
+              onChange={(e) => setForm((f) => ({ ...f, onceOnly: e.target.checked, recurring: e.target.checked ? false : f.recurring }))}
+              className="check-lg rounded"
+            />
+            Juste une fois
           </label>
         </div>
 

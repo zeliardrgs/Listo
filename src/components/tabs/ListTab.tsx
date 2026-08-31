@@ -44,6 +44,8 @@ export default function ListTab() {
   const storeIconFor = useStoreIcon()
   const [showForm, setShowForm] = useState(false)
   const [prefillName, setPrefillName] = useState('')
+  const [prefillCategory, setPrefillCategory] = useState('')
+  const [prefillStore, setPrefillStore] = useState('')
   const [filter, setFilter] = useState('')
   const [confirmClear, setConfirmClear] = useState(false)
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null)
@@ -66,13 +68,26 @@ export default function ListTab() {
 
   function toggleForm() {
     setShowForm((v) => {
-      if (!v) setPrefillName('')
+      if (!v) {
+        setPrefillName('')
+        setPrefillCategory('')
+        setPrefillStore('')
+      }
       return !v
     })
   }
 
   function handleQuickCreate(name: string) {
     setPrefillName(name)
+    setPrefillCategory('')
+    setPrefillStore('')
+    setShowForm(true)
+  }
+
+  function openAddForGroup(g: Group) {
+    setPrefillName('')
+    setPrefillCategory(sortMode === 'category' ? g.label : '')
+    setPrefillStore(sortMode === 'store' ? g.label : '')
     setShowForm(true)
   }
 
@@ -225,7 +240,13 @@ export default function ListTab() {
 
       {showForm && (
         <div className="order-3 mb-4 sm:order-none">
-          <AddItemForm initialName={prefillName} onAdded={() => setShowForm(false)} onCancel={() => setShowForm(false)} />
+          <AddItemForm
+            initialName={prefillName}
+            initialCategory={prefillCategory}
+            initialStore={prefillStore}
+            onAdded={() => setShowForm(false)}
+            onCancel={() => setShowForm(false)}
+          />
         </div>
       )}
 
@@ -286,7 +307,19 @@ export default function ListTab() {
                 <div className={`mb-2 flex items-center gap-1.5 px-1 text-xs font-bold uppercase tracking-wide ${g.color.headerText}`}>
                   {g.emojiKind === 'category' && <Emoji name={emojiFor(g.label)} size={16} />}
                   {g.emojiKind === 'store' && <StoreIconView icon={storeIconFor(g.label)} size={16} />}
-                  {g.label} <span className="font-medium opacity-70">· {g.items.length}</span>
+                  <span className="min-w-0 flex-1 truncate">
+                    {g.label} <span className="font-medium opacity-70">· {g.items.length}</span>
+                  </span>
+                  {sortMode !== 'name' && (
+                    <button
+                      type="button"
+                      onClick={() => openAddForGroup(g)}
+                      title={`Ajouter un article dans ${g.label}`}
+                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/60 normal-case tracking-normal hover:bg-white"
+                    >
+                      <PlusIcon className="h-3.5 w-3.5" />
+                    </button>
+                  )}
                 </div>
                 <ul className="space-y-2">
                   {g.items.map((it) => (

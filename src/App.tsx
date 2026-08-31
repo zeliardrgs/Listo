@@ -12,6 +12,8 @@ import { useScrollDirection } from './hooks/useScrollDirection'
 import { useHouseholdSync } from './hooks/useHouseholdSync'
 import JoinInvite from './components/JoinInvite'
 import InstallBanner from './components/InstallBanner'
+import HouseholdOnboardingBanner from './components/HouseholdOnboardingBanner'
+import HouseholdSwitcher from './components/HouseholdSwitcher'
 
 type Tab = 'list' | 'recipes' | 'planning' | 'shopping'
 
@@ -141,6 +143,9 @@ export default function App() {
             className={`relative flex items-center justify-center gap-2 sm:static sm:justify-start ${scrolled ? 'pb-1' : 'pb-2'}`}
           >
             <Logo compact={scrolled} />
+            <div className="hidden sm:block">
+              <HouseholdSwitcher onOpenSettings={() => setShowSettings(true)} />
+            </div>
             <SettingsButton
               onClick={() => setShowSettings(true)}
               className="absolute right-0 sm:hidden"
@@ -181,6 +186,7 @@ export default function App() {
       </header>
 
       <InstallBanner />
+      <HouseholdOnboardingBanner />
 
       <main className="flex-1 overflow-y-auto pb-16 sm:pb-0">
         {showSettings ? (

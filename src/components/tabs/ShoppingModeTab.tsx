@@ -10,6 +10,17 @@ import Emoji from '../Emoji'
 import ShoppingListPrintable from '../ShoppingListPrintable'
 import type { ShoppingItem } from '../../types'
 
+const CELEBRATIONS = [
+  'Une bonne chose de faite !',
+  'Bravo, courses terminées !',
+  'Frigo plein, mission accomplie !',
+  'Et voilà, prêt pour la semaine !',
+  'Bien joué !',
+  'Chariot vide, mission réussie !',
+  'Zéro article oublié, bravo !',
+  'Courses en boîte !'
+]
+
 export default function ShoppingModeTab() {
   const items = useAppStore((s) => s.items)
   const recipes = useAppStore((s) => s.recipes)
@@ -25,6 +36,7 @@ export default function ShoppingModeTab() {
   const [toast, setToast] = useState('')
   const [confirmClear, setConfirmClear] = useState(false)
   const [confirmClearStore, setConfirmClearStore] = useState<string | null>(null)
+  const [celebration, setCelebration] = useState<string | null>(null)
   const printableRef = useRef<HTMLDivElement>(null)
 
   const toBuyItems = useMemo(() => items.filter((it) => it.toBuy), [items])
@@ -73,8 +85,13 @@ export default function ShoppingModeTab() {
 
   function finishShopping() {
     if (!activeStore) return
-    resetCheckedForStore(activeStore)
-    setActiveStore(null)
+    const store = activeStore
+    setCelebration(CELEBRATIONS[Math.floor(Math.random() * CELEBRATIONS.length)])
+    setTimeout(() => {
+      resetCheckedForStore(store)
+      setActiveStore(null)
+      setCelebration(null)
+    }, 1600)
   }
 
   function handleClearAll() {
@@ -273,6 +290,15 @@ export default function ShoppingModeTab() {
       <div className="pointer-events-none fixed -left-[9999px] top-0 opacity-0">
         <ShoppingListPrintable ref={printableRef} store={activeStore} items={storeItems} />
       </div>
+
+      {celebration && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-brand-900/40 px-6">
+          <div className="flex flex-col items-center gap-3 rounded-3xl bg-white px-10 py-8 text-center shadow-xl">
+            <span className="text-5xl">🎉</span>
+            <p className="text-xl font-extrabold text-brand-700">{celebration}</p>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

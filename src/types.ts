@@ -12,6 +12,9 @@ export interface ShoppingItem {
   brand: string
   store: string
   recurring: boolean
+  // Removed from the list entirely once the shopping trip that bought it is
+  // finished, instead of just being marked "not to buy" again.
+  onceOnly?: boolean
   toBuy: boolean
   checked: boolean
   updatedAt: number

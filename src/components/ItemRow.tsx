@@ -16,6 +16,7 @@ interface Draft {
   brand: string
   store: string
   recurring: boolean
+  onceOnly: boolean
   toBuy: boolean
 }
 
@@ -26,6 +27,7 @@ function toDraft(item: ShoppingItem): Draft {
     brand: item.brand,
     store: item.store,
     recurring: item.recurring,
+    onceOnly: !!item.onceOnly,
     toBuy: item.toBuy
   }
 }
@@ -67,6 +69,7 @@ export default function ItemRow({ item }: { item: ShoppingItem }) {
       brand: draft.brand.trim(),
       store: draft.store,
       recurring: draft.recurring,
+      onceOnly: draft.onceOnly,
       toBuy: draft.toBuy
     })
     setExpanded(false)
@@ -89,6 +92,9 @@ export default function ItemRow({ item }: { item: ShoppingItem }) {
             <span className="truncate font-bold text-slate-800">{item.name}</span>
             {item.recurring && (
               <span className="shrink-0 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-700">↻</span>
+            )}
+            {item.onceOnly && (
+              <span className="shrink-0 rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-500">1×</span>
             )}
           </div>
           <p className="truncate text-sm text-slate-400">
@@ -170,10 +176,19 @@ export default function ItemRow({ item }: { item: ShoppingItem }) {
             <input
               type="checkbox"
               checked={draft.recurring}
-              onChange={(e) => setDraft((d) => ({ ...d, recurring: e.target.checked }))}
+              onChange={(e) => setDraft((d) => ({ ...d, recurring: e.target.checked, onceOnly: e.target.checked ? false : d.onceOnly }))}
               className="check-lg rounded"
             />
             Récurrent
+          </label>
+          <label className="flex items-center gap-2 text-sm font-medium text-slate-600">
+            <input
+              type="checkbox"
+              checked={draft.onceOnly}
+              onChange={(e) => setDraft((d) => ({ ...d, onceOnly: e.target.checked, recurring: e.target.checked ? false : d.recurring }))}
+              className="check-lg rounded"
+            />
+            Juste une fois
           </label>
         </div>
 
