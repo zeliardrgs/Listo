@@ -9,19 +9,22 @@ export interface ImportedRecipe {
   imageUrl?: string
 }
 
-const CORS_PROXIES = [
-  (url: string) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-  (url: string) => `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
-  (url: string) => `https://r.jina.ai/${url}`
+// r.jina.ai's "Reader" API returns readable Markdown by default — the
+// X-Return-Format header asks it for the underlying HTML instead, which is
+// what we need to find the page's JSON-LD recipe data. corsproxy.io now
+// requires an API key (401 on anonymous requests) so it's not listed here.
+const CORS_PROXIES: { url: (url: string) => string; headers?: Record<string, string> }[] = [
+  { url: (url) => `https://r.jina.ai/${url}`, headers: { 'X-Return-Format': 'html' } },
+  { url: (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}` }
 ]
 
 async function fetchHtml(url: string): Promise<string> {
   let lastError: unknown
-  for (const buildProxyUrl of CORS_PROXIES) {
+  for (const proxy of CORS_PROXIES) {
     try {
       const controller = new AbortController()
       const timeout = setTimeout(() => controller.abort(), 12000)
-      const res = await fetch(buildProxyUrl(url), { signal: controller.signal })
+      const res = await fetch(proxy.url(url), { signal: controller.signal, headers: proxy.headers })
       clearTimeout(timeout)
       if (!res.ok) {
         lastError = new Error(`HTTP ${res.status}`)

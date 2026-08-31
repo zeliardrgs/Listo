@@ -43,6 +43,7 @@ export default function ListTab() {
   const colorFor = useCategoryColor()
   const storeIconFor = useStoreIcon()
   const [showForm, setShowForm] = useState(false)
+  const [formTargetKey, setFormTargetKey] = useState<string | null>(null)
   const [prefillName, setPrefillName] = useState('')
   const [prefillCategory, setPrefillCategory] = useState('')
   const [prefillStore, setPrefillStore] = useState('')
@@ -72,6 +73,7 @@ export default function ListTab() {
         setPrefillName('')
         setPrefillCategory('')
         setPrefillStore('')
+        setFormTargetKey(null)
       }
       return !v
     })
@@ -81,6 +83,7 @@ export default function ListTab() {
     setPrefillName(name)
     setPrefillCategory('')
     setPrefillStore('')
+    setFormTargetKey(null)
     setShowForm(true)
   }
 
@@ -88,7 +91,13 @@ export default function ListTab() {
     setPrefillName('')
     setPrefillCategory(sortMode === 'category' ? g.label : '')
     setPrefillStore(sortMode === 'store' ? g.label : '')
+    setFormTargetKey(g.key)
     setShowForm(true)
+  }
+
+  function closeForm() {
+    setShowForm(false)
+    setFormTargetKey(null)
   }
 
   const groups = useMemo<Group[]>(() => {
@@ -238,14 +247,14 @@ export default function ListTab() {
         </div>
       </div>
 
-      {showForm && (
+      {showForm && formTargetKey === null && (
         <div className="order-3 mb-4 sm:order-none">
           <AddItemForm
             initialName={prefillName}
             initialCategory={prefillCategory}
             initialStore={prefillStore}
-            onAdded={() => setShowForm(false)}
-            onCancel={() => setShowForm(false)}
+            onAdded={closeForm}
+            onCancel={closeForm}
           />
         </div>
       )}
@@ -321,6 +330,17 @@ export default function ListTab() {
                     </button>
                   )}
                 </div>
+                {showForm && formTargetKey === g.key && (
+                  <div className="mb-2">
+                    <AddItemForm
+                      initialName={prefillName}
+                      initialCategory={prefillCategory}
+                      initialStore={prefillStore}
+                      onAdded={closeForm}
+                      onCancel={closeForm}
+                    />
+                  </div>
+                )}
                 <ul className="space-y-2">
                   {g.items.map((it) => (
                     <ItemRow key={it.id} item={it} />

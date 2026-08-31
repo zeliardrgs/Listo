@@ -12,7 +12,7 @@ import { useScrollDirection } from './hooks/useScrollDirection'
 import { useHouseholdSync } from './hooks/useHouseholdSync'
 import JoinInvite from './components/JoinInvite'
 import InstallBanner from './components/InstallBanner'
-import HouseholdOnboardingBanner from './components/HouseholdOnboardingBanner'
+import HouseholdOnboardingButton from './components/HouseholdOnboardingButton'
 import HouseholdSwitcher from './components/HouseholdSwitcher'
 
 type Tab = 'list' | 'recipes' | 'planning' | 'shopping'
@@ -146,11 +146,10 @@ export default function App() {
             <div className="hidden sm:block">
               <HouseholdSwitcher onOpenSettings={() => setShowSettings(true)} />
             </div>
-            <SettingsButton
-              onClick={() => setShowSettings(true)}
-              className="absolute right-0 sm:hidden"
-              icon={MoreIcon}
-            />
+            <div className="absolute right-0 flex items-center gap-1 sm:hidden">
+              <HouseholdOnboardingButton />
+              <SettingsButton onClick={() => setShowSettings(true)} icon={MoreIcon} />
+            </div>
           </div>
 
           <nav
@@ -179,14 +178,14 @@ export default function App() {
             ))}
           </nav>
 
-          <div className={`hidden items-center sm:flex ${scrolled ? 'pb-1' : 'pb-2'}`}>
+          <div className={`hidden items-center gap-1 sm:flex ${scrolled ? 'pb-1' : 'pb-2'}`}>
+            <HouseholdOnboardingButton />
             <SettingsButton onClick={() => setShowSettings(true)} />
           </div>
         </div>
       </header>
 
       <InstallBanner />
-      <HouseholdOnboardingBanner />
 
       <main className="flex-1 overflow-y-auto pb-16 sm:pb-0">
         {showSettings ? (

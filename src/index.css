@@ -27,3 +27,47 @@ input[type='checkbox'].check-lg {
   height: 22px;
   accent-color: #f5841f;
 }
+
+@keyframes celebration-pop {
+  0% {
+    transform: scale(0.4) rotate(-6deg);
+    opacity: 0;
+  }
+  55% {
+    transform: scale(1.08) rotate(2deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+.celebration-card {
+  animation: celebration-pop 420ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes celebration-particle {
+  0% {
+    transform: translate(0, 0) scale(0.5) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--tx), var(--ty)) scale(1.15) rotate(var(--rot));
+    opacity: 0;
+  }
+}
+
+.celebration-particle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  animation: celebration-particle 900ms ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .celebration-card,
+  .celebration-particle {
+    animation: none;
+  }
+}

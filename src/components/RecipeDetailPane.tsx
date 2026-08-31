@@ -571,13 +571,15 @@ export default function RecipeDetailPane({
                   Importer depuis un lien
                 </button>
                 {showImport && (
-                  <div className="mt-2 space-y-2 rounded-lg border border-brand-100 bg-brand-50/60 p-3">
+                  <div className="relative mt-2 space-y-2 rounded-lg border border-brand-100 bg-brand-50/60 p-3">
                     <div className="flex gap-2">
                       <input
                         value={importUrl}
                         onChange={(e) => setImportUrl(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && !importing && runImport()}
                         placeholder="https://…"
-                        className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-brand-400 focus:outline-none"
+                        disabled={importing}
+                        className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-brand-400 focus:outline-none disabled:opacity-60"
                       />
                       <button
                         type="button"
@@ -589,6 +591,13 @@ export default function RecipeDetailPane({
                       </button>
                     </div>
                     {importError && <p className="text-xs font-semibold text-red-500">{importError}</p>}
+
+                    {importing && (
+                      <div className="absolute inset-0 flex items-center justify-center gap-2 rounded-lg bg-white/80 text-sm font-bold text-brand-700">
+                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-brand-200 border-t-brand-600" />
+                        Récupération de la recette…
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

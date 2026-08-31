@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState, type CSSProperties } from 'react'
 import { useAppStore } from '../../store/useAppStore'
 import { groupByCategory, copyListToClipboard, exportListAsImage } from '../../utils/exportList'
 import { useCategoryEmojiName } from '../../hooks/useCategoryEmojiName'
@@ -22,6 +22,30 @@ const CELEBRATIONS = [
   'Courses en boîte !'
 ]
 
+const CONFETTI_EMOJI = ['🎉', '✨', '🎊', '⭐️', '🥳']
+
+interface Particle {
+  emoji: string
+  tx: number
+  ty: number
+  rot: number
+  delay: number
+}
+
+function makeParticles(count: number): Particle[] {
+  return Array.from({ length: count }, () => {
+    const angle = Math.random() * Math.PI * 2
+    const distance = 70 + Math.random() * 60
+    return {
+      emoji: CONFETTI_EMOJI[Math.floor(Math.random() * CONFETTI_EMOJI.length)],
+      tx: Math.cos(angle) * distance,
+      ty: Math.sin(angle) * distance,
+      rot: Math.random() * 240 - 120,
+      delay: Math.random() * 120
+    }
+  })
+}
+
 export default function ShoppingModeTab() {
   const items = useAppStore((s) => s.items)
   const recipes = useAppStore((s) => s.recipes)
@@ -37,7 +61,7 @@ export default function ShoppingModeTab() {
   const [toast, setToast] = useState('')
   const [confirmClear, setConfirmClear] = useState(false)
   const [confirmClearStore, setConfirmClearStore] = useState<string | null>(null)
-  const [celebration, setCelebration] = useState<string | null>(null)
+  const [celebration, setCelebration] = useState<{ message: string; particles: Particle[] } | null>(null)
   const printableRef = useRef<HTMLDivElement>(null)
 
   const toBuyItems = useMemo(() => items.filter((it) => it.toBuy), [items])
@@ -87,12 +111,15 @@ export default function ShoppingModeTab() {
   function finishShopping() {
     if (!activeStore) return
     const store = activeStore
-    setCelebration(CELEBRATIONS[Math.floor(Math.random() * CELEBRATIONS.length)])
+    setCelebration({
+      message: CELEBRATIONS[Math.floor(Math.random() * CELEBRATIONS.length)],
+      particles: makeParticles(10)
+    })
     setTimeout(() => {
       resetCheckedForStore(store)
       setActiveStore(null)
       setCelebration(null)
-    }, 1600)
+    }, 1700)
   }
 
   function handleClearAll() {
@@ -299,9 +326,25 @@ export default function ShoppingModeTab() {
 
       {celebration && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-brand-900/40 px-6">
-          <div className="flex flex-col items-center gap-3 rounded-3xl bg-white px-10 py-8 text-center shadow-xl">
+          <div className="celebration-card relative flex flex-col items-center gap-3 rounded-3xl bg-white px-10 py-8 text-center shadow-xl">
+            {celebration.particles.map((p, i) => (
+              <span
+                key={i}
+                className="celebration-particle text-2xl"
+                style={
+                  {
+                    '--tx': `${p.tx}px`,
+                    '--ty': `${p.ty}px`,
+                    '--rot': `${p.rot}deg`,
+                    animationDelay: `${p.delay}ms`
+                  } as CSSProperties
+                }
+              >
+                {p.emoji}
+              </span>
+            ))}
             <span className="text-5xl">🎉</span>
-            <p className="text-xl font-extrabold text-brand-700">{celebration}</p>
+            <p className="text-xl font-extrabold text-brand-700">{celebration.message}</p>
           </div>
         </div>
       )}
