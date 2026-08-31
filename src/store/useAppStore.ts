@@ -36,16 +36,41 @@ function makeId() {
   return Math.random().toString(36).slice(2) + Date.now().toString(36)
 }
 
-// Replaces one recipe's prior contribution to an item (its quantities
-// changed, or it's being re-added) while leaving other recipes' untouched.
+// Replaces one recipe's prior contribution(s) to an item (its quantities
+// changed, or it's being re-added) while leaving other recipes' untouched. A
+// single recipe can contribute more than one entry here (e.g. two ingredient
+// lines for "huile" with different units), so this drops all of that
+// recipe's previous entries and appends the fresh set rather than keying by
+// recipeId alone.
 function mergeRecipeQuantities(
   existing: RecipeQuantityContribution[] | undefined,
   incoming: RecipeQuantityContribution[] | undefined
 ): RecipeQuantityContribution[] | undefined {
   if (!incoming || incoming.length === 0) return existing
-  const byRecipe = new Map((existing || []).map((c) => [c.recipeId, c] as const))
-  incoming.forEach((c) => byRecipe.set(c.recipeId, c))
-  return Array.from(byRecipe.values())
+  const incomingRecipeIds = new Set(incoming.map((c) => c.recipeId))
+  const kept = (existing || []).filter((c) => !incomingRecipeIds.has(c.recipeId))
+  return [...kept, ...incoming]
+}
+
+// Combines a single recipe's ingredient lines that map to the same shopping
+// item into per-unit contributions (summing quantities that share a unit),
+// so e.g. "2 c. à soupe d'huile" + "15 cl d'huile" both survive instead of
+// the second silently overwriting the first.
+function buildItemContributions(ings: RecipeIngredient[], recipeId: string): RecipeQuantityContribution[] {
+  const byUnit = new Map<string, { quantity?: number; unit?: Unit }>()
+  ings.forEach((ing) => {
+    const key = ing.unit || ''
+    const prev = byUnit.get(key)
+    if (!prev) {
+      byUnit.set(key, { quantity: ing.quantity, unit: ing.unit })
+    } else {
+      byUnit.set(key, {
+        quantity: prev.quantity != null && ing.quantity != null ? prev.quantity + ing.quantity : (prev.quantity ?? ing.quantity),
+        unit: ing.unit ?? prev.unit
+      })
+    }
+  })
+  return Array.from(byUnit.values()).map((v) => ({ recipeId, quantity: v.quantity, unit: v.unit }))
 }
 
 interface AppStore {
@@ -270,36 +295,43 @@ export const useAppStore = create<AppStore>()(
         if (!recipe) return
         set((s) => {
           const items = [...s.items]
+          const groups = new Map<string, RecipeIngredient[]>()
           recipe.ingredients
             .filter((ing: RecipeIngredient) => !ing.inStock)
             .forEach((ing: RecipeIngredient) => {
-              const contribution: RecipeQuantityContribution = { recipeId, quantity: ing.quantity, unit: ing.unit }
-              const idx = items.findIndex((it) => it.name.trim().toLowerCase() === ing.name.trim().toLowerCase())
-              if (idx !== -1) {
-                const existing = items[idx]
-                items[idx] = {
-                  ...existing,
-                  toBuy: true,
-                  fromRecipes: Array.from(new Set([...(existing.fromRecipes || []), recipeId])),
-                  recipeQuantities: mergeRecipeQuantities(existing.recipeQuantities, [contribution]),
-                  updatedAt: Date.now()
-                }
-              } else {
-                items.push({
-                  id: makeId(),
-                  name: ing.name,
-                  category: ing.category || 'Autre',
-                  brand: '',
-                  store: pickDefaultStore(s),
-                  recurring: false,
-                  toBuy: true,
-                  fromRecipes: [recipeId],
-                  recipeQuantities: [contribution],
-                  checked: false,
-                  updatedAt: Date.now()
-                })
-              }
+              const key = ing.name.trim().toLowerCase()
+              const list = groups.get(key)
+              if (list) list.push(ing)
+              else groups.set(key, [ing])
             })
+          groups.forEach((ings) => {
+            const contributions = buildItemContributions(ings, recipeId)
+            const idx = items.findIndex((it) => it.name.trim().toLowerCase() === ings[0].name.trim().toLowerCase())
+            if (idx !== -1) {
+              const existing = items[idx]
+              items[idx] = {
+                ...existing,
+                toBuy: true,
+                fromRecipes: Array.from(new Set([...(existing.fromRecipes || []), recipeId])),
+                recipeQuantities: mergeRecipeQuantities(existing.recipeQuantities, contributions),
+                updatedAt: Date.now()
+              }
+            } else {
+              items.push({
+                id: makeId(),
+                name: ings[0].name,
+                category: ings[0].category || 'Autre',
+                brand: '',
+                store: pickDefaultStore(s),
+                recurring: false,
+                toBuy: true,
+                fromRecipes: [recipeId],
+                recipeQuantities: contributions,
+                checked: false,
+                updatedAt: Date.now()
+              })
+            }
+          })
           return { items }
         })
       },

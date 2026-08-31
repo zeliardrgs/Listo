@@ -17,9 +17,7 @@ const CELEBRATIONS = [
   'Frigo plein, mission accomplie !',
   'Et voilà, prêt pour la semaine !',
   'Bien joué !',
-  'Chariot vide, mission réussie !',
-  'Zéro article oublié, bravo !',
-  'Courses en boîte !'
+  'Chariot vide, mission réussie !'
 ]
 
 const CONFETTI_EMOJI = ['🎉', '✨', '🎊', '⭐️', '🥳']
@@ -30,18 +28,20 @@ interface Particle {
   ty: number
   rot: number
   delay: number
+  size: number
 }
 
 function makeParticles(count: number): Particle[] {
   return Array.from({ length: count }, () => {
     const angle = Math.random() * Math.PI * 2
-    const distance = 70 + Math.random() * 60
+    const distance = 90 + Math.random() * 110
     return {
       emoji: CONFETTI_EMOJI[Math.floor(Math.random() * CONFETTI_EMOJI.length)],
       tx: Math.cos(angle) * distance,
       ty: Math.sin(angle) * distance,
       rot: Math.random() * 240 - 120,
-      delay: Math.random() * 120
+      delay: Math.random() * 150,
+      size: 1.25 + Math.random() * 1.25
     }
   })
 }
@@ -113,13 +113,13 @@ export default function ShoppingModeTab() {
     const store = activeStore
     setCelebration({
       message: CELEBRATIONS[Math.floor(Math.random() * CELEBRATIONS.length)],
-      particles: makeParticles(10)
+      particles: makeParticles(20)
     })
     setTimeout(() => {
       resetCheckedForStore(store)
       setActiveStore(null)
       setCelebration(null)
-    }, 1700)
+    }, 2000)
   }
 
   function handleClearAll() {
@@ -336,7 +336,8 @@ export default function ShoppingModeTab() {
                     '--tx': `${p.tx}px`,
                     '--ty': `${p.ty}px`,
                     '--rot': `${p.rot}deg`,
-                    animationDelay: `${p.delay}ms`
+                    animationDelay: `${p.delay}ms`,
+                    fontSize: `${p.size}rem`
                   } as CSSProperties
                 }
               >

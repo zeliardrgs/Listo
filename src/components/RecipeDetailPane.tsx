@@ -744,7 +744,11 @@ export default function RecipeDetailPane({
                       >
                         <Emoji name={emojiFor(ing.category || 'Autre')} size={20} />
                       </div>
-                      <span className="min-w-[80px] flex-1 truncate text-sm font-bold text-slate-800">{ing.name}</span>
+                      <input
+                        value={ing.name}
+                        onChange={(e) => updateIngredientField(ing.id, { name: e.target.value })}
+                        className="min-w-[100px] flex-1 rounded-lg border border-slate-200 px-2 py-1.5 text-sm font-bold text-slate-800 focus:border-brand-400 focus:outline-none"
+                      />
                       <input
                         type="number"
                         min={0}

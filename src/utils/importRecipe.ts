@@ -1,5 +1,4 @@
 import type { RecipeIngredient, Unit } from '../types'
-import { UNITS } from '../data/constants'
 
 export interface ImportedRecipe {
   name: string
@@ -44,57 +43,72 @@ function makeId() {
   return Math.random().toString(36).slice(2) + Date.now().toString(36)
 }
 
-function parseQuantityAndUnit(raw: string): { quantity: number; unit: Unit; name: string } {
+// Unit words/phrases recognized in scraped French recipe text, longest
+// phrases first so e.g. "cuillères à café" matches before a bare "cuillère"
+// would. Phrases with no `unit` are still stripped from the name (so
+// "2 cuillères à café de câpres" doesn't keep "cuillères à café" glued to
+// "câpres"), they just don't map onto our fixed Unit vocabulary — the
+// quantity is kept, the unit is simply left blank.
+const UNIT_PHRASES: { words: string[]; unit?: Unit; scale?: number }[] = [
+  { words: ['cuillères à café', 'cuillère à café', 'c. à café', 'càc'] },
+  { words: ['cuillères à soupe', 'cuillère à soupe', 'c. à soupe', 'càs'] },
+  { words: ['gousses', 'gousse'] },
+  { words: ['pincées', 'pincée'] },
+  { words: ['sachets', 'sachet'] },
+  { words: ['verres', 'verre'] },
+  { words: ['brins', 'brin'] },
+  { words: ['branches', 'branche'] },
+  { words: ['feuilles', 'feuille'] },
+  { words: ['tranches', 'tranche'], unit: 'tranche' },
+  { words: ['bottes', 'botte'], unit: 'botte' },
+  { words: ['paquets', 'paquet'], unit: 'paquet' },
+  { words: ['boîtes', 'boites', 'boîte', 'boite'], unit: 'boîte' },
+  { words: ['barquettes', 'barquette'], unit: 'barquette' },
+  { words: ['pièces', 'pieces', 'pièce', 'piece'], unit: 'pièce' },
+  { words: ['grammes', 'gramme', 'gr', 'g'], unit: 'g' },
+  { words: ['kg'], unit: 'kg' },
+  // A centiliter isn't one of our units, so fold it into ml (×10) rather
+  // than mislabeling "15 cl" as "15 ml".
+  { words: ['cl'], unit: 'ml', scale: 10 },
+  { words: ['ml'], unit: 'ml' },
+  { words: ['litres', 'litre', 'l'], unit: 'l' }
+]
+
+function stripLeadingArticle(s: string): string {
+  return s.replace(/^(de\s+|d['’]\s*)/i, '').trim()
+}
+
+function parseQuantityAndUnit(raw: string): { quantity?: number; unit?: Unit; name: string } {
   const text = raw.trim().replace(/\s+/g, ' ')
-  const match = text.match(/^([\d.,]+(?:\s?\/\s?[\d.,]+)?)\s*([a-zA-ZÀ-ÿ.]*)\s*(.*)$/)
-  if (!match) return { quantity: 1, unit: 'pièce', name: text }
+  const qtyMatch = text.match(/^([\d.,]+(?:\s?\/\s?[\d.,]+)?)\s*(.*)$/)
+  if (!qtyMatch) return { name: stripLeadingArticle(text) || text }
 
-  let [, qtyRaw, unitRaw, rest] = match
-  let quantity = 1
-  if (qtyRaw) {
-    if (qtyRaw.includes('/')) {
-      const [a, b] = qtyRaw.split('/').map((n) => parseFloat(n.replace(',', '.')))
-      quantity = b ? a / b : a
-    } else {
-      quantity = parseFloat(qtyRaw.replace(',', '.'))
-    }
+  const [, qtyRaw, remainder] = qtyMatch
+  let quantity: number | undefined
+  if (qtyRaw.includes('/')) {
+    const [a, b] = qtyRaw.split('/').map((n) => parseFloat(n.replace(',', '.')))
+    quantity = b ? a / b : a
+  } else {
+    quantity = parseFloat(qtyRaw.replace(',', '.'))
   }
-  if (Number.isNaN(quantity)) quantity = 1
+  if (quantity != null && Number.isNaN(quantity)) quantity = undefined
 
-  const unitMap: Record<string, Unit> = {
-    g: 'g',
-    gr: 'g',
-    grammes: 'g',
-    kg: 'kg',
-    ml: 'ml',
-    cl: 'ml',
-    l: 'l',
-    litre: 'l',
-    litres: 'l',
-    paquet: 'paquet',
-    paquets: 'paquet',
-    boite: 'boîte',
-    boites: 'boîte',
-    'boîte': 'boîte',
-    botte: 'botte',
-    tranche: 'tranche',
-    tranches: 'tranche',
-    piece: 'pièce',
-    pieces: 'pièce',
-    'pièce': 'pièce',
-    'pièces': 'pièce'
+  const lowerRemainder = remainder.toLowerCase()
+  const matchedPhrase = UNIT_PHRASES.find((p) =>
+    p.words.some((w) => lowerRemainder === w || lowerRemainder.startsWith(`${w} `))
+  )
+
+  if (!matchedPhrase) {
+    const name = stripLeadingArticle(remainder) || text
+    return { quantity, name }
   }
-  const normalizedUnit = unitRaw.toLowerCase().replace(/\.$/, '')
-  let unit: Unit = unitMap[normalizedUnit] || (UNITS.includes(normalizedUnit as Unit) ? (normalizedUnit as Unit) : 'pièce')
-  let name = rest.trim()
 
-  if (!unitMap[normalizedUnit] && !UNITS.includes(normalizedUnit as Unit)) {
-    name = `${unitRaw} ${rest}`.trim() || text
-    unit = 'pièce'
-  }
-  if (!name) name = text
+  const matchedWord = matchedPhrase.words.find((w) => lowerRemainder === w || lowerRemainder.startsWith(`${w} `))!
+  const afterUnit = remainder.slice(matchedWord.length).trim()
+  const name = stripLeadingArticle(afterUnit) || text
+  if (matchedPhrase.scale && quantity != null) quantity *= matchedPhrase.scale
 
-  return { quantity, unit, name }
+  return { quantity, unit: matchedPhrase.unit, name }
 }
 
 function stripHtml(html: string): string {
