@@ -71,7 +71,10 @@ export default function ImportReviewModal({
 
   const searchTrimmed = search.trim()
   const searchResults = searchTrimmed
-    ? items.filter((it) => it.name.toLowerCase().includes(searchTrimmed.toLowerCase())).slice(0, 6)
+    ? items
+        .filter((it) => it.name.toLowerCase().includes(searchTrimmed.toLowerCase()))
+        .sort((a, b) => a.name.localeCompare(b.name, 'fr'))
+        .slice(0, 6)
     : []
 
   function handleConfirm() {

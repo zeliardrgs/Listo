@@ -91,7 +91,7 @@ export default function ItemRow({ item }: { item: ShoppingItem }) {
           <div className="flex items-baseline gap-2">
             <span className="truncate font-bold text-slate-800">{item.name}</span>
             {item.recurring && (
-              <span className="shrink-0 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-700">↻</span>
+              <span className="shrink-0 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-700">★</span>
             )}
             {item.onceOnly && (
               <span className="shrink-0 rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-500">1×</span>
@@ -179,7 +179,7 @@ export default function ItemRow({ item }: { item: ShoppingItem }) {
               onChange={(e) => setDraft((d) => ({ ...d, recurring: e.target.checked, onceOnly: e.target.checked ? false : d.onceOnly }))}
               className="check-lg rounded"
             />
-            Récurrent
+            Favoris
           </label>
           <label className="flex items-center gap-2 text-sm font-medium text-slate-600">
             <input

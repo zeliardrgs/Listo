@@ -178,7 +178,7 @@ export default function AddItemForm({
               onChange={(e) => setForm((f) => ({ ...f, recurring: e.target.checked, onceOnly: e.target.checked ? false : f.onceOnly }))}
               className="check-lg rounded"
             />
-            Récurrent
+            Favoris
           </label>
           <label className="flex items-center gap-2 text-sm font-medium text-slate-600">
             <input
