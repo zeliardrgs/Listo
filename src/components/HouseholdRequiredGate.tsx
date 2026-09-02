@@ -76,7 +76,7 @@ export default function HouseholdRequiredGate() {
         <div className="max-h-[85vh] overflow-y-auto rounded-3xl bg-white shadow-2xl">
           <div className="bg-[#FFF1DC] px-6 py-6 text-center">
             <p className="flex flex-wrap items-center justify-center gap-2 text-xl font-extrabold text-brand-800 sm:text-2xl">
-              Bienvenue sur <ListoLogo className="h-[2.1rem] w-auto sm:h-[2.45rem]" color="#f5841f" />
+              Bienvenue sur <ListoLogo className="h-[2.94rem] w-auto sm:h-[3.43rem]" color="#f5841f" />
             </p>
           </div>
 
@@ -86,62 +86,66 @@ export default function HouseholdRequiredGate() {
             </p>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="rounded-2xl bg-[#FFF8EE] px-5 py-6 text-center">
+              <div className="flex flex-col rounded-2xl bg-[#FFF8EE] px-5 py-6 text-center">
                 <h2 className="mb-3 text-sm font-extrabold text-brand-700">Créer un foyer</h2>
                 <img src={createCat} alt="" className="mx-auto mb-4 h-24 w-24" />
-                <input
-                  value={nameDraft}
-                  onChange={(e) => setNameDraft(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && !busy && handleCreate()}
-                  placeholder="Nom de votre foyer"
-                  className="mb-3 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-center text-sm focus:border-brand-400 focus:outline-none"
-                />
-                <button
-                  type="button"
-                  onClick={handleCreate}
-                  disabled={busy === 'create' || !nameDraft.trim()}
-                  className="w-full rounded-lg bg-brand-600 py-2.5 text-sm font-bold text-white hover:bg-brand-700 disabled:opacity-60"
-                >
-                  {busy === 'create' ? 'Création…' : 'Créer'}
-                </button>
-                {createError && <p className="mt-2 text-xs font-semibold text-red-500">{createError}</p>}
-              </div>
-
-              <div className="rounded-2xl bg-[#FFF8EE] px-5 py-6 text-center">
-                <h2 className="mb-3 text-sm font-extrabold text-brand-700">Rejoindre un foyer</h2>
-                <img src={joinCats} alt="" className="mx-auto mb-4 h-[4.6rem] w-auto" />
-                <div className="mb-3 flex gap-2">
+                <div className="mt-auto">
                   <input
-                    value={codeDraft}
-                    onChange={(e) => setCodeDraft(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && !busy && handleJoin()}
-                    placeholder="Code du Foyer"
-                    maxLength={6}
-                    className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-center text-sm font-bold uppercase tracking-widest focus:border-brand-400 focus:outline-none"
+                    value={nameDraft}
+                    onChange={(e) => setNameDraft(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && !busy && handleCreate()}
+                    placeholder="Nom de votre foyer"
+                    className="mb-3 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-center text-sm focus:border-brand-400 focus:outline-none"
                   />
                   <button
                     type="button"
-                    onClick={handleJoin}
-                    disabled={busy === 'join' || !codeDraft.trim()}
-                    className="shrink-0 rounded-lg bg-brand-600 px-4 py-2 text-sm font-bold text-white hover:bg-brand-700 disabled:opacity-60"
+                    onClick={handleCreate}
+                    disabled={busy === 'create' || !nameDraft.trim()}
+                    className="w-full rounded-lg bg-brand-600 py-2.5 text-sm font-bold text-white hover:bg-brand-700 disabled:opacity-60"
                   >
-                    {busy === 'join' ? 'Vérif…' : 'Rejoindre'}
+                    {busy === 'create' ? 'Création…' : 'Créer'}
                   </button>
+                  {createError && <p className="mt-2 text-xs font-semibold text-red-500">{createError}</p>}
                 </div>
-                {joinError && <p className="mt-2 text-xs font-semibold text-red-500">{joinError}</p>}
-                <button
-                  type="button"
-                  onClick={() => setShowCodeHelp((v) => !v)}
-                  className="mt-2 text-xs font-semibold text-brand-600 underline decoration-dotted hover:text-brand-700"
-                >
-                  Ou trouver ce code ?
-                </button>
-                {showCodeHelp && (
-                  <p className="mt-2 text-xs text-slate-500">
-                    Demande-le à quelqu'un déjà dans le foyer : le code est affiché dans ses Paramètres, sous « Foyer
-                    actif ».
-                  </p>
-                )}
+              </div>
+
+              <div className="flex flex-col rounded-2xl bg-[#FFF8EE] px-5 py-6 text-center">
+                <h2 className="mb-3 text-sm font-extrabold text-brand-700">Rejoindre un foyer</h2>
+                <img src={joinCats} alt="" className="mx-auto mb-4 h-[5.52rem] w-auto" />
+                <div className="mt-auto">
+                  <div className="mb-3 flex gap-2">
+                    <input
+                      value={codeDraft}
+                      onChange={(e) => setCodeDraft(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && !busy && handleJoin()}
+                      placeholder="Code du foyer"
+                      maxLength={6}
+                      className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-center text-sm focus:border-brand-400 focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleJoin}
+                      disabled={busy === 'join' || !codeDraft.trim()}
+                      className="shrink-0 rounded-lg bg-brand-600 px-4 py-2 text-sm font-bold text-white hover:bg-brand-700 disabled:opacity-60"
+                    >
+                      {busy === 'join' ? 'Vérif…' : 'Rejoindre'}
+                    </button>
+                  </div>
+                  {joinError && <p className="mt-2 text-xs font-semibold text-red-500">{joinError}</p>}
+                  <button
+                    type="button"
+                    onClick={() => setShowCodeHelp((v) => !v)}
+                    className="mt-2 text-xs font-semibold text-brand-600 underline decoration-dotted hover:text-brand-700"
+                  >
+                    Ou trouver ce code ?
+                  </button>
+                  {showCodeHelp && (
+                    <p className="mt-2 text-xs text-slate-500">
+                      Demande-le à quelqu'un déjà dans le foyer : le code est affiché dans ses Paramètres, sous «
+                      Foyer actif ».
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           </div>
