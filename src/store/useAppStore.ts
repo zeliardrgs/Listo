@@ -134,6 +134,7 @@ interface AppStore {
   // Folds a mistakenly-created item (e.g. a plural/singular mismatch the
   // fuzzy matcher missed) into an existing one the user picks instead.
   mergeItemInto: (sourceId: string, targetId: string) => void
+  removeRecipeFromShoppingList: (recipeId: string) => void
 
   addToPlanningQueue: (recipeId: string) => void
   removeFromPlanningQueue: (id: string) => void
@@ -428,6 +429,28 @@ export const useAppStore = create<AppStore>()(
           const items = s.items.filter((it) => it.id !== sourceId).map((it) => (it.id === targetId ? merged : it))
           return { items }
         }),
+
+      // Un-adds one recipe's ingredients from the shopping list: strips its
+      // contribution from every item it touched, taking an item off the
+      // list entirely only if no other recipe still wants it (a manually
+      // added item, or one shared with another recipe, stays put).
+      removeRecipeFromShoppingList: (recipeId) =>
+        set((s) => ({
+          items: s.items.map((it) => {
+            if (!it.fromRecipes?.includes(recipeId)) return it
+            const fromRecipes = it.fromRecipes.filter((r) => r !== recipeId)
+            const recipeQuantities = it.recipeQuantities?.filter((c) => c.recipeId !== recipeId)
+            const stillWanted = fromRecipes.length > 0
+            return {
+              ...it,
+              fromRecipes: stillWanted ? fromRecipes : undefined,
+              recipeQuantities: stillWanted && recipeQuantities && recipeQuantities.length > 0 ? recipeQuantities : undefined,
+              toBuy: stillWanted ? it.toBuy : false,
+              checked: stillWanted ? it.checked : false,
+              updatedAt: Date.now()
+            }
+          })
+        })),
 
       addToPlanningQueue: (recipeId) =>
         set((s) => ({ planningQueue: [...s.planningQueue, { id: makeId(), recipeId }] })),

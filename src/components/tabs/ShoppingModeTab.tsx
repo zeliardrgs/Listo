@@ -1,10 +1,10 @@
-import { useMemo, useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { useAppStore } from '../../store/useAppStore'
 import { groupByCategory, copyListToClipboard, exportListAsImage } from '../../utils/exportList'
 import { useCategoryEmojiName } from '../../hooks/useCategoryEmojiName'
 import { useCategoryColor } from '../../hooks/useCategoryColor'
 import { useStoreIcon } from '../../hooks/useStoreIcon'
-import { CheckIcon, CopyIcon, ImageIcon, TrashIcon } from '../icons'
+import { CheckIcon, ChevronDownIcon, CopyIcon, CrossIcon, ImageIcon, MoreIcon, RecipeIcon, TrashIcon } from '../icons'
 import StoreIconView from '../StoreIconView'
 import Emoji from '../Emoji'
 import ShoppingListPrintable from '../ShoppingListPrintable'
@@ -56,13 +56,26 @@ export default function ShoppingModeTab() {
   const resetCheckedForStore = useAppStore((s) => s.resetCheckedForStore)
   const clearShoppingList = useAppStore((s) => s.clearShoppingList)
   const clearShoppingListForStore = useAppStore((s) => s.clearShoppingListForStore)
+  const removeRecipeFromShoppingList = useAppStore((s) => s.removeRecipeFromShoppingList)
 
   const [activeStore, setActiveStore] = useState<string | null>(null)
   const [toast, setToast] = useState('')
   const [confirmClear, setConfirmClear] = useState(false)
   const [confirmClearStore, setConfirmClearStore] = useState<string | null>(null)
   const [celebration, setCelebration] = useState<{ message: string; particles: Particle[] } | null>(null)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [recipesOpen, setRecipesOpen] = useState(false)
   const printableRef = useRef<HTMLDivElement>(null)
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!menuOpen) return
+    function onMouseDown(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false)
+    }
+    document.addEventListener('mousedown', onMouseDown)
+    return () => document.removeEventListener('mousedown', onMouseDown)
+  }, [menuOpen])
 
   const toBuyItems = useMemo(() => items.filter((it) => it.toBuy), [items])
 
@@ -77,6 +90,16 @@ export default function ShoppingModeTab() {
     [toBuyItems, activeStore]
   )
   const checkedCount = storeItems.filter((it) => it.checked).length
+
+  const storeRecipes = useMemo(() => {
+    const counts = new Map<string, number>()
+    storeItems.forEach((it) => {
+      ;(it.fromRecipes || []).forEach((id) => counts.set(id, (counts.get(id) || 0) + 1))
+    })
+    return Array.from(counts.entries())
+      .map(([id, count]) => ({ id, count, name: recipes.find((r) => r.id === id)?.name }))
+      .filter((r): r is { id: string; count: number; name: string } => !!r.name)
+  }, [storeItems, recipes])
 
   function recipesUsing(item: ShoppingItem): string[] {
     if (!item.fromRecipes || item.fromRecipes.length === 0) return []
@@ -222,34 +245,96 @@ export default function ShoppingModeTab() {
             {checkedCount} / {storeItems.length} Article{storeItems.length > 1 ? 's' : ''}
           </span>
         </div>
-        <button
-          onClick={() => handleClearStore(activeStore)}
-          onBlur={() => setConfirmClearStore((s) => (s === activeStore ? null : s))}
-          title={confirmClearStore === activeStore ? 'Cliquer à nouveau pour confirmer' : 'Vider la liste de ce magasin'}
-          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full shadow-sm transition-colors ${
-            confirmClearStore === activeStore ? 'bg-red-500 text-white' : 'bg-white text-red-500 hover:bg-red-50'
-          }`}
-        >
-          <TrashIcon className="h-4 w-4" />
-        </button>
+        <div ref={menuRef} className="relative shrink-0">
+          <button
+            onClick={() => setMenuOpen((v) => !v)}
+            title="Plus d'options"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-slate-500 shadow-sm hover:bg-slate-50"
+          >
+            <MoreIcon className="h-5 w-5" />
+          </button>
+          {menuOpen && (
+            <div className="absolute right-0 top-full z-30 mt-1.5 w-56 overflow-hidden rounded-xl border border-brand-100 bg-white py-1 shadow-lg">
+              <button
+                type="button"
+                onClick={() => {
+                  setMenuOpen(false)
+                  handleCopy()
+                }}
+                className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left text-sm font-semibold text-slate-600 hover:bg-brand-50"
+              >
+                <CopyIcon className="h-4 w-4 shrink-0 text-brand-500" />
+                Copier le texte
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setMenuOpen(false)
+                  handleExportImage()
+                }}
+                className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left text-sm font-semibold text-slate-600 hover:bg-brand-50"
+              >
+                <ImageIcon className="h-4 w-4 shrink-0 text-brand-500" />
+                Télécharger l'image
+              </button>
+              <button
+                type="button"
+                onClick={() => handleClearStore(activeStore)}
+                onBlur={() => setConfirmClearStore((s) => (s === activeStore ? null : s))}
+                className="flex w-full items-center gap-2.5 border-t border-slate-100 px-3.5 py-2.5 text-left text-sm font-semibold text-red-500 hover:bg-red-50"
+              >
+                <TrashIcon className="h-4 w-4 shrink-0" />
+                {confirmClearStore === activeStore ? 'Cliquer à nouveau pour confirmer' : 'Vider la liste'}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
-      <div className="mb-4 flex items-center gap-2">
-        <button
-          onClick={handleCopy}
-          className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-white px-4 py-2.5 text-sm font-bold text-brand-600 shadow-sm hover:bg-brand-50"
-        >
-          <CopyIcon className="h-4 w-4" />
-          Copier texte
-        </button>
-        <button
-          onClick={handleExportImage}
-          className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-white px-4 py-2.5 text-sm font-bold text-brand-600 shadow-sm hover:bg-brand-50"
-        >
-          <ImageIcon className="h-4 w-4" />
-          Télécharger Image
-        </button>
-      </div>
+      {storeRecipes.length > 0 && (
+        <div className="mb-4 overflow-hidden rounded-2xl bg-white shadow-sm">
+          <button
+            type="button"
+            onClick={() => setRecipesOpen((v) => !v)}
+            className="flex w-full items-center justify-between gap-2 px-4 py-3 text-sm font-bold text-slate-700"
+          >
+            <span className="flex min-w-0 items-center gap-2">
+              <RecipeIcon className="h-4 w-4 shrink-0 text-brand-500" />
+              <span className="truncate">
+                {storeRecipes.length} recette{storeRecipes.length > 1 ? 's' : ''} dans cette liste
+              </span>
+            </span>
+            <ChevronDownIcon
+              className={`h-4 w-4 shrink-0 text-slate-400 transition-transform ${recipesOpen ? 'rotate-180' : ''}`}
+            />
+          </button>
+          {recipesOpen && (
+            <ul className="border-t border-slate-100">
+              {storeRecipes.map((r) => (
+                <li
+                  key={r.id}
+                  className="flex items-center justify-between gap-2 border-b border-slate-50 px-4 py-2.5 last:border-b-0"
+                >
+                  <span className="min-w-0 flex-1 truncate text-sm font-semibold text-slate-600">
+                    {r.name}
+                    <span className="ml-1.5 font-normal text-slate-400">
+                      · {r.count} article{r.count > 1 ? 's' : ''}
+                    </span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => removeRecipeFromShoppingList(r.id)}
+                    title={`Retirer « ${r.name} » de la liste`}
+                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-red-400 hover:bg-red-50"
+                  >
+                    <CrossIcon className="h-3.5 w-3.5" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
 
       {toast && (
         <div className="mb-3 rounded-lg bg-brand-800 px-3 py-2 text-center text-xs font-bold text-white">{toast}</div>
