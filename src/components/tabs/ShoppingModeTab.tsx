@@ -4,7 +4,18 @@ import { groupByCategory, copyListToClipboard, exportListAsImage } from '../../u
 import { useCategoryEmojiName } from '../../hooks/useCategoryEmojiName'
 import { useCategoryColor } from '../../hooks/useCategoryColor'
 import { useStoreIcon } from '../../hooks/useStoreIcon'
-import { CheckIcon, ChevronDownIcon, ClipboardIcon, CopyIcon, ImageIcon, MinusIcon, MoreIcon, PlusIcon, TrashIcon } from '../icons'
+import {
+  CheckIcon,
+  ChevronDownIcon,
+  ClipboardIcon,
+  CopyIcon,
+  CrossIcon,
+  ImageIcon,
+  MinusIcon,
+  MoreIcon,
+  PlusIcon,
+  TrashIcon
+} from '../icons'
 import StoreIconView from '../StoreIconView'
 import Emoji from '../Emoji'
 import ShoppingListPrintable from '../ShoppingListPrintable'
@@ -21,6 +32,11 @@ const CELEBRATIONS = [
 ]
 
 const CONFETTI_EMOJI = ['🎉', '✨', '🎊', '⭐️', '🥳']
+
+interface Toast {
+  message: string
+  snapshot?: ShoppingItem[]
+}
 
 interface Particle {
   emoji: string
@@ -59,9 +75,10 @@ export default function ShoppingModeTab() {
   const removeRecipeFromShoppingList = useAppStore((s) => s.removeRecipeFromShoppingList)
   const recipeServingsInList = useAppStore((s) => s.recipeServingsInList)
   const setRecipeServingsInList = useAppStore((s) => s.setRecipeServingsInList)
+  const replaceItems = useAppStore((s) => s.replaceItems)
 
   const [activeStore, setActiveStore] = useState<string | null>(null)
-  const [toast, setToast] = useState('')
+  const [toast, setToast] = useState<Toast | null>(null)
   const [confirmClear, setConfirmClear] = useState(false)
   const [confirmClearStore, setConfirmClearStore] = useState<string | null>(null)
   const [celebration, setCelebration] = useState<{ message: string; particles: Particle[] } | null>(null)
@@ -69,6 +86,7 @@ export default function ShoppingModeTab() {
   const [recipesOpen, setRecipesOpen] = useState(false)
   const printableRef = useRef<HTMLDivElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
+  const toastTimer = useRef<ReturnType<typeof setTimeout>>()
 
   useEffect(() => {
     if (!menuOpen) return
@@ -78,6 +96,8 @@ export default function ShoppingModeTab() {
     document.addEventListener('mousedown', onMouseDown)
     return () => document.removeEventListener('mousedown', onMouseDown)
   }, [menuOpen])
+
+  useEffect(() => () => clearTimeout(toastTimer.current), [])
 
   const toBuyItems = useMemo(() => items.filter((it) => it.toBuy), [items])
 
@@ -116,18 +136,26 @@ export default function ShoppingModeTab() {
     return item.fromRecipes.map((id) => recipes.find((r) => r.id === id)?.name).filter(Boolean) as string[]
   }
 
-  function flashToast(msg: string) {
-    setToast(msg)
-    setTimeout(() => setToast(''), 2000)
+  function showToast(message: string, snapshot?: ShoppingItem[]) {
+    clearTimeout(toastTimer.current)
+    setToast({ message, snapshot })
+    toastTimer.current = setTimeout(() => setToast(null), snapshot ? 6000 : 2000)
+  }
+
+  function undoToast() {
+    if (!toast?.snapshot) return
+    replaceItems(toast.snapshot)
+    clearTimeout(toastTimer.current)
+    setToast(null)
   }
 
   async function handleCopy() {
     if (!activeStore) return
     try {
       await copyListToClipboard(activeStore, storeItems)
-      flashToast('Liste copiée dans le presse-papiers')
+      showToast('Liste copiée dans le presse-papiers')
     } catch {
-      flashToast('Impossible de copier la liste')
+      showToast('Impossible de copier la liste')
     }
   }
 
@@ -135,9 +163,9 @@ export default function ShoppingModeTab() {
     if (!activeStore || !printableRef.current) return
     try {
       await exportListAsImage(printableRef.current, `liste-${activeStore.toLowerCase().replace(/\s+/g, '-')}.png`)
-      flashToast('Image exportée')
+      showToast('Image exportée')
     } catch {
-      flashToast("Échec de l'export image")
+      showToast("Échec de l'export image")
     }
   }
 
@@ -160,8 +188,10 @@ export default function ShoppingModeTab() {
       setConfirmClear(true)
       return
     }
+    const snapshot = items
     clearShoppingList()
     setConfirmClear(false)
+    showToast('Liste vidée', snapshot)
   }
 
   function handleClearStore(store: string) {
@@ -169,10 +199,38 @@ export default function ShoppingModeTab() {
       setConfirmClearStore(store)
       return
     }
+    const snapshot = items
     clearShoppingListForStore(store)
     setConfirmClearStore(null)
     if (activeStore === store) setActiveStore(null)
+    showToast(`Liste de ${store} vidée`, snapshot)
   }
+
+  const toastNode = toast && (
+    <div className="fixed inset-x-0 bottom-32 z-50 flex justify-center px-4 sm:bottom-6">
+      <div className="flex items-center gap-3 rounded-full bg-slate-900 py-2.5 pl-4 pr-2 text-sm text-white shadow-lg">
+        <span>{toast.message}</span>
+        {toast.snapshot && (
+          <button
+            onClick={undoToast}
+            className="rounded-full bg-white/10 px-3 py-1.5 text-xs font-bold text-brand-200 hover:bg-white/20"
+          >
+            Annuler
+          </button>
+        )}
+        <button
+          onClick={() => {
+            clearTimeout(toastTimer.current)
+            setToast(null)
+          }}
+          title="Fermer"
+          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-slate-400 hover:bg-white/10 hover:text-white"
+        >
+          <CrossIcon className="h-3.5 w-3.5" />
+        </button>
+      </div>
+    </div>
+  )
 
   if (!activeStore) {
     return (
@@ -232,6 +290,7 @@ export default function ShoppingModeTab() {
             ))}
           </div>
         )}
+        {toastNode}
       </div>
     )
   }
@@ -364,10 +423,6 @@ export default function ShoppingModeTab() {
         </div>
       )}
 
-      {toast && (
-        <div className="mb-3 rounded-lg bg-brand-800 px-3 py-2 text-center text-xs font-bold text-white">{toast}</div>
-      )}
-
       <div className="space-y-4 pb-20">
         {groupByCategory(storeItems).map(([cat, list]) => {
           const color = colorFor(cat)
@@ -464,6 +519,8 @@ export default function ShoppingModeTab() {
           </div>
         </div>
       )}
+
+      {toastNode}
     </div>
   )
 }

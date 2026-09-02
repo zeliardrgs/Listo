@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useAppStore } from '../../store/useAppStore'
 import { useHouseholdStore } from '../../store/useHouseholdStore'
 import { useSyncStatusStore } from '../../store/useSyncStatusStore'
@@ -17,6 +17,11 @@ import { PlusIcon, CrossIcon, TrashIcon } from '../icons'
 import type { ShoppingItem } from '../../types'
 
 type SortMode = 'name' | 'store' | 'category' | 'favorite'
+
+interface Toast {
+  message: string
+  snapshot?: ShoppingItem[]
+}
 
 interface Group {
   key: string
@@ -42,6 +47,8 @@ function byFavoriteThenName(a: ShoppingItem, b: ShoppingItem) {
 export default function ListTab() {
   const items = useAppStore((s) => s.items)
   const clearShoppingList = useAppStore((s) => s.clearShoppingList)
+  const removeItem = useAppStore((s) => s.removeItem)
+  const replaceItems = useAppStore((s) => s.replaceItems)
   const sortMode = useAppStore((s) => s.listSortMode)
   const setSortMode = useAppStore((s) => s.setListSortMode)
   const emojiFor = useCategoryEmojiName()
@@ -56,6 +63,8 @@ export default function ListTab() {
   const [filter, setFilter] = useState('')
   const [confirmClear, setConfirmClear] = useState(false)
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null)
+  const [toast, setToast] = useState<Toast | null>(null)
+  const toastTimer = useRef<ReturnType<typeof setTimeout>>()
   const scrolled = useScrolled()
   const scrollDirection = useScrollDirection()
   const activeHousehold = useHouseholdStore((s) => s.activeCode)
@@ -64,13 +73,36 @@ export default function ListTab() {
 
   const toBuyCount = useMemo(() => items.filter((it) => it.toBuy).length, [items])
 
+  useEffect(() => () => clearTimeout(toastTimer.current), [])
+
+  function showToast(message: string, snapshot?: ShoppingItem[]) {
+    clearTimeout(toastTimer.current)
+    setToast({ message, snapshot })
+    toastTimer.current = setTimeout(() => setToast(null), snapshot ? 6000 : 2200)
+  }
+
+  function undoToast() {
+    if (!toast?.snapshot) return
+    replaceItems(toast.snapshot)
+    clearTimeout(toastTimer.current)
+    setToast(null)
+  }
+
+  function handleDeleteItem(item: ShoppingItem) {
+    const snapshot = items
+    removeItem(item.id)
+    showToast(`« ${item.name} » supprimé`, snapshot)
+  }
+
   function handleClearAll() {
     if (!confirmClear) {
       setConfirmClear(true)
       return
     }
+    const snapshot = items
     clearShoppingList()
     setConfirmClear(false)
+    showToast('Liste vidée', snapshot)
   }
 
   function toggleForm() {
@@ -375,7 +407,7 @@ export default function ListTab() {
                 )}
                 <ul className="space-y-2">
                   {g.items.map((it) => (
-                    <ItemRow key={it.id} item={it} />
+                    <ItemRow key={it.id} item={it} onDelete={handleDeleteItem} />
                   ))}
                 </ul>
               </div>
@@ -383,6 +415,32 @@ export default function ListTab() {
           )}
         </div>
       </div>
+
+      {toast && (
+        <div className="fixed inset-x-0 bottom-32 z-50 flex justify-center px-4 sm:bottom-6">
+          <div className="flex items-center gap-3 rounded-full bg-slate-900 py-2.5 pl-4 pr-2 text-sm text-white shadow-lg">
+            <span>{toast.message}</span>
+            {toast.snapshot && (
+              <button
+                onClick={undoToast}
+                className="rounded-full bg-white/10 px-3 py-1.5 text-xs font-bold text-brand-200 hover:bg-white/20"
+              >
+                Annuler
+              </button>
+            )}
+            <button
+              onClick={() => {
+                clearTimeout(toastTimer.current)
+                setToast(null)
+              }}
+              title="Fermer"
+              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-slate-400 hover:bg-white/10 hover:text-white"
+            >
+              <CrossIcon className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

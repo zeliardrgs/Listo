@@ -32,7 +32,7 @@ function toDraft(item: ShoppingItem): Draft {
   }
 }
 
-export default function ItemRow({ item }: { item: ShoppingItem }) {
+export default function ItemRow({ item, onDelete }: { item: ShoppingItem; onDelete?: (item: ShoppingItem) => void }) {
   const updateItem = useAppStore((s) => s.updateItem)
   const removeItem = useAppStore((s) => s.removeItem)
   const emojiFor = useCategoryEmojiName()
@@ -195,7 +195,7 @@ export default function ItemRow({ item }: { item: ShoppingItem }) {
         <div className="flex items-center justify-end gap-2 pt-1">
           <button
             type="button"
-            onClick={() => removeItem(item.id)}
+            onClick={() => (onDelete ? onDelete(item) : removeItem(item.id))}
             title="Supprimer"
             className="flex h-9 w-9 items-center justify-center rounded-full border border-red-200 bg-red-50 text-red-500 hover:bg-red-100"
           >

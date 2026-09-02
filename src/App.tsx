@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import ListTab from './components/tabs/ListTab'
 import RecipesTab from './components/tabs/RecipesTab'
 import PlanningTab from './components/tabs/PlanningTab'
@@ -10,6 +10,7 @@ import { ClipboardIcon, CalendarIcon, MoreIcon } from './components/icons'
 import { useScrolled } from './hooks/useScrolled'
 import { useScrollDirection } from './hooks/useScrollDirection'
 import { useHouseholdSync } from './hooks/useHouseholdSync'
+import { useAppStore } from './store/useAppStore'
 import JoinInvite from './components/JoinInvite'
 import InstallBanner from './components/InstallBanner'
 import HouseholdRequiredGate from './components/HouseholdRequiredGate'
@@ -58,6 +59,15 @@ const TABS: { key: Tab; label: string; icon: JSX.Element }[] = [
   }
 ]
 
+function TabBadge({ count }: { count: number }) {
+  if (count <= 0) return null
+  return (
+    <span className="absolute -right-1.5 -top-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white">
+      {count > 99 ? '99+' : count}
+    </span>
+  )
+}
+
 const Logo = ({ compact }: { compact?: boolean }) => (
   <ListoLogo className={`w-auto transition-all duration-200 ${compact ? 'h-6' : 'h-8 sm:h-9'}`} color="#ffffff" />
 )
@@ -86,11 +96,13 @@ function BottomTabBar({
   tab,
   showSettings,
   hidden,
+  toBuyCount,
   onSelect
 }: {
   tab: Tab
   showSettings: boolean
   hidden: boolean
+  toBuyCount: number
   onSelect: (t: Tab) => void
 }) {
   return (
@@ -105,12 +117,18 @@ function BottomTabBar({
           <button key={t.key} onClick={() => onSelect(t.key)} className="flex flex-1 items-center justify-center">
             {isActive ? (
               <span className="flex items-center gap-1.5 rounded-full bg-cream px-4 py-2 text-xs font-bold leading-none text-brand-700">
-                <span className="h-4 w-4 shrink-0">{t.icon}</span>
+                <span className="relative h-4 w-4 shrink-0">
+                  {t.icon}
+                  {t.key === 'shopping' && <TabBadge count={toBuyCount} />}
+                </span>
                 <span className="whitespace-nowrap">{t.label}</span>
               </span>
             ) : (
               <span className="flex h-9 w-9 items-center justify-center text-white/70">
-                <span className="h-5 w-5">{t.icon}</span>
+                <span className="relative h-5 w-5">
+                  {t.icon}
+                  {t.key === 'shopping' && <TabBadge count={toBuyCount} />}
+                </span>
               </span>
             )}
           </button>
@@ -126,6 +144,8 @@ export default function App() {
   const scrolled = useScrolled()
   const scrollDirection = useScrollDirection()
   useHouseholdSync()
+  const items = useAppStore((s) => s.items)
+  const toBuyCount = useMemo(() => items.filter((it) => it.toBuy).length, [items])
 
   useEffect(() => {
     localStorage.setItem(ACTIVE_TAB_KEY, tab)
@@ -168,8 +188,11 @@ export default function App() {
                     : 'text-white/85 hover:text-white'
                 }`}
               >
-                <span className={`shrink-0 transition-all duration-200 ${scrolled ? 'h-3.5 w-3.5' : 'h-4 w-4'}`}>
+                <span
+                  className={`relative shrink-0 transition-all duration-200 ${scrolled ? 'h-3.5 w-3.5' : 'h-4 w-4'}`}
+                >
                   {t.icon}
+                  {t.key === 'shopping' && <TabBadge count={toBuyCount} />}
                 </span>
                 <span className="whitespace-nowrap">{t.label}</span>
               </button>
@@ -202,6 +225,7 @@ export default function App() {
         tab={tab}
         showSettings={showSettings}
         hidden={scrollDirection === 'down' && !showSettings}
+        toBuyCount={toBuyCount}
         onSelect={(t) => {
           setTab(t)
           setShowSettings(false)
