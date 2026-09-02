@@ -6,9 +6,10 @@ import { useCategoryColor } from '../hooks/useCategoryColor'
 import { useStoreIcon } from '../hooks/useStoreIcon'
 import StoreIconView from './StoreIconView'
 import { pluralizeUnit } from '../utils/pluralizeUnit'
-import { importRecipeFromUrl } from '../utils/importRecipe'
+import { importRecipeFromUrl, type ImportedRecipe } from '../utils/importRecipe'
 import { matchExistingItem } from '../utils/matchItem'
 import RecipeIllustration from './RecipeIllustration'
+import ImportReviewModal from './ImportReviewModal'
 import Emoji from './Emoji'
 import {
   SearchIcon,
@@ -72,6 +73,7 @@ export default function RecipeDetailPane({
   const storeIconFor = useStoreIcon()
 
   const [mode, setMode] = useState<'view' | 'edit'>(recipe ? 'view' : 'edit')
+  const [importResult, setImportResult] = useState<ImportedRecipe | null>(null)
   const [name, setName] = useState(recipe?.name ?? initialName ?? '')
   const [tags, setTags] = useState<string[]>(recipe?.tags ?? [])
   const [imageUrl, setImageUrl] = useState(recipe?.imageUrl ?? '')
@@ -121,6 +123,11 @@ export default function RecipeDetailPane({
   useEffect(() => {
     if (variant !== 'pane') return
     function onDocClick(e: MouseEvent) {
+      // The import review modal is rendered in a portal (so it can truly
+      // cover the whole screen instead of being trapped by this pane's own
+      // transform), so it's outside paneRef's DOM subtree even though it's
+      // conceptually "inside" — don't treat clicks in it as outside-clicks.
+      if (importResult) return
       if (paneRef.current && !paneRef.current.contains(e.target as Node)) {
         if (isDirty) {
           e.preventDefault()
@@ -133,7 +140,7 @@ export default function RecipeDetailPane({
     }
     document.addEventListener('click', onDocClick, true)
     return () => document.removeEventListener('click', onDocClick, true)
-  }, [variant, isDirty, onClose])
+  }, [variant, isDirty, onClose, importResult])
 
   useEffect(() => () => clearTimeout(unsavedHintTimer.current), [])
 
@@ -316,11 +323,7 @@ export default function RecipeDetailPane({
     importAbortRef.current = controller
     try {
       const imported = await importRecipeFromUrl(importUrl.trim(), controller.signal)
-      setName(imported.name)
-      setIngredients(imported.ingredients)
-      setInstructions(imported.instructions)
-      setImageUrl(imported.imageUrl || '')
-      setImageUrlDraft(imported.imageUrl || '')
+      setImportResult(imported)
       setShowImport(false)
     } catch (err: any) {
       if (!importCancelledRef.current) {
@@ -925,6 +928,21 @@ export default function RecipeDetailPane({
             Annuler l'import
           </button>
         </div>
+      )}
+
+      {importResult && (
+        <ImportReviewModal
+          imported={importResult}
+          onCancel={() => setImportResult(null)}
+          onConfirm={(finalIngredients) => {
+            setName(importResult.name)
+            setIngredients(finalIngredients)
+            setInstructions(importResult.instructions)
+            setImageUrl(importResult.imageUrl || '')
+            setImageUrlDraft(importResult.imageUrl || '')
+            setImportResult(null)
+          }}
+        />
       )}
     </>
   )
