@@ -292,7 +292,7 @@ export default function ShoppingModeTab() {
       </div>
 
       {storeRecipes.length > 0 && (
-        <div className="mb-4 overflow-hidden rounded-2xl bg-white shadow-sm">
+        <div className="mb-4 overflow-hidden rounded-2xl bg-[#FFF1DC]">
           <button
             type="button"
             onClick={() => setRecipesOpen((v) => !v)}
