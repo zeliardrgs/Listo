@@ -1,4 +1,4 @@
-export type Unit = 'pièce' | 'g' | 'kg' | 'ml' | 'cl' | 'l' | 'paquet' | 'boîte' | 'botte' | 'tranche' | 'barquette'
+export type Unit = 'pièce' | 'g' | 'kg' | 'ml' | 'cl' | 'l' | 'paquet' | 'boîte' | 'botte' | 'tranche' | 'barquette' | 'pincée'
 
 export interface StoreIconValue {
   type: 'emoji' | 'image'

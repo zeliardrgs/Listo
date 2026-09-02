@@ -59,7 +59,7 @@ const UNIT_PHRASES: { words: string[]; unit?: Unit }[] = [
   { words: ['cuillères à café', 'cuillère à café', 'c. à café', 'càc'] },
   { words: ['cuillères à soupe', 'cuillère à soupe', 'c. à soupe', 'càs'] },
   { words: ['gousses', 'gousse'] },
-  { words: ['pincées', 'pincée'] },
+  { words: ['pincées', 'pincée'], unit: 'pincée' },
   { words: ['sachets', 'sachet'] },
   { words: ['verres', 'verre'] },
   { words: ['brins', 'brin'] },

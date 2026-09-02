@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { useAppStore } from '../store/useAppStore'
-import { PRODUCT_SUGGESTIONS, UNITS } from '../data/constants'
+import { PRODUCT_SUGGESTIONS, SOLID_UNITS, LIQUID_UNITS } from '../data/constants'
 import { useCategoryEmojiName } from '../hooks/useCategoryEmojiName'
 import { useCategoryColor } from '../hooks/useCategoryColor'
 import { useStoreIcon } from '../hooks/useStoreIcon'
@@ -797,11 +797,20 @@ export default function RecipeDetailPane({
                         className="w-20 shrink-0 rounded-lg border border-slate-200 bg-white px-1 py-1.5 text-sm"
                       >
                         <option value="">Unité</option>
-                        {UNITS.map((u) => (
-                          <option key={u} value={u}>
-                            {u}
-                          </option>
-                        ))}
+                        <optgroup label="Solide">
+                          {SOLID_UNITS.map((u) => (
+                            <option key={u} value={u}>
+                              {u}
+                            </option>
+                          ))}
+                        </optgroup>
+                        <optgroup label="Liquide">
+                          {LIQUID_UNITS.map((u) => (
+                            <option key={u} value={u}>
+                              {u}
+                            </option>
+                          ))}
+                        </optgroup>
                       </select>
                       <label className="flex shrink-0 items-center gap-1.5 text-xs font-semibold text-slate-500">
                         <input
