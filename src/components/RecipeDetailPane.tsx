@@ -74,6 +74,7 @@ export default function RecipeDetailPane({
 
   const [mode, setMode] = useState<'view' | 'edit'>(recipe ? 'view' : 'edit')
   const [importResult, setImportResult] = useState<ImportedRecipe | null>(null)
+  const [importSourceHost, setImportSourceHost] = useState('')
   const [name, setName] = useState(recipe?.name ?? initialName ?? '')
   const [tags, setTags] = useState<string[]>(recipe?.tags ?? [])
   const [imageUrl, setImageUrl] = useState(recipe?.imageUrl ?? '')
@@ -324,6 +325,7 @@ export default function RecipeDetailPane({
     try {
       const imported = await importRecipeFromUrl(importUrl.trim(), controller.signal)
       setImportResult(imported)
+      setImportSourceHost(importHostHint)
       setShowImport(false)
     } catch (err: any) {
       if (!importCancelledRef.current) {
@@ -933,9 +935,10 @@ export default function RecipeDetailPane({
       {importResult && (
         <ImportReviewModal
           imported={importResult}
+          sourceHost={importSourceHost}
           onCancel={() => setImportResult(null)}
-          onConfirm={(finalIngredients) => {
-            setName(importResult.name)
+          onConfirm={(finalName, finalIngredients) => {
+            setName(finalName)
             setIngredients(finalIngredients)
             setInstructions(importResult.instructions)
             setImageUrl(importResult.imageUrl || '')

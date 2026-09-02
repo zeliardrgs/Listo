@@ -1,14 +1,16 @@
-import { Fragment, useState } from 'react'
+import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useAppStore } from '../store/useAppStore'
 import { matchExistingItem } from '../utils/matchItem'
-import { pluralizeUnit } from '../utils/pluralizeUnit'
+import { useCategoryEmojiName } from '../hooks/useCategoryEmojiName'
+import { useCategoryColor } from '../hooks/useCategoryColor'
 import RecipeIllustration from './RecipeIllustration'
-import { SearchIcon, CrossIcon, CheckIcon, PlusIcon } from './icons'
+import Emoji from './Emoji'
+import { SearchIcon, CrossIcon, CheckIcon, PlusIcon, ChevronDownIcon, TrashIcon, DownloadIcon } from './icons'
 import type { ImportedRecipe } from '../utils/importRecipe'
 import type { RecipeIngredient, ShoppingItem } from '../types'
 
-type Resolution = { mode: 'existing'; itemId: string; itemName: string } | { mode: 'new' }
+type Resolution = { mode: 'existing'; itemId: string; itemName: string; itemCategory: string } | { mode: 'new' }
 
 // Shown right after a recipe import finishes parsing, before the recipe is
 // saved: for every imported ingredient, decide up front which existing
@@ -16,18 +18,22 @@ type Resolution = { mode: 'existing'; itemId: string; itemName: string } | { mod
 // never silently creates a near-duplicate article ("oeuf" vs "Oeufs").
 export default function ImportReviewModal({
   imported,
+  sourceHost,
   onCancel,
   onConfirm
 }: {
   imported: ImportedRecipe
+  sourceHost?: string
   onCancel: () => void
-  onConfirm: (ingredients: RecipeIngredient[]) => void
+  onConfirm: (name: string, ingredients: RecipeIngredient[]) => void
 }) {
   const items = useAppStore((s) => s.items)
   const addItem = useAppStore((s) => s.addItem)
+  const emojiFor = useCategoryEmojiName()
+  const colorFor = useCategoryColor()
 
-  const activeIngredients = imported.ingredients.filter((i) => !i.inStock)
-
+  const [name, setName] = useState(imported.name)
+  const [ingredients, setIngredients] = useState<RecipeIngredient[]>(imported.ingredients.filter((i) => !i.inStock))
   const [overrides, setOverrides] = useState<Record<string, Resolution>>({})
   const [pickerFor, setPickerFor] = useState<string | null>(null)
   const [search, setSearch] = useState('')
@@ -35,11 +41,11 @@ export default function ImportReviewModal({
   function resolutionFor(ing: RecipeIngredient): Resolution {
     if (overrides[ing.id]) return overrides[ing.id]
     const auto = matchExistingItem(ing.name, items)
-    return auto ? { mode: 'existing', itemId: auto.id, itemName: auto.name } : { mode: 'new' }
+    return auto ? { mode: 'existing', itemId: auto.id, itemName: auto.name, itemCategory: auto.category } : { mode: 'new' }
   }
 
   function pickExisting(ingId: string, item: ShoppingItem) {
-    setOverrides((o) => ({ ...o, [ingId]: { mode: 'existing', itemId: item.id, itemName: item.name } }))
+    setOverrides((o) => ({ ...o, [ingId]: { mode: 'existing', itemId: item.id, itemName: item.name, itemCategory: item.category } }))
     setPickerFor(null)
     setSearch('')
   }
@@ -50,14 +56,26 @@ export default function ImportReviewModal({
     setSearch('')
   }
 
+  function renameIngredient(id: string, newName: string) {
+    setIngredients((list) => list.map((i) => (i.id === id ? { ...i, name: newName } : i)))
+  }
+
+  function removeIngredient(id: string) {
+    setIngredients((list) => list.filter((i) => i.id !== id))
+    setOverrides((o) => {
+      const { [id]: _dropped, ...rest } = o
+      return rest
+    })
+    if (pickerFor === id) setPickerFor(null)
+  }
+
   const searchTrimmed = search.trim()
   const searchResults = searchTrimmed
     ? items.filter((it) => it.name.toLowerCase().includes(searchTrimmed.toLowerCase())).slice(0, 6)
     : []
 
   function handleConfirm() {
-    const finalIngredients = imported.ingredients.map((ing) => {
-      if (ing.inStock) return ing
+    const finalIngredients = ingredients.map((ing) => {
       const resolution = resolutionFor(ing)
       if (resolution.mode === 'existing') {
         const item = items.find((it) => it.id === resolution.itemId)
@@ -75,58 +93,98 @@ export default function ImportReviewModal({
       }
       return ing
     })
-    onConfirm(finalIngredients)
+    onConfirm(name.trim() || imported.name, finalIngredients)
   }
 
   return createPortal(
-    <div className="fixed inset-0 z-[100] flex flex-col bg-white">
-      <div className="flex items-center gap-3 border-b border-slate-100 px-4 py-3 sm:gap-4 sm:px-6">
-        <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-brand-50">
-          {imported.imageUrl ? (
-            <img src={imported.imageUrl} alt={imported.name} className="h-full w-full object-cover" />
-          ) : (
-            <RecipeIllustration category="Plat" className="h-full w-full" />
-          )}
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
+      <div className="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+        <div className="shrink-0 bg-[#FFF1DC] px-6 py-4 text-center">
+          <h2 className="text-lg font-extrabold text-brand-800 sm:text-xl">Correspondance des ingrédients</h2>
         </div>
-        <div className="min-w-0 flex-1">
-          <h2 className="truncate text-base font-extrabold text-slate-800 sm:text-lg">{imported.name}</h2>
-          <p className="text-xs text-slate-400">
-            {activeIngredients.length} ingrédient{activeIngredients.length > 1 ? 's' : ''} importé
-            {activeIngredients.length > 1 ? 's' : ''}
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={onCancel}
-          title="Annuler l'import"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-400 hover:bg-slate-50"
-        >
-          <CrossIcon className="h-4 w-4" />
-        </button>
-      </div>
 
-      <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6">
-        <div className="mx-auto max-w-4xl">
-          <div className="mb-2 hidden grid-cols-2 gap-x-6 sm:grid">
-            <p className="text-xs font-bold uppercase tracking-wide text-slate-400">Ingrédients de la recette</p>
-            <p className="text-xs font-bold uppercase tracking-wide text-slate-400">Article correspondant</p>
+        <div className="flex shrink-0 items-start gap-4 px-6 py-4">
+          <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-brand-50">
+            {imported.imageUrl ? (
+              <img src={imported.imageUrl} alt={name} className="h-full w-full object-cover" />
+            ) : (
+              <RecipeIllustration category="Plat" className="h-full w-full" />
+            )}
           </div>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-2">
-            {activeIngredients.map((ing) => {
+          <div className="min-w-0 flex-1 pt-0.5">
+            {sourceHost && <p className="mb-1 truncate text-xs text-slate-400">Importé depuis {sourceHost}</p>}
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-base font-extrabold text-slate-800 focus:border-brand-400 focus:outline-none"
+            />
+            <p className="mt-1.5 text-xs text-slate-400">
+              {ingredients.length} ingrédient{ingredients.length > 1 ? 's' : ''} importé{ingredients.length > 1 ? 's' : ''}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-6 pb-4">
+          <div className="mx-auto mb-2 grid max-w-3xl grid-cols-2 gap-3">
+            <span className="mx-auto rounded-full bg-brand-100 px-4 py-1 text-xs font-bold text-brand-700">
+              Ingrédients importés
+            </span>
+            <span className="mx-auto rounded-full bg-brand-100 px-4 py-1 text-xs font-bold text-brand-700">
+              Ingrédients dans votre liste
+            </span>
+          </div>
+
+          <div className="mx-auto max-w-3xl space-y-2 rounded-2xl bg-[#FFF1DC] p-3">
+            {ingredients.map((ing) => {
               const resolution = resolutionFor(ing)
               return (
-                <Fragment key={ing.id}>
-                  <div className="flex items-center rounded-xl bg-slate-50 px-3 py-2.5 text-sm font-semibold text-slate-700">
-                    {ing.quantity != null && (
-                      <span className="mr-1.5 shrink-0 text-slate-400">
-                        {ing.quantity} {pluralizeUnit(ing.unit, ing.quantity)}
-                      </span>
-                    )}
-                    <span className="truncate">{ing.name}</span>
+                <div key={ing.id} className="grid grid-cols-2 items-start gap-3">
+                  <div className="flex items-center gap-1.5 rounded-xl bg-white px-3 py-2.5 ring-1 ring-slate-100">
+                    <input
+                      value={ing.name}
+                      onChange={(e) => renameIngredient(ing.id, e.target.value)}
+                      className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-slate-800 focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeIngredient(ing.id)}
+                      title="Retirer cet ingrédient de l'import"
+                      className="shrink-0 text-slate-300 hover:text-red-500"
+                    >
+                      <CrossIcon className="h-3.5 w-3.5" />
+                    </button>
                   </div>
-                  <div className="rounded-xl border border-slate-100 px-3 py-2">
-                    {pickerFor === ing.id ? (
-                      <div className="space-y-1">
+
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setPickerFor((v) => (v === ing.id ? null : ing.id))}
+                      className="flex w-full items-center gap-2 rounded-xl bg-white px-3 py-2.5 text-left ring-1 ring-slate-100"
+                    >
+                      {resolution.mode === 'existing' ? (
+                        <>
+                          <span
+                            className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${colorFor(resolution.itemCategory).iconBg}`}
+                          >
+                            <Emoji name={emojiFor(resolution.itemCategory)} size={16} />
+                          </span>
+                          <span className="min-w-0 flex-1 truncate text-sm font-bold text-slate-800">
+                            {resolution.itemName}
+                            <span className="ml-1 truncate font-normal text-slate-400">· {resolution.itemCategory}</span>
+                          </span>
+                        </>
+                      ) : (
+                        <span className="min-w-0 flex-1 truncate text-sm font-bold text-brand-600">
+                          Créer un nouvel article
+                        </span>
+                      )}
+                      <ChevronDownIcon
+                        className={`h-4 w-4 shrink-0 text-slate-400 transition-transform ${pickerFor === ing.id ? 'rotate-180' : ''}`}
+                      />
+                    </button>
+
+                    {pickerFor === ing.id && (
+                      <div className="absolute left-0 right-0 top-full z-10 mt-1.5 space-y-1 rounded-xl border border-brand-100 bg-white p-2 shadow-lg">
                         <div className="flex items-center gap-1.5 rounded-lg bg-slate-50 px-2.5 py-1.5">
                           <SearchIcon className="h-3.5 w-3.5 shrink-0 text-slate-300" />
                           <input
@@ -136,16 +194,6 @@ export default function ImportReviewModal({
                             placeholder="Chercher un article existant…"
                             className="w-full bg-transparent text-xs focus:outline-none"
                           />
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setPickerFor(null)
-                              setSearch('')
-                            }}
-                            className="shrink-0 text-slate-300 hover:text-slate-500"
-                          >
-                            <CrossIcon className="h-3 w-3" />
-                          </button>
                         </div>
                         {searchResults.length > 0 && (
                           <ul className="overflow-hidden rounded-lg ring-1 ring-slate-100">
@@ -172,43 +220,35 @@ export default function ImportReviewModal({
                           <span className="truncate">Créer « {ing.name} » comme nouvel article</span>
                         </button>
                       </div>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => setPickerFor(ing.id)}
-                        className="flex w-full items-center justify-between gap-2 text-left"
-                      >
-                        {resolution.mode === 'existing' ? (
-                          <span className="truncate text-sm font-semibold text-green-700">→ {resolution.itemName}</span>
-                        ) : (
-                          <span className="truncate text-sm font-semibold text-brand-600">+ Nouvel article</span>
-                        )}
-                        <span className="shrink-0 text-[11px] font-semibold text-slate-400">Changer</span>
-                      </button>
                     )}
                   </div>
-                </Fragment>
+                </div>
               )
             })}
+            {ingredients.length === 0 && (
+              <p className="py-6 text-center text-sm text-slate-400">Aucun ingrédient à importer.</p>
+            )}
           </div>
         </div>
-      </div>
 
-      <div className="flex items-center justify-end gap-2 border-t border-slate-100 px-4 py-3 sm:px-6">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-bold text-slate-500 hover:bg-slate-50"
-        >
-          Annuler
-        </button>
-        <button
-          type="button"
-          onClick={handleConfirm}
-          className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-bold text-white hover:bg-brand-700"
-        >
-          Continuer
-        </button>
+        <div className="flex shrink-0 items-center justify-between border-t border-slate-100 px-6 py-4">
+          <button
+            type="button"
+            onClick={onCancel}
+            title="Annuler l'import"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-red-50 text-red-500 hover:bg-red-100"
+          >
+            <TrashIcon className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={handleConfirm}
+            className="flex items-center gap-2 rounded-xl bg-brand-600 px-6 py-3 text-sm font-bold text-white hover:bg-brand-700"
+          >
+            <DownloadIcon className="h-4 w-4" />
+            Importer
+          </button>
+        </div>
       </div>
     </div>,
     document.body
