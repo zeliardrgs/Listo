@@ -16,14 +16,14 @@ import { useScrollDirection } from '../../hooks/useScrollDirection'
 import { PlusIcon, CrossIcon, TrashIcon } from '../icons'
 import type { ShoppingItem } from '../../types'
 
-type SortMode = 'name' | 'store' | 'category'
+type SortMode = 'name' | 'store' | 'category' | 'favorite'
 
 interface Group {
   key: string
   label: string
   items: ShoppingItem[]
   color: CategoryColor
-  emojiKind: 'category' | 'store' | null
+  emojiKind: 'category' | 'store' | 'favorite' | null
 }
 
 function sectionId(label: string) {
@@ -52,6 +52,7 @@ export default function ListTab() {
   const [prefillName, setPrefillName] = useState('')
   const [prefillCategory, setPrefillCategory] = useState('')
   const [prefillStore, setPrefillStore] = useState('')
+  const [prefillRecurring, setPrefillRecurring] = useState(false)
   const [filter, setFilter] = useState('')
   const [confirmClear, setConfirmClear] = useState(false)
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null)
@@ -78,6 +79,7 @@ export default function ListTab() {
         setPrefillName('')
         setPrefillCategory('')
         setPrefillStore('')
+        setPrefillRecurring(false)
         setFormTargetKey(null)
       }
       return !v
@@ -88,6 +90,7 @@ export default function ListTab() {
     setPrefillName(name)
     setPrefillCategory('')
     setPrefillStore('')
+    setPrefillRecurring(false)
     setFormTargetKey(null)
     setShowForm(true)
   }
@@ -96,6 +99,7 @@ export default function ListTab() {
     setPrefillName('')
     setPrefillCategory(sortMode === 'category' ? g.label : '')
     setPrefillStore(sortMode === 'store' ? g.label : '')
+    setPrefillRecurring(sortMode === 'favorite' && g.key === 'favorites')
     setFormTargetKey(g.key)
     setShowForm(true)
   }
@@ -123,6 +127,25 @@ export default function ListTab() {
           color: NEUTRAL_GROUP_COLOR,
           emojiKind: null
         }))
+    }
+    if (sortMode === 'favorite') {
+      const byName = (a: ShoppingItem, b: ShoppingItem) => a.name.localeCompare(b.name)
+      return [
+        {
+          key: 'favorites',
+          label: 'Favoris',
+          items: filtered.filter((it) => it.recurring).sort(byName),
+          color: NEUTRAL_GROUP_COLOR,
+          emojiKind: 'favorite' as const
+        },
+        {
+          key: 'others',
+          label: 'Autres articles',
+          items: filtered.filter((it) => !it.recurring).sort(byName),
+          color: NEUTRAL_GROUP_COLOR,
+          emojiKind: null
+        }
+      ]
     }
     const key = sortMode === 'store' ? 'store' : 'category'
     const map = new Map<string, ShoppingItem[]>()
@@ -238,7 +261,7 @@ export default function ListTab() {
           <span />
         )}
         <div className="flex items-center gap-2">
-          {(['name', 'store', 'category'] as SortMode[]).map((m) => (
+          {(['name', 'store', 'category', 'favorite'] as SortMode[]).map((m) => (
             <button
               key={m}
               onClick={() => setSortMode(m)}
@@ -246,7 +269,7 @@ export default function ListTab() {
                 sortMode === m ? 'bg-brand-600 text-white' : 'bg-brand-100 text-brand-700 hover:bg-brand-200'
               }`}
             >
-              {m === 'name' ? 'Nom' : m === 'store' ? 'Magasin' : 'Rayon'}
+              {m === 'name' ? 'Nom' : m === 'store' ? 'Magasin' : m === 'category' ? 'Rayon' : 'Favoris'}
             </button>
           ))}
         </div>
@@ -258,6 +281,7 @@ export default function ListTab() {
             initialName={prefillName}
             initialCategory={prefillCategory}
             initialStore={prefillStore}
+            initialRecurring={prefillRecurring}
             onAdded={closeForm}
             onCancel={closeForm}
           />
@@ -302,6 +326,7 @@ export default function ListTab() {
                   >
                     {sortMode === 'category' && <Emoji name={emojiFor(g.label)} size={14} />}
                     {sortMode === 'store' && <StoreIconView icon={storeIconFor(g.label)} size={14} />}
+                    {g.emojiKind === 'favorite' && <span className="text-amber-500">★</span>}
                     {sortMode === 'name' ? (
                       <span className="font-bold">{g.label}</span>
                     ) : (
@@ -321,6 +346,7 @@ export default function ListTab() {
                 <div className={`mb-2 flex items-center gap-1.5 px-1 text-xs font-bold uppercase tracking-wide ${g.color.headerText}`}>
                   {g.emojiKind === 'category' && <Emoji name={emojiFor(g.label)} size={16} />}
                   {g.emojiKind === 'store' && <StoreIconView icon={storeIconFor(g.label)} size={16} />}
+                  {g.emojiKind === 'favorite' && <span className="text-amber-500">★</span>}
                   <span className="min-w-0 flex-1 truncate">
                     {g.label} <span className="font-medium opacity-70">· {g.items.length}</span>
                   </span>
@@ -341,6 +367,7 @@ export default function ListTab() {
                       initialName={prefillName}
                       initialCategory={prefillCategory}
                       initialStore={prefillStore}
+                      initialRecurring={prefillRecurring}
                       onAdded={closeForm}
                       onCancel={closeForm}
                     />

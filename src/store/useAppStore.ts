@@ -113,7 +113,7 @@ interface AppStore {
   categoryColorOverrides: Record<string, string>
   storeIconOverrides: Record<string, StoreIconValue>
   defaultStore: string
-  listSortMode: 'name' | 'store' | 'category'
+  listSortMode: 'name' | 'store' | 'category' | 'favorite'
   // Servings each recipe's contribution to the shopping list was last
   // computed at, so the Courses recipes panel can show/adjust "N pers."
   // without needing the recipe's own edit form.
@@ -161,7 +161,7 @@ interface AppStore {
   setStoreIcon: (name: string, icon: StoreIconValue) => void
   setDefaultStore: (name: string) => void
   getDefaultStore: () => string
-  setListSortMode: (mode: 'name' | 'store' | 'category') => void
+  setListSortMode: (mode: 'name' | 'store' | 'category' | 'favorite') => void
   addCategory: (name: string, emojiName: string) => void
   removeCategory: (name: string) => void
   renameCategory: (oldName: string, newName: string) => void

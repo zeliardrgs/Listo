@@ -22,12 +22,14 @@ export default function AddItemForm({
   initialName,
   initialCategory,
   initialStore,
+  initialRecurring,
   onAdded,
   onCancel
 }: {
   initialName?: string
   initialCategory?: string
   initialStore?: string
+  initialRecurring?: boolean
   onAdded?: () => void
   onCancel?: () => void
 }) {
@@ -43,7 +45,8 @@ export default function AddItemForm({
     ...emptyForm,
     name: initialName || '',
     category: initialCategory || emptyForm.category,
-    store: initialStore || emptyForm.store
+    store: initialStore || emptyForm.store,
+    recurring: !!initialRecurring
   }))
   const [nameOpen, setNameOpen] = useState(false)
 
