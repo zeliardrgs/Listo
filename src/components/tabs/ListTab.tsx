@@ -34,6 +34,11 @@ function scrollToSection(label: string) {
   document.getElementById(sectionId(label))?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
+// Favorites first within a group, alphabetical otherwise.
+function byFavoriteThenName(a: ShoppingItem, b: ShoppingItem) {
+  return Number(b.recurring) - Number(a.recurring) || a.name.localeCompare(b.name)
+}
+
 export default function ListTab() {
   const items = useAppStore((s) => s.items)
   const clearShoppingList = useAppStore((s) => s.clearShoppingList)
@@ -114,7 +119,7 @@ export default function ListTab() {
         .map(([label, groupItems]) => ({
           key: label,
           label,
-          items: groupItems.sort((a, b) => a.name.localeCompare(b.name)),
+          items: groupItems.sort(byFavoriteThenName),
           color: NEUTRAL_GROUP_COLOR,
           emojiKind: null
         }))
@@ -131,7 +136,7 @@ export default function ListTab() {
       .map(([label, groupItems]) => ({
         key: label,
         label,
-        items: groupItems.sort((a, b) => a.name.localeCompare(b.name)),
+        items: groupItems.sort(byFavoriteThenName),
         color: sortMode === 'category' ? colorFor(label) : NEUTRAL_GROUP_COLOR,
         emojiKind: sortMode === 'category' ? 'category' : sortMode === 'store' ? 'store' : null
       }))
