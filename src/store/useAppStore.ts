@@ -114,6 +114,10 @@ interface AppStore {
   storeIconOverrides: Record<string, StoreIconValue>
   defaultStore: string
   listSortMode: 'name' | 'store' | 'category'
+  // Servings each recipe's contribution to the shopping list was last
+  // computed at, so the Courses recipes panel can show/adjust "N pers."
+  // without needing the recipe's own edit form.
+  recipeServingsInList: Record<string, number>
   planningQueue: PlanningItem[]
   planningSlots: Record<string, PlanningItem[]>
   planningNotes: Record<string, string>
@@ -135,6 +139,7 @@ interface AppStore {
   // fuzzy matcher missed) into an existing one the user picks instead.
   mergeItemInto: (sourceId: string, targetId: string) => void
   removeRecipeFromShoppingList: (recipeId: string) => void
+  setRecipeServingsInList: (recipeId: string, servings: number) => void
 
   addToPlanningQueue: (recipeId: string) => void
   removeFromPlanningQueue: (id: string) => void
@@ -190,6 +195,7 @@ export const useAppStore = create<AppStore>()(
       storeIconOverrides: {},
       defaultStore: '',
       listSortMode: 'name',
+      recipeServingsInList: {},
       planningQueue: [],
       planningSlots: {},
       planningNotes: {},
@@ -337,25 +343,29 @@ export const useAppStore = create<AppStore>()(
         set((s) => ({ recipes: s.recipes.map((r) => (r.id === id ? { ...r, ...patch } : r)) })),
 
       removeRecipe: (id) =>
-        set((s) => ({
-          recipes: s.recipes.filter((r) => r.id !== id),
-          planningQueue: s.planningQueue.filter((i) => i.recipeId !== id),
-          planningSlots: Object.fromEntries(
-            Object.entries(s.planningSlots).map(([key, list]) => [key, list.filter((i) => i.recipeId !== id)])
-          ),
-          // Otherwise a deleted recipe keeps showing up forever as a source
-          // on any shopping item it once contributed to.
-          items: s.items.map((it) => {
-            if (!it.fromRecipes?.includes(id)) return it
-            const fromRecipes = it.fromRecipes.filter((r) => r !== id)
-            const recipeQuantities = it.recipeQuantities?.filter((c) => c.recipeId !== id)
-            return {
-              ...it,
-              fromRecipes: fromRecipes.length > 0 ? fromRecipes : undefined,
-              recipeQuantities: recipeQuantities && recipeQuantities.length > 0 ? recipeQuantities : undefined
-            }
-          })
-        })),
+        set((s) => {
+          const { [id]: _dropped, ...recipeServingsInList } = s.recipeServingsInList
+          return {
+            recipes: s.recipes.filter((r) => r.id !== id),
+            planningQueue: s.planningQueue.filter((i) => i.recipeId !== id),
+            planningSlots: Object.fromEntries(
+              Object.entries(s.planningSlots).map(([key, list]) => [key, list.filter((i) => i.recipeId !== id)])
+            ),
+            recipeServingsInList,
+            // Otherwise a deleted recipe keeps showing up forever as a source
+            // on any shopping item it once contributed to.
+            items: s.items.map((it) => {
+              if (!it.fromRecipes?.includes(id)) return it
+              const fromRecipes = it.fromRecipes.filter((r) => r !== id)
+              const recipeQuantities = it.recipeQuantities?.filter((c) => c.recipeId !== id)
+              return {
+                ...it,
+                fromRecipes: fromRecipes.length > 0 ? fromRecipes : undefined,
+                recipeQuantities: recipeQuantities && recipeQuantities.length > 0 ? recipeQuantities : undefined
+              }
+            })
+          }
+        }),
 
       addIngredientsToList: (recipeId) => {
         const recipe = get().recipes.find((r) => r.id === recipeId)
@@ -408,7 +418,7 @@ export const useAppStore = create<AppStore>()(
               results.push({ ingredientName: ings[0].name, matchedItemId: null, matchedItemName: null, createdItemId: newId })
             }
           })
-          return { items }
+          return { items, recipeServingsInList: { ...s.recipeServingsInList, [recipeId]: recipe.servings } }
         })
         return results
       },
@@ -435,22 +445,59 @@ export const useAppStore = create<AppStore>()(
       // list entirely only if no other recipe still wants it (a manually
       // added item, or one shared with another recipe, stays put).
       removeRecipeFromShoppingList: (recipeId) =>
-        set((s) => ({
-          items: s.items.map((it) => {
+        set((s) => {
+          const { [recipeId]: _dropped, ...recipeServingsInList } = s.recipeServingsInList
+          return {
+            recipeServingsInList,
+            items: s.items.map((it) => {
+              if (!it.fromRecipes?.includes(recipeId)) return it
+              const fromRecipes = it.fromRecipes.filter((r) => r !== recipeId)
+              const recipeQuantities = it.recipeQuantities?.filter((c) => c.recipeId !== recipeId)
+              const stillWanted = fromRecipes.length > 0
+              return {
+                ...it,
+                fromRecipes: stillWanted ? fromRecipes : undefined,
+                recipeQuantities: stillWanted && recipeQuantities && recipeQuantities.length > 0 ? recipeQuantities : undefined,
+                toBuy: stillWanted ? it.toBuy : false,
+                checked: stillWanted ? it.checked : false,
+                updatedAt: Date.now()
+              }
+            })
+          }
+        }),
+
+      // Rescales one recipe's contribution to the shopping list to a new
+      // serving count — recomputed from the recipe's own ingredients (at
+      // recipe.servings as the baseline) rather than the item's current
+      // quantity, so repeated adjustments don't compound rounding drift.
+      setRecipeServingsInList: (recipeId, servings) =>
+        set((s) => {
+          const recipe = s.recipes.find((r) => r.id === recipeId)
+          if (!recipe || servings < 1) return s
+          const factor = recipe.servings ? servings / recipe.servings : 1
+          const groups = new Map<string, RecipeIngredient[]>()
+          recipe.ingredients
+            .filter((ing) => !ing.inStock)
+            .forEach((ing) => {
+              const key = ing.name.trim().toLowerCase()
+              const list = groups.get(key)
+              if (list) list.push(ing)
+              else groups.set(key, [ing])
+            })
+          const ingredientGroups = Array.from(groups.values())
+          const items = s.items.map((it) => {
             if (!it.fromRecipes?.includes(recipeId)) return it
-            const fromRecipes = it.fromRecipes.filter((r) => r !== recipeId)
-            const recipeQuantities = it.recipeQuantities?.filter((c) => c.recipeId !== recipeId)
-            const stillWanted = fromRecipes.length > 0
-            return {
-              ...it,
-              fromRecipes: stillWanted ? fromRecipes : undefined,
-              recipeQuantities: stillWanted && recipeQuantities && recipeQuantities.length > 0 ? recipeQuantities : undefined,
-              toBuy: stillWanted ? it.toBuy : false,
-              checked: stillWanted ? it.checked : false,
-              updatedAt: Date.now()
-            }
+            const matchGroup = ingredientGroups.find((ings) => namesMatch(ings[0].name, it.name))
+            if (!matchGroup) return it
+            const scaled = matchGroup.map((ing) => ({
+              ...ing,
+              quantity: ing.quantity != null ? Math.round(ing.quantity * factor * 100) / 100 : undefined
+            }))
+            const contributions = buildItemContributions(scaled, recipeId)
+            return { ...it, recipeQuantities: mergeRecipeQuantities(it.recipeQuantities, contributions), updatedAt: Date.now() }
           })
-        })),
+          return { items, recipeServingsInList: { ...s.recipeServingsInList, [recipeId]: servings } }
+        }),
 
       addToPlanningQueue: (recipeId) =>
         set((s) => ({ planningQueue: [...s.planningQueue, { id: makeId(), recipeId }] })),
