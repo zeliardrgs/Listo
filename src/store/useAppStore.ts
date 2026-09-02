@@ -241,6 +241,16 @@ export const useAppStore = create<AppStore>()(
             updated.recipeQuantities = undefined
           }
 
+          // Taking an item off the "to buy" list closes out whatever recipe
+          // put it there — the association (and its quantity) is only
+          // meaningful for the trip that's now over. Without this, a stale
+          // recipe's contribution silently reappears (and gets summed in)
+          // the next time some other recipe re-adds the same article.
+          if (patch.toBuy === false && current.toBuy) {
+            updated.fromRecipes = undefined
+            updated.recipeQuantities = undefined
+          }
+
           const oldNameKey = current.name.trim().toLowerCase()
           const nameChanged = patch.name != null && updated.name.trim() !== current.name.trim()
           const categoryChanged = patch.category != null && updated.category !== current.category
@@ -279,13 +289,19 @@ export const useAppStore = create<AppStore>()(
 
       clearShoppingList: () =>
         set((s) => ({
-          items: s.items.map((it) => (it.toBuy || it.checked ? { ...it, toBuy: false, checked: false } : it))
+          items: s.items.map((it) =>
+            it.toBuy || it.checked
+              ? { ...it, toBuy: false, checked: false, fromRecipes: undefined, recipeQuantities: undefined }
+              : it
+          )
         })),
 
       clearShoppingListForStore: (store) =>
         set((s) => ({
           items: s.items.map((it) =>
-            it.store === store && (it.toBuy || it.checked) ? { ...it, toBuy: false, checked: false } : it
+            it.store === store && (it.toBuy || it.checked)
+              ? { ...it, toBuy: false, checked: false, fromRecipes: undefined, recipeQuantities: undefined }
+              : it
           )
         })),
 
@@ -294,11 +310,20 @@ export const useAppStore = create<AppStore>()(
           items: s.items.map((it) => (it.id === id ? { ...it, checked: !it.checked } : it))
         })),
 
+      // Finishing a shopping trip closes out every checked item's recipe
+      // association (and quantity) — it was only meaningful for this trip,
+      // even for a recurring item that stays on the list. Without clearing
+      // it here, a stale contribution lingers on the item forever and gets
+      // silently summed in the next time any recipe re-adds it.
       resetCheckedForStore: (store) =>
         set((s) => ({
           items: s.items
             .filter((it) => !(it.store === store && it.checked && it.onceOnly))
-            .map((it) => (it.store === store && it.checked ? { ...it, toBuy: it.recurring, checked: false } : it))
+            .map((it) =>
+              it.store === store && it.checked
+                ? { ...it, toBuy: it.recurring, checked: false, fromRecipes: undefined, recipeQuantities: undefined }
+                : it
+            )
         })),
 
       addRecipe: (recipe) => {
@@ -316,7 +341,19 @@ export const useAppStore = create<AppStore>()(
           planningQueue: s.planningQueue.filter((i) => i.recipeId !== id),
           planningSlots: Object.fromEntries(
             Object.entries(s.planningSlots).map(([key, list]) => [key, list.filter((i) => i.recipeId !== id)])
-          )
+          ),
+          // Otherwise a deleted recipe keeps showing up forever as a source
+          // on any shopping item it once contributed to.
+          items: s.items.map((it) => {
+            if (!it.fromRecipes?.includes(id)) return it
+            const fromRecipes = it.fromRecipes.filter((r) => r !== id)
+            const recipeQuantities = it.recipeQuantities?.filter((c) => c.recipeId !== id)
+            return {
+              ...it,
+              fromRecipes: fromRecipes.length > 0 ? fromRecipes : undefined,
+              recipeQuantities: recipeQuantities && recipeQuantities.length > 0 ? recipeQuantities : undefined
+            }
+          })
         })),
 
       addIngredientsToList: (recipeId) => {
