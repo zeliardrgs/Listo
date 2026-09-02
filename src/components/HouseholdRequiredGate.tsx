@@ -24,6 +24,7 @@ export default function HouseholdRequiredGate() {
   if (activeCode || households.length > 0) return null
 
   async function handleCreate() {
+    if (!nameDraft.trim()) return
     setBusy('create')
     setCreateError(null)
     try {
@@ -59,7 +60,7 @@ export default function HouseholdRequiredGate() {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-brand-900/60 px-4 py-10">
       <div className="relative w-full max-w-3xl">
         <div
-          className="absolute left-1/2 top-0 h-16 w-[6.5rem] -translate-x-1/2 -translate-y-[calc(100%-2px)] bg-[#FFF1DC]"
+          className="absolute left-1/2 top-0 h-[51px] w-[104px] -translate-x-1/2 -translate-y-[calc(100%-3px)] bg-[#FFF1DC]"
           style={{
             WebkitMaskImage: `url(${tagShape})`,
             maskImage: `url(${tagShape})`,
@@ -75,7 +76,7 @@ export default function HouseholdRequiredGate() {
         <div className="max-h-[85vh] overflow-y-auto rounded-3xl bg-white shadow-2xl">
           <div className="bg-[#FFF1DC] px-6 py-6 text-center">
             <p className="flex flex-wrap items-center justify-center gap-2 text-xl font-extrabold text-brand-800 sm:text-2xl">
-              Bienvenue sur <ListoLogo className="h-6 w-auto sm:h-7" color="#f5841f" />
+              Bienvenue sur <ListoLogo className="h-[2.1rem] w-auto sm:h-[2.45rem]" color="#f5841f" />
             </p>
           </div>
 
@@ -98,7 +99,7 @@ export default function HouseholdRequiredGate() {
                 <button
                   type="button"
                   onClick={handleCreate}
-                  disabled={busy === 'create'}
+                  disabled={busy === 'create' || !nameDraft.trim()}
                   className="w-full rounded-lg bg-brand-600 py-2.5 text-sm font-bold text-white hover:bg-brand-700 disabled:opacity-60"
                 >
                   {busy === 'create' ? 'Création…' : 'Créer'}
@@ -109,22 +110,24 @@ export default function HouseholdRequiredGate() {
               <div className="rounded-2xl bg-[#FFF8EE] px-5 py-6 text-center">
                 <h2 className="mb-3 text-sm font-extrabold text-brand-700">Rejoindre un foyer</h2>
                 <img src={joinCats} alt="" className="mx-auto mb-4 h-[4.6rem] w-auto" />
-                <input
-                  value={codeDraft}
-                  onChange={(e) => setCodeDraft(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && !busy && handleJoin()}
-                  placeholder="Code du Foyer"
-                  maxLength={6}
-                  className="mb-3 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-center text-sm font-bold uppercase tracking-widest focus:border-brand-400 focus:outline-none"
-                />
-                <button
-                  type="button"
-                  onClick={handleJoin}
-                  disabled={busy === 'join' || !codeDraft.trim()}
-                  className="w-full rounded-lg bg-brand-600 py-2.5 text-sm font-bold text-white hover:bg-brand-700 disabled:opacity-60"
-                >
-                  {busy === 'join' ? 'Vérification…' : 'Rejoindre'}
-                </button>
+                <div className="mb-3 flex gap-2">
+                  <input
+                    value={codeDraft}
+                    onChange={(e) => setCodeDraft(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && !busy && handleJoin()}
+                    placeholder="Code du Foyer"
+                    maxLength={6}
+                    className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-center text-sm font-bold uppercase tracking-widest focus:border-brand-400 focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleJoin}
+                    disabled={busy === 'join' || !codeDraft.trim()}
+                    className="shrink-0 rounded-lg bg-brand-600 px-4 py-2 text-sm font-bold text-white hover:bg-brand-700 disabled:opacity-60"
+                  >
+                    {busy === 'join' ? 'Vérif…' : 'Rejoindre'}
+                  </button>
+                </div>
                 {joinError && <p className="mt-2 text-xs font-semibold text-red-500">{joinError}</p>}
                 <button
                   type="button"
