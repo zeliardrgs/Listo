@@ -3,7 +3,7 @@ import { useAppStore } from '../store/useAppStore'
 import { useCategoryEmojiName } from '../hooks/useCategoryEmojiName'
 import { useCategoryColor } from '../hooks/useCategoryColor'
 import { useStoreIcon } from '../hooks/useStoreIcon'
-import { CheckIcon, PlusIcon, CrossIcon, TrashIcon, ListCheckIcon } from './icons'
+import { CheckIcon, PlusIcon, CrossIcon, TrashIcon, ListCheckIcon, EditIcon } from './icons'
 import CategorySelect from './CategorySelect'
 import StoreSelect from './StoreSelect'
 import Emoji from './Emoji'
@@ -41,6 +41,8 @@ export default function ItemRow({ item, onDelete }: { item: ShoppingItem; onDele
   const [expanded, setExpanded] = useState(false)
   const [draft, setDraft] = useState<Draft>(() => toDraft(item))
   const rootRef = useRef<HTMLLIElement>(null)
+  const holdTimer = useRef<ReturnType<typeof setTimeout>>()
+  const holdStart = useRef<{ x: number; y: number } | null>(null)
 
   function openEdit() {
     setDraft(toDraft(item))
@@ -59,6 +61,24 @@ export default function ItemRow({ item, onDelete }: { item: ShoppingItem; onDele
     document.addEventListener('mousedown', onMouseDown)
     return () => document.removeEventListener('mousedown', onMouseDown)
   }, [expanded])
+
+  useEffect(() => () => clearTimeout(holdTimer.current), [])
+
+  function clearHold() {
+    clearTimeout(holdTimer.current)
+    holdStart.current = null
+  }
+
+  function handlePointerDown(e: React.PointerEvent) {
+    if (e.pointerType !== 'touch' || (e.target as HTMLElement).closest('button')) return
+    holdStart.current = { x: e.clientX, y: e.clientY }
+    holdTimer.current = setTimeout(openEdit, 500)
+  }
+
+  function handlePointerMove(e: React.PointerEvent) {
+    if (!holdStart.current) return
+    if (Math.abs(e.clientX - holdStart.current.x) > 10 || Math.abs(e.clientY - holdStart.current.y) > 10) clearHold()
+  }
 
   function save(e: React.FormEvent) {
     e.preventDefault()
@@ -81,8 +101,13 @@ export default function ItemRow({ item, onDelete }: { item: ShoppingItem; onDele
     return (
       <li
         id={`item-${item.id}`}
-        onClick={openEdit}
-        className="flex scroll-mt-4 cursor-pointer items-center gap-3 rounded-2xl bg-white dark:bg-[#241c15] px-4 py-3 shadow-sm transition-shadow hover:shadow-md"
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={clearHold}
+        onPointerCancel={clearHold}
+        onPointerLeave={clearHold}
+        onContextMenu={(e) => e.preventDefault()}
+        className="flex scroll-mt-4 items-center gap-3 rounded-2xl bg-white dark:bg-[#241c15] px-4 py-3 shadow-sm transition-shadow hover:shadow-md"
       >
         <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${iconBg}`}>
           <Emoji name={emojiFor(item.category)} size={26} />
@@ -90,6 +115,14 @@ export default function ItemRow({ item, onDelete }: { item: ShoppingItem; onDele
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline gap-2">
             <span className="truncate font-bold text-slate-800 dark:text-slate-100">{item.name}</span>
+            <button
+              type="button"
+              onClick={openEdit}
+              title="Modifier"
+              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10"
+            >
+              <EditIcon className="h-3.5 w-3.5" />
+            </button>
             {item.recurring && (
               <span className="shrink-0 rounded-full bg-amber-100 dark:bg-amber-900/40 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-300">★</span>
             )}
@@ -110,10 +143,7 @@ export default function ItemRow({ item, onDelete }: { item: ShoppingItem; onDele
         )}
         <button
           type="button"
-          onClick={(e) => {
-            e.stopPropagation()
-            updateItem(item.id, { toBuy: !item.toBuy })
-          }}
+          onClick={() => updateItem(item.id, { toBuy: !item.toBuy })}
           title={item.toBuy ? 'Retirer de la liste à acheter' : 'Ajouter à la liste à acheter'}
           className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors ${
             item.toBuy ? 'bg-brand-600 text-white' : 'border border-brand-200 dark:border-brand-700/50 bg-brand-50 dark:bg-brand-900/40 text-brand-600 dark:text-brand-300'
