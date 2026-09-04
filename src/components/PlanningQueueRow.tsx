@@ -56,7 +56,7 @@ export default function PlanningQueueRow({
           onRemove()
         }}
         title="Retirer"
-        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-slate-300 dark:text-slate-600 opacity-100 hover:bg-red-50 hover:text-red-400 sm:opacity-0 sm:group-hover:opacity-100"
+        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-slate-300 dark:text-slate-600 opacity-100 hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-400 sm:opacity-0 sm:group-hover:opacity-100"
       >
         <CrossIcon className="h-3 w-3" />
       </button>

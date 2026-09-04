@@ -59,7 +59,7 @@ export default function RecipeCard({
             onClick={plan}
             title={planned ? 'Retirer du planning' : 'Planifier'}
             className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-bold transition-colors ${
-              planned ? 'bg-brand-50 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300 hover:bg-red-50 hover:text-red-500' : 'bg-brand-600 text-white hover:bg-brand-700'
+              planned ? 'bg-brand-50 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300 hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-500 dark:hover:text-red-400' : 'bg-brand-600 text-white hover:bg-brand-700'
             }`}
           >
             {planned ? <CheckIcon className="h-3.5 w-3.5" /> : <CalendarIcon className="h-3.5 w-3.5" />}

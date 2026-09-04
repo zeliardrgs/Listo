@@ -624,7 +624,7 @@ export default function RecipeDetailPane({
                         {importing ? 'Import…' : 'Importer'}
                       </button>
                     </div>
-                    {importError && <p className="text-xs font-semibold text-red-500">{importError}</p>}
+                    {importError && <p className="text-xs font-semibold text-red-500 dark:text-red-400">{importError}</p>}
                   </div>
                 )}
               </div>
@@ -825,7 +825,7 @@ export default function RecipeDetailPane({
                         type="button"
                         onClick={() => removeIngredientRow(ing.id)}
                         title="Retirer l'ingrédient"
-                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-red-400 hover:bg-red-50"
+                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40"
                       >
                         <CrossIcon className="h-3.5 w-3.5" />
                       </button>
@@ -858,7 +858,7 @@ export default function RecipeDetailPane({
               type="button"
               onClick={onPlan}
               className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-bold transition-colors ${
-                planned ? 'bg-brand-50 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300 hover:bg-red-50 hover:text-red-500' : 'bg-brand-100 dark:bg-brand-900/50 text-brand-700 dark:text-brand-300 hover:bg-brand-200 dark:hover:bg-brand-800/60'
+                planned ? 'bg-brand-50 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300 hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-500 dark:hover:text-red-400' : 'bg-brand-100 dark:bg-brand-900/50 text-brand-700 dark:text-brand-300 hover:bg-brand-200 dark:hover:bg-brand-800/60'
               }`}
             >
               {planned ? <CheckIcon className="h-4 w-4" /> : <CalendarIcon className="h-4 w-4" />}
@@ -891,7 +891,7 @@ export default function RecipeDetailPane({
                     onClick={handleDelete}
                     title={confirmDelete ? 'Cliquer à nouveau pour confirmer' : 'Supprimer'}
                     className={`flex h-9 w-9 items-center justify-center rounded-lg border transition-colors ${
-                      confirmDelete ? 'border-red-500 bg-red-500 text-white' : 'border-red-200 bg-red-50 text-red-500 hover:bg-red-100'
+                      confirmDelete ? 'border-red-500 bg-red-500 text-white' : 'border-red-200 dark:border-red-800/50 bg-red-50 dark:bg-red-950/40 text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50'
                     }`}
                   >
                     <TrashIcon className="h-4 w-4" />

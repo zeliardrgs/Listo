@@ -91,7 +91,7 @@ export default function ItemRow({ item, onDelete }: { item: ShoppingItem; onDele
           <div className="flex items-baseline gap-2">
             <span className="truncate font-bold text-slate-800 dark:text-slate-100">{item.name}</span>
             {item.recurring && (
-              <span className="shrink-0 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-700">★</span>
+              <span className="shrink-0 rounded-full bg-amber-100 dark:bg-amber-900/40 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-300">★</span>
             )}
             {item.onceOnly && (
               <span className="shrink-0 rounded-full bg-slate-100 dark:bg-white/10 px-1.5 py-0.5 text-[10px] font-bold text-slate-500 dark:text-slate-400">1×</span>
@@ -197,7 +197,7 @@ export default function ItemRow({ item, onDelete }: { item: ShoppingItem; onDele
             type="button"
             onClick={() => (onDelete ? onDelete(item) : removeItem(item.id))}
             title="Supprimer"
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-red-200 bg-red-50 text-red-500 hover:bg-red-100"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-red-200 dark:border-red-800/50 bg-red-50 dark:bg-red-950/40 text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50"
           >
             <TrashIcon className="h-4 w-4" />
           </button>

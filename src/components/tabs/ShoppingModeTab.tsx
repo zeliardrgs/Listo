@@ -244,7 +244,7 @@ export default function ShoppingModeTab() {
               onBlur={() => setConfirmClear(false)}
               title={confirmClear ? 'Cliquer à nouveau pour confirmer' : 'Vider la liste de course'}
               className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${
-                confirmClear ? 'bg-red-500 text-white' : 'bg-red-50 text-red-500 hover:bg-red-100'
+                confirmClear ? 'bg-red-500 text-white' : 'bg-red-50 dark:bg-red-950/40 text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50'
               }`}
             >
               <TrashIcon className="h-3.5 w-3.5" />
@@ -281,7 +281,7 @@ export default function ShoppingModeTab() {
                   onBlur={() => setConfirmClearStore((s) => (s === store ? null : s))}
                   title={confirmClearStore === store ? 'Cliquer à nouveau pour confirmer' : `Vider la liste de ${store}`}
                   className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors ${
-                    confirmClearStore === store ? 'bg-red-500 text-white' : 'text-red-400 hover:bg-red-50'
+                    confirmClearStore === store ? 'bg-red-500 text-white' : 'text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40'
                   }`}
                 >
                   <TrashIcon className="h-3.5 w-3.5" />
@@ -350,7 +350,7 @@ export default function ShoppingModeTab() {
                 type="button"
                 onClick={() => handleClearStore(activeStore)}
                 onBlur={() => setConfirmClearStore((s) => (s === activeStore ? null : s))}
-                className="flex w-full items-center gap-2.5 border-t border-slate-100 dark:border-white/5 px-3.5 py-2.5 text-left text-sm font-semibold text-red-500 hover:bg-red-50"
+                className="flex w-full items-center gap-2.5 border-t border-slate-100 dark:border-white/5 px-3.5 py-2.5 text-left text-sm font-semibold text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40"
               >
                 <TrashIcon className="h-4 w-4 shrink-0" />
                 {confirmClearStore === activeStore ? 'Cliquer à nouveau pour confirmer' : 'Vider la liste'}
@@ -411,7 +411,7 @@ export default function ShoppingModeTab() {
                       type="button"
                       onClick={() => removeRecipeFromShoppingList(r.id)}
                       title={`Retirer « ${r.name} » de la liste`}
-                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-red-400 hover:bg-red-50"
+                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40"
                     >
                       <TrashIcon className="h-3.5 w-3.5" />
                     </button>

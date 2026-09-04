@@ -219,7 +219,7 @@ export default function PlanningTab() {
                   onBlur={() => setConfirmClearPlanning(false)}
                   title={confirmClearPlanning ? 'Cliquer à nouveau pour confirmer' : 'Vider le planning'}
                   className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${
-                    confirmClearPlanning ? 'bg-red-500 text-white' : 'bg-red-50 text-red-500 hover:bg-red-100'
+                    confirmClearPlanning ? 'bg-red-500 text-white' : 'bg-red-50 dark:bg-red-950/40 text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50'
                   }`}
                 >
                   <TrashIcon className="h-3.5 w-3.5" />

@@ -105,7 +105,7 @@ export default function HouseholdRequiredGate() {
                   >
                     {busy === 'create' ? 'Création…' : 'Créer'}
                   </button>
-                  {createError && <p className="mt-2 text-xs font-semibold text-red-500">{createError}</p>}
+                  {createError && <p className="mt-2 text-xs font-semibold text-red-500 dark:text-red-400">{createError}</p>}
                 </div>
               </div>
 
@@ -131,7 +131,7 @@ export default function HouseholdRequiredGate() {
                       {busy === 'join' ? 'Vérif…' : 'Rejoindre'}
                     </button>
                   </div>
-                  {joinError && <p className="mt-2 text-xs font-semibold text-red-500">{joinError}</p>}
+                  {joinError && <p className="mt-2 text-xs font-semibold text-red-500 dark:text-red-400">{joinError}</p>}
                   <button
                     type="button"
                     onClick={() => setShowCodeHelp((v) => !v)}

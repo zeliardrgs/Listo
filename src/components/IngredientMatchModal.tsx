@@ -67,7 +67,7 @@ export default function IngredientMatchModal({
                       Nouvel article
                     </span>
                   ) : (
-                    <span className="shrink-0 rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-bold text-green-700">
+                    <span className="shrink-0 rounded-full bg-green-100 dark:bg-green-900/40 px-2 py-0.5 text-[11px] font-bold text-green-700 dark:text-green-300">
                       → {overrideTarget ? itemName(overrideTarget) : r.matchedItemName}
                     </span>
                   )}

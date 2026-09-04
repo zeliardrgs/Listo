@@ -39,7 +39,7 @@ export default function JoinInvite() {
   return (
     <Modal title="Invitation à un foyer" onClose={dismiss}>
       {error ? (
-        <p className="text-sm text-red-500">{error}</p>
+        <p className="text-sm text-red-500 dark:text-red-400">{error}</p>
       ) : (
         <div className="space-y-4 py-2 text-center">
           <p className="text-sm text-slate-600 dark:text-slate-300">

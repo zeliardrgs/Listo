@@ -116,7 +116,7 @@ function SimpleDraftRow({
         type="button"
         onClick={onRemove}
         title="Supprimer"
-        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-red-400 hover:bg-red-50"
+        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40"
       >
         <TrashIcon className="h-4 w-4" />
       </button>
@@ -282,7 +282,7 @@ function HouseholdSection() {
             <button
               type="button"
               onClick={() => leave(active.code)}
-              className="mt-1 text-xs font-bold text-red-500 hover:text-red-600"
+              className="mt-1 text-xs font-bold text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-400"
             >
               Quitter ce foyer
             </button>
@@ -311,7 +311,7 @@ function HouseholdSection() {
                   type="button"
                   onClick={() => leave(h.code)}
                   title="Quitter ce foyer"
-                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-red-400 hover:bg-red-50"
+                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40"
                 >
                   <TrashIcon className="h-4 w-4" />
                 </button>
@@ -372,7 +372,7 @@ function HouseholdSection() {
             </button>
           </div>
         </div>
-        {error && <p className="text-center text-xs font-semibold text-red-500">{error}</p>}
+        {error && <p className="text-center text-xs font-semibold text-red-500 dark:text-red-400">{error}</p>}
       </div>
 
       {toast && (
@@ -443,7 +443,7 @@ function StoreDraftRow({
         type="button"
         onClick={onRemove}
         title="Supprimer"
-        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-red-400 hover:bg-red-50"
+        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40"
       >
         <TrashIcon className="h-4 w-4" />
       </button>
@@ -515,7 +515,7 @@ function CategoryDraftRow({
         type="button"
         onClick={onRemove}
         title="Supprimer"
-        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-red-400 hover:bg-red-50"
+        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40"
       >
         <TrashIcon className="h-4 w-4" />
       </button>

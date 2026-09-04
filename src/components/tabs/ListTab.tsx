@@ -283,7 +283,7 @@ export default function ListTab() {
             onBlur={() => setConfirmClear(false)}
             title={confirmClear ? 'Cliquer à nouveau pour confirmer' : 'Vider la liste de course'}
             className={`flex items-center gap-1.5 self-start rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${
-              confirmClear ? 'bg-red-500 text-white' : 'bg-red-50 text-red-500 hover:bg-red-100'
+              confirmClear ? 'bg-red-500 text-white' : 'bg-red-50 dark:bg-red-950/40 text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50'
             }`}
           >
             <TrashIcon className="h-3.5 w-3.5" />

@@ -86,7 +86,7 @@ export default function PlanningCell({
                 onRemoveItem(item.id)
               }}
               title="Retirer"
-              className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-slate-300 dark:text-slate-600 opacity-100 hover:bg-red-50 hover:text-red-400 sm:opacity-0 sm:group-hover/chip:opacity-100"
+              className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-slate-300 dark:text-slate-600 opacity-100 hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-400 sm:opacity-0 sm:group-hover/chip:opacity-100"
             >
               <CrossIcon className="h-2.5 w-2.5" />
             </button>
