@@ -60,8 +60,8 @@ export default function PlanningCell({
       onDragLeave={() => setDragOver(false)}
       onDrop={onDrop}
       onClick={onCellClick}
-      className={`group/cell flex min-h-[64px] flex-col gap-1 border border-brand-50 p-1.5 transition-colors ${
-        dragOver ? 'bg-brand-50 ring-2 ring-inset ring-brand-300' : armed && hasRoom ? 'cursor-pointer bg-brand-50/40 ring-1 ring-inset ring-brand-200' : 'bg-white'
+      className={`group/cell flex min-h-[64px] flex-col gap-1 border border-brand-50 dark:border-brand-800/40 p-1.5 transition-colors ${
+        dragOver ? 'bg-brand-50 dark:bg-brand-900/40 ring-2 ring-inset ring-brand-300' : armed && hasRoom ? 'cursor-pointer bg-brand-50/40 ring-1 ring-inset ring-brand-200' : 'bg-white dark:bg-[#241c15]'
       }`}
     >
       {validItems.map((item) => {
@@ -74,9 +74,9 @@ export default function PlanningCell({
               e.dataTransfer.setData('text/plain', item.id)
               e.dataTransfer.effectAllowed = 'move'
             }}
-            className="group/chip flex cursor-grab items-center gap-1 rounded-lg border border-brand-100 bg-brand-50/60 p-1 active:cursor-grabbing"
+            className="group/chip flex cursor-grab items-center gap-1 rounded-lg border border-brand-100 dark:border-brand-800/50 bg-brand-50/60 p-1 active:cursor-grabbing"
           >
-            <span className="min-w-0 flex-1 truncate text-[11px] font-bold leading-tight text-slate-700" title={recipe.name}>
+            <span className="min-w-0 flex-1 truncate text-[11px] font-bold leading-tight text-slate-700 dark:text-slate-200" title={recipe.name}>
               {recipe.name}
             </span>
             <button
@@ -86,7 +86,7 @@ export default function PlanningCell({
                 onRemoveItem(item.id)
               }}
               title="Retirer"
-              className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-slate-300 opacity-100 hover:bg-red-50 hover:text-red-400 sm:opacity-0 sm:group-hover/chip:opacity-100"
+              className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-slate-300 dark:text-slate-600 opacity-100 hover:bg-red-50 hover:text-red-400 sm:opacity-0 sm:group-hover/chip:opacity-100"
             >
               <CrossIcon className="h-2.5 w-2.5" />
             </button>
@@ -110,7 +110,7 @@ export default function PlanningCell({
             }
           }}
           placeholder="Note…"
-          className="w-full rounded-md border border-brand-200 px-1.5 py-1 text-[11px] focus:outline-none focus:ring-2 focus:ring-brand-100"
+          className="w-full rounded-md border border-brand-200 dark:border-brand-700/50 px-1.5 py-1 text-[11px] focus:outline-none focus:ring-2 focus:ring-brand-100"
         />
       ) : note ? (
         <button
@@ -120,7 +120,7 @@ export default function PlanningCell({
             startEditingNote()
           }}
           title="Cliquer pour modifier la note"
-          className="w-full rounded-md bg-slate-50 px-1.5 py-1 text-left text-[11px] font-medium text-slate-500 hover:bg-slate-100"
+          className="w-full rounded-md bg-slate-50 dark:bg-white/5 px-1.5 py-1 text-left text-[11px] font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10"
         >
           {note}
         </button>
@@ -132,7 +132,7 @@ export default function PlanningCell({
               e.stopPropagation()
               startEditingNote()
             }}
-            className="flex w-full items-center justify-center gap-1 rounded-md py-1 text-[10px] font-semibold text-slate-300 opacity-100 hover:bg-slate-50 hover:text-slate-400 sm:opacity-0 sm:group-hover/cell:opacity-100"
+            className="flex w-full items-center justify-center gap-1 rounded-md py-1 text-[10px] font-semibold text-slate-300 dark:text-slate-600 opacity-100 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-400 sm:opacity-0 sm:group-hover/cell:opacity-100"
           >
             <PlusIcon className="h-2.5 w-2.5" />
             Note

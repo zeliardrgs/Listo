@@ -101,13 +101,13 @@ export default function ImportReviewModal({
 
   return createPortal(
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
-      <div className="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
-        <div className="shrink-0 bg-[#FFF1DC] px-6 py-4 text-center">
-          <h2 className="text-lg font-extrabold text-brand-800 sm:text-xl">Correspondance des ingrédients</h2>
+      <div className="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white dark:bg-[#241c15] shadow-2xl">
+        <div className="shrink-0 bg-[#FFF1DC] dark:bg-[#3a2f1f] px-6 py-4 text-center">
+          <h2 className="text-lg font-extrabold text-brand-800 dark:text-brand-200 sm:text-xl">Correspondance des ingrédients</h2>
         </div>
 
         <div className="flex shrink-0 items-start gap-4 px-6 py-4">
-          <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-brand-50">
+          <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-brand-50 dark:bg-brand-900/40">
             {imported.imageUrl ? (
               <img src={imported.imageUrl} alt={name} className="h-full w-full object-cover" />
             ) : (
@@ -119,7 +119,7 @@ export default function ImportReviewModal({
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-base font-extrabold text-slate-800 focus:border-brand-400 focus:outline-none"
+              className="w-full rounded-lg border border-slate-200 dark:border-white/10 px-3 py-2 text-base font-extrabold text-slate-800 dark:text-slate-100 focus:border-brand-400 focus:outline-none"
             />
             <p className="mt-1.5 text-xs text-slate-400">
               {ingredients.length} ingrédient{ingredients.length > 1 ? 's' : ''} importé{ingredients.length > 1 ? 's' : ''}
@@ -129,30 +129,30 @@ export default function ImportReviewModal({
 
         <div className="flex-1 overflow-y-auto px-6 pb-4">
           <div className="mx-auto mb-2 grid max-w-3xl grid-cols-2 gap-3">
-            <span className="mx-auto rounded-full bg-brand-100 px-4 py-1 text-xs font-bold text-brand-700">
+            <span className="mx-auto rounded-full bg-brand-100 dark:bg-brand-900/50 px-4 py-1 text-xs font-bold text-brand-700 dark:text-brand-300">
               Ingrédients importés
             </span>
-            <span className="mx-auto rounded-full bg-brand-100 px-4 py-1 text-xs font-bold text-brand-700">
+            <span className="mx-auto rounded-full bg-brand-100 dark:bg-brand-900/50 px-4 py-1 text-xs font-bold text-brand-700 dark:text-brand-300">
               Ingrédients dans votre liste
             </span>
           </div>
 
-          <div className="mx-auto max-w-3xl space-y-2 rounded-2xl bg-[#FFF1DC] p-3">
+          <div className="mx-auto max-w-3xl space-y-2 rounded-2xl bg-[#FFF1DC] dark:bg-[#3a2f1f] p-3">
             {ingredients.map((ing) => {
               const resolution = resolutionFor(ing)
               return (
                 <div key={ing.id} className="grid grid-cols-2 items-start gap-3">
-                  <div className="flex items-center gap-1.5 rounded-xl bg-white px-3 py-2.5 ring-1 ring-slate-100">
+                  <div className="flex items-center gap-1.5 rounded-xl bg-white dark:bg-[#241c15] px-3 py-2.5 ring-1 ring-slate-100 dark:ring-white/5">
                     <input
                       value={ing.name}
                       onChange={(e) => renameIngredient(ing.id, e.target.value)}
-                      className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-slate-800 focus:outline-none"
+                      className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-slate-800 dark:text-slate-100 focus:outline-none"
                     />
                     <button
                       type="button"
                       onClick={() => removeIngredient(ing.id)}
                       title="Retirer cet ingrédient de l'import"
-                      className="shrink-0 text-slate-300 hover:text-red-500"
+                      className="shrink-0 text-slate-300 dark:text-slate-600 hover:text-red-500"
                     >
                       <CrossIcon className="h-3.5 w-3.5" />
                     </button>
@@ -162,7 +162,7 @@ export default function ImportReviewModal({
                     <button
                       type="button"
                       onClick={() => setPickerFor((v) => (v === ing.id ? null : ing.id))}
-                      className="flex w-full items-center gap-2 rounded-xl bg-white px-3 py-2.5 text-left ring-1 ring-slate-100"
+                      className="flex w-full items-center gap-2 rounded-xl bg-white dark:bg-[#241c15] px-3 py-2.5 text-left ring-1 ring-slate-100 dark:ring-white/5"
                     >
                       {resolution.mode === 'existing' ? (
                         <>
@@ -171,13 +171,13 @@ export default function ImportReviewModal({
                           >
                             <Emoji name={emojiFor(resolution.itemCategory)} size={16} />
                           </span>
-                          <span className="min-w-0 flex-1 truncate text-sm font-bold text-slate-800">
+                          <span className="min-w-0 flex-1 truncate text-sm font-bold text-slate-800 dark:text-slate-100">
                             {resolution.itemName}
                             <span className="ml-1 truncate font-normal text-slate-400">· {resolution.itemCategory}</span>
                           </span>
                         </>
                       ) : (
-                        <span className="min-w-0 flex-1 truncate text-sm font-bold text-brand-600">
+                        <span className="min-w-0 flex-1 truncate text-sm font-bold text-brand-600 dark:text-brand-300">
                           Créer un nouvel article
                         </span>
                       )}
@@ -187,9 +187,9 @@ export default function ImportReviewModal({
                     </button>
 
                     {pickerFor === ing.id && (
-                      <div className="absolute left-0 right-0 top-full z-10 mt-1.5 space-y-1 rounded-xl border border-brand-100 bg-white p-2 shadow-lg">
-                        <div className="flex items-center gap-1.5 rounded-lg bg-slate-50 px-2.5 py-1.5">
-                          <SearchIcon className="h-3.5 w-3.5 shrink-0 text-slate-300" />
+                      <div className="absolute left-0 right-0 top-full z-10 mt-1.5 space-y-1 rounded-xl border border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#241c15] p-2 shadow-lg">
+                        <div className="flex items-center gap-1.5 rounded-lg bg-slate-50 dark:bg-white/5 px-2.5 py-1.5">
+                          <SearchIcon className="h-3.5 w-3.5 shrink-0 text-slate-300 dark:text-slate-600" />
                           <input
                             autoFocus
                             value={search}
@@ -199,15 +199,15 @@ export default function ImportReviewModal({
                           />
                         </div>
                         {searchResults.length > 0 && (
-                          <ul className="overflow-hidden rounded-lg ring-1 ring-slate-100">
+                          <ul className="overflow-hidden rounded-lg ring-1 ring-slate-100 dark:ring-white/5">
                             {searchResults.map((it) => (
                               <li key={it.id}>
                                 <button
                                   type="button"
                                   onClick={() => pickExisting(ing.id, it)}
-                                  className="flex w-full items-center gap-2 px-2.5 py-1.5 text-left text-xs font-semibold text-slate-600 hover:bg-brand-50"
+                                  className="flex w-full items-center gap-2 px-2.5 py-1.5 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-brand-50 dark:hover:bg-brand-900/40"
                                 >
-                                  <CheckIcon className="h-3 w-3 shrink-0 text-brand-500" />
+                                  <CheckIcon className="h-3 w-3 shrink-0 text-brand-500 dark:text-brand-300" />
                                   <span className="truncate">{it.name}</span>
                                 </button>
                               </li>
@@ -217,7 +217,7 @@ export default function ImportReviewModal({
                         <button
                           type="button"
                           onClick={() => pickNew(ing.id)}
-                          className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs font-semibold text-brand-600 hover:bg-brand-50"
+                          className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs font-semibold text-brand-600 dark:text-brand-300 hover:bg-brand-50 dark:hover:bg-brand-900/40"
                         >
                           <PlusIcon className="h-3 w-3 shrink-0" />
                           <span className="truncate">Créer « {ing.name} » comme nouvel article</span>
@@ -234,7 +234,7 @@ export default function ImportReviewModal({
           </div>
         </div>
 
-        <div className="flex shrink-0 items-center justify-between border-t border-slate-100 px-6 py-4">
+        <div className="flex shrink-0 items-center justify-between border-t border-slate-100 dark:border-white/5 px-6 py-4">
           <button
             type="button"
             onClick={onCancel}

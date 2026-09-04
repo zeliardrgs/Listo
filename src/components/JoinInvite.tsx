@@ -42,8 +42,8 @@ export default function JoinInvite() {
         <p className="text-sm text-red-500">{error}</p>
       ) : (
         <div className="space-y-4 py-2 text-center">
-          <p className="text-sm text-slate-600">
-            Tu as été invité à rejoindre le foyer <span className="font-bold text-brand-700">« {pending?.name} »</span>.
+          <p className="text-sm text-slate-600 dark:text-slate-300">
+            Tu as été invité à rejoindre le foyer <span className="font-bold text-brand-700 dark:text-brand-300">« {pending?.name} »</span>.
           </p>
           <button
             type="button"

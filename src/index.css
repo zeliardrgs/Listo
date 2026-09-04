@@ -2,6 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  /* Form controls default to a white background regardless of theme unless
+     styled explicitly, and most inputs across the app don't set one. */
+  .dark input:not([type='checkbox']):not([type='radio']),
+  .dark select,
+  .dark textarea {
+    background-color: #241c15;
+    color: #f3e9dc;
+  }
+  .dark input:not([type='checkbox'])::placeholder,
+  .dark textarea::placeholder {
+    color: #8d7c67;
+  }
+  .dark select option {
+    background-color: #241c15;
+  }
+}
+
 html, body, #root {
   height: 100%;
 }
@@ -13,6 +31,11 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
+.dark body {
+  background: #171310;
+  color: #f3e9dc;
+}
+
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -20,6 +43,9 @@ body {
 ::-webkit-scrollbar-thumb {
   background: #ffd9a8;
   border-radius: 8px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #4a3220;
 }
 
 input[type='checkbox'].check-lg {

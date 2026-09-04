@@ -12,16 +12,16 @@ export interface ColorSwatch {
 }
 
 export const COLOR_SWATCHES: ColorSwatch[] = [
-  { key: 'red', label: 'Rouge', swatch: '#F5711F', color: { cardBg: 'bg-[#FFD0D5]', headerText: 'text-[#F5711F]', iconBg: 'bg-[#FFD0D5]' } },
-  { key: 'orange', label: 'Orange', swatch: '#F56A1F', color: { cardBg: 'bg-[#FFE3D2]', headerText: 'text-[#F56A1F]', iconBg: 'bg-[#FFE3D2]' } },
-  { key: 'cream', label: 'Crème', swatch: '#F5A31F', color: { cardBg: 'bg-[#FFF1DC]', headerText: 'text-[#F5A31F]', iconBg: 'bg-[#FFF1DC]' } },
-  { key: 'lime', label: 'Citron vert', swatch: '#5DC426', color: { cardBg: 'bg-[#DEF4BA]', headerText: 'text-[#5DC426]', iconBg: 'bg-[#DEF4BA]' } },
-  { key: 'green', label: 'Vert', swatch: '#23A104', color: { cardBg: 'bg-[#C4E8CC]', headerText: 'text-[#23A104]', iconBg: 'bg-[#C4E8CC]' } },
-  { key: 'blue', label: 'Bleu', swatch: '#1F9CF5', color: { cardBg: 'bg-[#D0EDFF]', headerText: 'text-[#1F9CF5]', iconBg: 'bg-[#D0EDFF]' } },
-  { key: 'indigo', label: 'Indigo', swatch: '#565DE5', color: { cardBg: 'bg-[#C3CCF6]', headerText: 'text-[#565DE5]', iconBg: 'bg-[#C3CCF6]' } },
-  { key: 'purple', label: 'Violet', swatch: '#B267DE', color: { cardBg: 'bg-[#DED5F0]', headerText: 'text-[#B267DE]', iconBg: 'bg-[#DED5F0]' } },
-  { key: 'pink', label: 'Rose', swatch: '#E45EE2', color: { cardBg: 'bg-[#FFE2FF]', headerText: 'text-[#E45EE2]', iconBg: 'bg-[#FFE2FF]' } },
-  { key: 'gray', label: 'Gris', swatch: '#829BAD', color: { cardBg: 'bg-[#DBE2E6]', headerText: 'text-[#829BAD]', iconBg: 'bg-[#DBE2E6]' } }
+  { key: 'red', label: 'Rouge', swatch: '#F5711F', color: { cardBg: 'bg-[#FFD0D5] dark:bg-[#402024]', headerText: 'text-[#F5711F]', iconBg: 'bg-[#FFD0D5] dark:bg-[#402024]' } },
+  { key: 'orange', label: 'Orange', swatch: '#F56A1F', color: { cardBg: 'bg-[#FFE3D2] dark:bg-[#40291c]', headerText: 'text-[#F56A1F]', iconBg: 'bg-[#FFE3D2] dark:bg-[#40291c]' } },
+  { key: 'cream', label: 'Crème', swatch: '#F5A31F', color: { cardBg: 'bg-[#FFF1DC] dark:bg-[#3a2f1f]', headerText: 'text-[#F5A31F]', iconBg: 'bg-[#FFF1DC] dark:bg-[#3a2f1f]' } },
+  { key: 'lime', label: 'Citron vert', swatch: '#5DC426', color: { cardBg: 'bg-[#DEF4BA] dark:bg-[#2c3620]', headerText: 'text-[#5DC426]', iconBg: 'bg-[#DEF4BA] dark:bg-[#2c3620]' } },
+  { key: 'green', label: 'Vert', swatch: '#23A104', color: { cardBg: 'bg-[#C4E8CC] dark:bg-[#1f3226]', headerText: 'text-[#23A104]', iconBg: 'bg-[#C4E8CC] dark:bg-[#1f3226]' } },
+  { key: 'blue', label: 'Bleu', swatch: '#1F9CF5', color: { cardBg: 'bg-[#D0EDFF] dark:bg-[#1a2f3a]', headerText: 'text-[#1F9CF5]', iconBg: 'bg-[#D0EDFF] dark:bg-[#1a2f3a]' } },
+  { key: 'indigo', label: 'Indigo', swatch: '#565DE5', color: { cardBg: 'bg-[#C3CCF6] dark:bg-[#26283f]', headerText: 'text-[#565DE5]', iconBg: 'bg-[#C3CCF6] dark:bg-[#26283f]' } },
+  { key: 'purple', label: 'Violet', swatch: '#B267DE', color: { cardBg: 'bg-[#DED5F0] dark:bg-[#302a3d]', headerText: 'text-[#B267DE]', iconBg: 'bg-[#DED5F0] dark:bg-[#302a3d]' } },
+  { key: 'pink', label: 'Rose', swatch: '#E45EE2', color: { cardBg: 'bg-[#FFE2FF] dark:bg-[#3a2438]', headerText: 'text-[#E45EE2]', iconBg: 'bg-[#FFE2FF] dark:bg-[#3a2438]' } },
+  { key: 'gray', label: 'Gris', swatch: '#829BAD', color: { cardBg: 'bg-[#DBE2E6] dark:bg-[#2b3033]', headerText: 'text-[#829BAD]', iconBg: 'bg-[#DBE2E6] dark:bg-[#2b3033]' } }
 ]
 
 const CATEGORY_DEFAULT_COLOR_KEY: Record<string, string> = {
@@ -65,7 +65,7 @@ export function categoryColor(category: string, overrides?: Record<string, strin
 }
 
 export const NEUTRAL_GROUP_COLOR: CategoryColor = {
-  cardBg: 'bg-[#fff1dc]',
-  headerText: 'text-brand-700',
-  iconBg: 'bg-brand-50'
+  cardBg: 'bg-[#fff1dc] dark:bg-[#3a2f1f]',
+  headerText: 'text-brand-700 dark:text-brand-300',
+  iconBg: 'bg-brand-50 dark:bg-brand-900/40'
 }

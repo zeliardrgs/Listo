@@ -94,14 +94,14 @@ export default function StoreSelect({
       </button>
 
       {open && (
-        <div className="absolute z-30 mt-1 max-h-64 w-full min-w-[180px] overflow-y-auto rounded-lg border border-brand-100 bg-white py-1 shadow-lg">
+        <div className="absolute z-30 mt-1 max-h-64 w-full min-w-[180px] overflow-y-auto rounded-lg border border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#241c15] py-1 shadow-lg">
           {stores.map((s) => (
             <button
               key={s}
               type="button"
               onClick={() => select(s)}
-              className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-brand-50 ${
-                s === value ? 'font-semibold text-brand-700' : 'text-slate-700'
+              className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-brand-50 dark:hover:bg-brand-900/40 ${
+                s === value ? 'font-semibold text-brand-700 dark:text-brand-300' : 'text-slate-700 dark:text-slate-200'
               }`}
             >
               <StoreIconView icon={iconFor(s)} size={16} className="shrink-0" />
@@ -111,7 +111,7 @@ export default function StoreSelect({
           <button
             type="button"
             onClick={() => setAdding(true)}
-            className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm font-semibold text-brand-600 hover:bg-brand-50"
+            className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm font-semibold text-brand-600 dark:text-brand-300 hover:bg-brand-50 dark:hover:bg-brand-900/40"
           >
             + Nouveau magasin…
           </button>

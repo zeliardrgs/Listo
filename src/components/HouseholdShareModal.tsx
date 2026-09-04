@@ -41,20 +41,20 @@ export default function HouseholdShareModal({
           <img
             src={qrDataUrl}
             alt="QR code d'invitation au foyer"
-            className="h-56 w-56 rounded-xl border border-slate-100"
+            className="h-56 w-56 rounded-xl border border-slate-100 dark:border-white/5"
           />
         )}
-        <p className="text-sm text-slate-500">Scanne ce code, ou partage le lien :</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">Scanne ce code, ou partage le lien :</p>
         <button
           type="button"
           onClick={copyLink}
-          className="flex items-center gap-2 rounded-full border border-brand-300 px-4 py-2 text-sm font-bold text-brand-600 hover:bg-brand-50"
+          className="flex items-center gap-2 rounded-full border border-brand-300 px-4 py-2 text-sm font-bold text-brand-600 dark:text-brand-300 hover:bg-brand-50 dark:hover:bg-brand-900/40"
         >
           {copied ? <CheckIcon className="h-4 w-4" /> : <CopyIcon className="h-4 w-4" />}
           {copied ? 'Lien copié !' : 'Copier le lien'}
         </button>
         <p className="text-xs text-slate-400">
-          Ou donne simplement le code <span className="font-bold text-slate-600">{code}</span>
+          Ou donne simplement le code <span className="font-bold text-slate-600 dark:text-slate-300">{code}</span>
         </p>
       </div>
     </Modal>

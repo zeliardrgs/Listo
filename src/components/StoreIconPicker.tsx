@@ -54,27 +54,27 @@ export default function StoreIconPicker({
         type="button"
         onClick={toggleOpen}
         title="Changer l'icône"
-        className="flex h-10 w-10 items-center justify-center rounded-full border border-brand-200 bg-brand-50 hover:bg-brand-100"
+        className="flex h-10 w-10 items-center justify-center rounded-full border border-brand-200 dark:border-brand-700/50 bg-brand-50 dark:bg-brand-900/40 hover:bg-brand-100 dark:hover:bg-brand-900/50"
       >
         <StoreIconView icon={value} size={24} />
       </button>
       {open && pos && (
         <div
           style={{ position: 'fixed', top: pos.top, left: pos.left }}
-          className="z-50 w-64 rounded-xl border border-brand-100 bg-white p-2 shadow-lg"
+          className="z-50 w-64 rounded-xl border border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#241c15] p-2 shadow-lg"
         >
-          <div className="mb-2 flex gap-1 rounded-lg bg-slate-100 p-1 text-xs font-semibold">
+          <div className="mb-2 flex gap-1 rounded-lg bg-slate-100 dark:bg-white/10 p-1 text-xs font-semibold">
             <button
               type="button"
               onClick={() => setMode('emoji')}
-              className={`flex-1 rounded-md py-1.5 ${mode === 'emoji' ? 'bg-white text-brand-700 shadow' : 'text-slate-500'}`}
+              className={`flex-1 rounded-md py-1.5 ${mode === 'emoji' ? 'bg-white dark:bg-[#241c15] text-brand-700 dark:text-brand-300 shadow' : 'text-slate-500 dark:text-slate-400'}`}
             >
               Emoji
             </button>
             <button
               type="button"
               onClick={() => setMode('image')}
-              className={`flex-1 rounded-md py-1.5 ${mode === 'image' ? 'bg-white text-brand-700 shadow' : 'text-slate-500'}`}
+              className={`flex-1 rounded-md py-1.5 ${mode === 'image' ? 'bg-white dark:bg-[#241c15] text-brand-700 dark:text-brand-300 shadow' : 'text-slate-500 dark:text-slate-400'}`}
             >
               Image (URL)
             </button>
@@ -87,7 +87,7 @@ export default function StoreIconPicker({
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Rechercher un emoji…"
-                className="mb-2 w-full rounded-lg border border-slate-200 px-2 py-1.5 text-sm focus:border-brand-400 focus:outline-none"
+                className="mb-2 w-full rounded-lg border border-slate-200 dark:border-white/10 px-2 py-1.5 text-sm focus:border-brand-400 focus:outline-none"
               />
               <div className="grid max-h-52 grid-cols-6 gap-1 overflow-y-auto">
                 {filtered.map((name) => (
@@ -100,8 +100,8 @@ export default function StoreIconPicker({
                       setOpen(false)
                       setQuery('')
                     }}
-                    className={`flex h-9 w-9 items-center justify-center rounded-lg hover:bg-brand-50 ${
-                      value.type === 'emoji' && name === value.value ? 'bg-brand-100 ring-2 ring-brand-400' : ''
+                    className={`flex h-9 w-9 items-center justify-center rounded-lg hover:bg-brand-50 dark:hover:bg-brand-900/40 ${
+                      value.type === 'emoji' && name === value.value ? 'bg-brand-100 dark:bg-brand-900/50 ring-2 ring-brand-400' : ''
                     }`}
                   >
                     <Emoji name={name} size={22} />
@@ -120,7 +120,7 @@ export default function StoreIconPicker({
                 onChange={(e) => setUrlDraft(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && applyImageUrl()}
                 placeholder="URL de l'image"
-                className="w-full rounded-lg border border-slate-200 px-2 py-1.5 text-sm focus:border-brand-400 focus:outline-none"
+                className="w-full rounded-lg border border-slate-200 dark:border-white/10 px-2 py-1.5 text-sm focus:border-brand-400 focus:outline-none"
               />
               <button
                 type="button"

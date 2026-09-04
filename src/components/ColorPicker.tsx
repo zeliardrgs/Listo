@@ -34,14 +34,14 @@ export default function ColorPicker({ value, onChange }: { value: string; onChan
         type="button"
         onClick={toggleOpen}
         title="Changer la couleur"
-        className={`flex h-10 w-10 items-center justify-center rounded-full border border-brand-200 ${current.iconBg}`}
+        className={`flex h-10 w-10 items-center justify-center rounded-full border border-brand-200 dark:border-brand-700/50 ${current.iconBg}`}
       >
         <span className="h-5 w-5 rounded-full" style={{ background: currentSwatch }} />
       </button>
       {open && pos && (
         <div
           style={{ position: 'fixed', top: pos.top, left: pos.left }}
-          className="z-50 w-48 rounded-xl border border-brand-100 bg-white p-2 shadow-lg"
+          className="z-50 w-48 rounded-xl border border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#241c15] p-2 shadow-lg"
         >
           <div className="grid grid-cols-5 gap-1.5">
             {COLOR_SWATCHES.map((c) => (

@@ -82,19 +82,19 @@ export default function ItemRow({ item, onDelete }: { item: ShoppingItem; onDele
       <li
         id={`item-${item.id}`}
         onClick={openEdit}
-        className="flex scroll-mt-4 cursor-pointer items-center gap-3 rounded-2xl bg-white px-4 py-3 shadow-sm transition-shadow hover:shadow-md"
+        className="flex scroll-mt-4 cursor-pointer items-center gap-3 rounded-2xl bg-white dark:bg-[#241c15] px-4 py-3 shadow-sm transition-shadow hover:shadow-md"
       >
         <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${iconBg}`}>
           <Emoji name={emojiFor(item.category)} size={26} />
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline gap-2">
-            <span className="truncate font-bold text-slate-800">{item.name}</span>
+            <span className="truncate font-bold text-slate-800 dark:text-slate-100">{item.name}</span>
             {item.recurring && (
               <span className="shrink-0 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-700">★</span>
             )}
             {item.onceOnly && (
-              <span className="shrink-0 rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-500">1×</span>
+              <span className="shrink-0 rounded-full bg-slate-100 dark:bg-white/10 px-1.5 py-0.5 text-[10px] font-bold text-slate-500 dark:text-slate-400">1×</span>
             )}
           </div>
           <p className="truncate text-sm text-slate-400">
@@ -116,7 +116,7 @@ export default function ItemRow({ item, onDelete }: { item: ShoppingItem; onDele
           }}
           title={item.toBuy ? 'Retirer de la liste à acheter' : 'Ajouter à la liste à acheter'}
           className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors ${
-            item.toBuy ? 'bg-brand-600 text-white' : 'border border-brand-200 bg-brand-50 text-brand-600'
+            item.toBuy ? 'bg-brand-600 text-white' : 'border border-brand-200 dark:border-brand-700/50 bg-brand-50 dark:bg-brand-900/40 text-brand-600 dark:text-brand-300'
           }`}
         >
           {item.toBuy ? <ListCheckIcon className="h-4 w-4" /> : <PlusIcon className="h-4 w-4" />}
@@ -126,7 +126,7 @@ export default function ItemRow({ item, onDelete }: { item: ShoppingItem; onDele
   }
 
   return (
-    <li id={`item-${item.id}`} ref={rootRef} className="scroll-mt-4 rounded-2xl border border-brand-100 bg-white px-4 py-4 shadow-sm">
+    <li id={`item-${item.id}`} ref={rootRef} className="scroll-mt-4 rounded-2xl border border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#241c15] px-4 py-4 shadow-sm">
       <form onSubmit={save} className="space-y-3">
         <div className="flex items-start gap-3">
           <div className={`mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${iconBg}`}>
@@ -137,25 +137,25 @@ export default function ItemRow({ item, onDelete }: { item: ShoppingItem; onDele
               <input
                 value={draft.name}
                 onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
-                className="min-w-[140px] flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold focus:border-brand-400 focus:outline-none"
+                className="min-w-[140px] flex-1 rounded-lg border border-slate-200 dark:border-white/10 px-3 py-2 text-sm font-semibold focus:border-brand-400 focus:outline-none"
               />
               <StoreSelect
                 value={draft.store}
                 onChange={(v) => setDraft((d) => ({ ...d, store: v }))}
-                className="w-40 shrink-0 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm sm:w-48"
+                className="w-40 shrink-0 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-[#241c15] px-3 py-2 text-sm sm:w-48"
               />
             </div>
             <div className="flex flex-wrap gap-2">
               <CategorySelect
                 value={draft.category}
                 onChange={(v) => setDraft((d) => ({ ...d, category: v }))}
-                className="w-36 rounded-lg border border-slate-200 bg-white px-2 py-2 text-sm"
+                className="w-36 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-[#241c15] px-2 py-2 text-sm"
               />
               <input
                 value={draft.brand}
                 onChange={(e) => setDraft((d) => ({ ...d, brand: e.target.value }))}
                 placeholder="Marque"
-                className="min-w-[100px] flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                className="min-w-[100px] flex-1 rounded-lg border border-slate-200 dark:border-white/10 px-3 py-2 text-sm"
               />
             </div>
           </div>
@@ -164,7 +164,7 @@ export default function ItemRow({ item, onDelete }: { item: ShoppingItem; onDele
             onClick={() => setDraft((d) => ({ ...d, toBuy: !d.toBuy }))}
             title={draft.toBuy ? 'Retirer de la liste à acheter' : 'Ajouter à la liste à acheter'}
             className={`mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors ${
-              draft.toBuy ? 'bg-brand-600 text-white' : 'border border-brand-200 bg-brand-50 text-brand-600'
+              draft.toBuy ? 'bg-brand-600 text-white' : 'border border-brand-200 dark:border-brand-700/50 bg-brand-50 dark:bg-brand-900/40 text-brand-600 dark:text-brand-300'
             }`}
           >
             {draft.toBuy ? <ListCheckIcon className="h-4 w-4" /> : <PlusIcon className="h-4 w-4" />}
@@ -172,7 +172,7 @@ export default function ItemRow({ item, onDelete }: { item: ShoppingItem; onDele
         </div>
 
         <div className="flex items-center gap-5 pl-14">
-          <label className="flex items-center gap-2 text-sm font-medium text-slate-600">
+          <label className="flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-300">
             <input
               type="checkbox"
               checked={draft.recurring}
@@ -181,7 +181,7 @@ export default function ItemRow({ item, onDelete }: { item: ShoppingItem; onDele
             />
             Favoris
           </label>
-          <label className="flex items-center gap-2 text-sm font-medium text-slate-600">
+          <label className="flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-300">
             <input
               type="checkbox"
               checked={draft.onceOnly}
@@ -205,7 +205,7 @@ export default function ItemRow({ item, onDelete }: { item: ShoppingItem; onDele
             type="button"
             onClick={cancel}
             title="Annuler"
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 hover:bg-slate-50"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5"
           >
             <CrossIcon className="h-4 w-4" />
           </button>

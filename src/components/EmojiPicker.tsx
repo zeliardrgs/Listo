@@ -35,21 +35,21 @@ export default function EmojiPicker({ value, onChange }: { value: string; onChan
         type="button"
         onClick={toggleOpen}
         title="Changer l'emoji"
-        className="flex h-10 w-10 items-center justify-center rounded-full border border-brand-200 bg-brand-50 hover:bg-brand-100"
+        className="flex h-10 w-10 items-center justify-center rounded-full border border-brand-200 dark:border-brand-700/50 bg-brand-50 dark:bg-brand-900/40 hover:bg-brand-100 dark:hover:bg-brand-900/50"
       >
         <Emoji name={value} size={24} />
       </button>
       {open && pos && (
         <div
           style={{ position: 'fixed', top: pos.top, left: pos.left }}
-          className="z-50 w-64 rounded-xl border border-brand-100 bg-white p-2 shadow-lg"
+          className="z-50 w-64 rounded-xl border border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#241c15] p-2 shadow-lg"
         >
           <input
             autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Rechercher un emoji…"
-            className="mb-2 w-full rounded-lg border border-slate-200 px-2 py-1.5 text-sm focus:border-brand-400 focus:outline-none"
+            className="mb-2 w-full rounded-lg border border-slate-200 dark:border-white/10 px-2 py-1.5 text-sm focus:border-brand-400 focus:outline-none"
           />
           <div className="grid max-h-52 grid-cols-6 gap-1 overflow-y-auto">
             {filtered.map((name) => (
@@ -62,8 +62,8 @@ export default function EmojiPicker({ value, onChange }: { value: string; onChan
                   setOpen(false)
                   setQuery('')
                 }}
-                className={`flex h-9 w-9 items-center justify-center rounded-lg hover:bg-brand-50 ${
-                  name === value ? 'bg-brand-100 ring-2 ring-brand-400' : ''
+                className={`flex h-9 w-9 items-center justify-center rounded-lg hover:bg-brand-50 dark:hover:bg-brand-900/40 ${
+                  name === value ? 'bg-brand-100 dark:bg-brand-900/50 ring-2 ring-brand-400' : ''
                 }`}
               >
                 <Emoji name={name} size={22} />

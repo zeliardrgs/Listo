@@ -14,6 +14,16 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
     <title>Listo</title>
+    <script>
+      // Applies the dark class before first paint to avoid a light-mode flash;
+      // useTheme() takes over from here and keeps it in sync afterwards.
+      try {
+        var stored = JSON.parse(localStorage.getItem('listo-theme') || 'null')
+        var mode = stored && stored.state && stored.state.mode ? stored.state.mode : 'system'
+        var isDark = mode === 'dark' || (mode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+        if (isDark) document.documentElement.classList.add('dark')
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

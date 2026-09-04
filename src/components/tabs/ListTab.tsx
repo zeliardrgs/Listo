@@ -238,7 +238,7 @@ export default function ListTab() {
   return (
     <div className="mx-auto flex max-w-6xl flex-col px-3 pt-4 pb-36 sm:block sm:pb-8">
       <div
-        className={`hidden sm:sticky sm:top-0 sm:z-30 sm:-mx-3 sm:block sm:overflow-hidden sm:bg-cream sm:px-3 sm:transition-all sm:duration-200 ${
+        className={`hidden sm:sticky sm:top-0 sm:z-30 sm:-mx-3 sm:block sm:overflow-hidden sm:bg-cream dark:sm:bg-[#171310] sm:px-3 sm:transition-all sm:duration-200 ${
           scrolled ? 'sm:max-h-20 sm:py-2 sm:opacity-100' : 'sm:pointer-events-none sm:max-h-0 sm:py-0 sm:opacity-0'
         }`}
       >
@@ -247,7 +247,7 @@ export default function ListTab() {
           <button
             onClick={toggleForm}
             className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full shadow-sm transition-colors ${
-              showForm ? 'bg-slate-200 text-slate-600' : 'bg-brand-600 text-white hover:bg-brand-700'
+              showForm ? 'bg-slate-200 dark:bg-white/15 text-slate-600 dark:text-slate-300' : 'bg-brand-600 text-white hover:bg-brand-700'
             }`}
             title="Ajouter un article"
           >
@@ -257,7 +257,7 @@ export default function ListTab() {
       </div>
 
       <div
-        className={`order-2 fixed inset-x-0 bottom-16 z-20 bg-cream px-3 py-2 transition-transform duration-200 sm:static sm:z-auto sm:order-none sm:mb-3 sm:translate-y-0 sm:bg-transparent sm:px-0 sm:py-0 ${
+        className={`order-2 fixed inset-x-0 bottom-16 z-20 bg-cream dark:bg-[#171310] px-3 py-2 transition-transform duration-200 sm:static sm:z-auto sm:order-none sm:mb-3 sm:translate-y-0 sm:bg-transparent sm:px-0 sm:py-0 ${
           scrollDirection === 'down' ? 'translate-y-[calc(100%+4rem)]' : 'translate-y-0'
         }`}
       >
@@ -266,7 +266,7 @@ export default function ListTab() {
           <button
             onClick={toggleForm}
             className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full shadow-sm transition-colors ${
-              showForm ? 'bg-slate-200 text-slate-600' : 'bg-brand-600 text-white hover:bg-brand-700'
+              showForm ? 'bg-slate-200 dark:bg-white/15 text-slate-600 dark:text-slate-300' : 'bg-brand-600 text-white hover:bg-brand-700'
             }`}
             title="Ajouter un article"
           >
@@ -298,7 +298,7 @@ export default function ListTab() {
               key={m}
               onClick={() => setSortMode(m)}
               className={`flex-1 rounded-full px-3 py-2 text-sm font-semibold transition-colors sm:flex-none sm:py-1.5 sm:text-xs ${
-                sortMode === m ? 'bg-brand-600 text-white' : 'bg-brand-100 text-brand-700 hover:bg-brand-200'
+                sortMode === m ? 'bg-brand-600 text-white' : 'bg-brand-100 dark:bg-brand-900/50 text-brand-700 dark:text-brand-300 hover:bg-brand-200 dark:hover:bg-brand-800/60'
               }`}
             >
               {m === 'name' ? 'Nom' : m === 'store' ? 'Magasin' : m === 'category' ? 'Rayon' : 'Favoris'}
@@ -322,7 +322,7 @@ export default function ListTab() {
 
       {isLoading && (
         <div className="order-4 mt-10 flex flex-col items-center gap-3 text-sm text-slate-400 sm:order-none">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-200 border-t-brand-600" />
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-200 dark:border-brand-700/50 border-t-brand-600" />
           Chargement de la liste…
         </div>
       )}
@@ -354,7 +354,7 @@ export default function ListTab() {
                     onClick={() => scrollToSection(g.label)}
                     className={`flex items-center rounded-lg text-left text-xs font-semibold transition-colors ${
                       sortMode === 'name' ? 'justify-center py-0.5' : 'gap-1.5 px-2 py-1.5'
-                    } ${isActive ? 'bg-brand-100 text-brand-700' : 'text-slate-600 hover:bg-brand-50 hover:text-brand-700'}`}
+                    } ${isActive ? 'bg-brand-100 dark:bg-brand-900/50 text-brand-700 dark:text-brand-300' : 'text-slate-600 dark:text-slate-300 hover:bg-brand-50 dark:hover:bg-brand-900/40 hover:text-brand-700 dark:hover:text-brand-300'}`}
                   >
                     {sortMode === 'category' && <Emoji name={emojiFor(g.label)} size={14} />}
                     {sortMode === 'store' && <StoreIconView icon={storeIconFor(g.label)} size={14} />}
@@ -387,7 +387,7 @@ export default function ListTab() {
                       type="button"
                       onClick={() => openAddForGroup(g)}
                       title={`Ajouter un article dans ${g.label}`}
-                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/60 normal-case tracking-normal hover:bg-white"
+                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/60 normal-case tracking-normal hover:bg-white dark:hover:bg-[#241c15]"
                     >
                       <PlusIcon className="h-3.5 w-3.5" />
                     </button>

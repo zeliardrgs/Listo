@@ -47,14 +47,14 @@ export default function CategoryIconPicker({
         type="button"
         onClick={toggleOpen}
         title="Changer l'icône et la couleur"
-        className={`flex h-10 w-10 items-center justify-center rounded-full border border-brand-200 ${current.iconBg}`}
+        className={`flex h-10 w-10 items-center justify-center rounded-full border border-brand-200 dark:border-brand-700/50 ${current.iconBg}`}
       >
         <Emoji name={emoji} size={22} />
       </button>
       {open && pos && (
         <div
           style={{ position: 'fixed', top: pos.top, left: pos.left }}
-          className="z-50 w-64 rounded-xl border border-brand-100 bg-white p-2 shadow-lg"
+          className="z-50 w-64 rounded-xl border border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#241c15] p-2 shadow-lg"
         >
           <p className="mb-1.5 px-1 text-[11px] font-bold uppercase tracking-wide text-slate-400">Couleur</p>
           <div className="mb-2 grid grid-cols-5 gap-1.5">
@@ -72,13 +72,13 @@ export default function CategoryIconPicker({
               </button>
             ))}
           </div>
-          <div className="mb-1.5 border-t border-slate-100 pt-2">
+          <div className="mb-1.5 border-t border-slate-100 dark:border-white/5 pt-2">
             <p className="mb-1.5 px-1 text-[11px] font-bold uppercase tracking-wide text-slate-400">Emoji</p>
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Rechercher un emoji…"
-              className="mb-2 w-full rounded-lg border border-slate-200 px-2 py-1.5 text-sm focus:border-brand-400 focus:outline-none"
+              className="mb-2 w-full rounded-lg border border-slate-200 dark:border-white/10 px-2 py-1.5 text-sm focus:border-brand-400 focus:outline-none"
             />
           </div>
           <div className="grid max-h-40 grid-cols-6 gap-1 overflow-y-auto">
@@ -88,8 +88,8 @@ export default function CategoryIconPicker({
                 type="button"
                 title={name}
                 onClick={() => onChangeEmoji(name)}
-                className={`flex h-9 w-9 items-center justify-center rounded-lg hover:bg-brand-50 ${
-                  name === emoji ? 'bg-brand-100 ring-2 ring-brand-400' : ''
+                className={`flex h-9 w-9 items-center justify-center rounded-lg hover:bg-brand-50 dark:hover:bg-brand-900/40 ${
+                  name === emoji ? 'bg-brand-100 dark:bg-brand-900/50 ring-2 ring-brand-400' : ''
                 }`}
               >
                 <Emoji name={name} size={22} />

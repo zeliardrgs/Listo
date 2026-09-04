@@ -1,3 +1,5 @@
+import { useIsDark } from '../hooks/useIsDark'
+
 const STROKE = '#7a3b0a'
 const ACCENT = '#f5841f'
 
@@ -8,6 +10,15 @@ const BG_BY_CATEGORY: Record<string, string> = {
   Apéritif: '#e3e0ff',
   'Petit-déjeuner': '#fff3b0',
   'Sauce/Base': '#d3ecff'
+}
+
+const DARK_BG_BY_CATEGORY: Record<string, string> = {
+  Entrée: '#1f3226',
+  Plat: '#40291c',
+  Dessert: '#3a2430',
+  Apéritif: '#292640',
+  'Petit-déjeuner': '#3a3520',
+  'Sauce/Base': '#1e2e38'
 }
 
 function EntreeIcon() {
@@ -90,8 +101,9 @@ const ICON_BY_CATEGORY: Record<string, () => JSX.Element> = {
 }
 
 export default function RecipeIllustration({ category, className }: { category: string; className?: string }) {
+  const isDark = useIsDark()
   const Icon = ICON_BY_CATEGORY[category] || DefaultIcon
-  const bg = BG_BY_CATEGORY[category] || '#fde8d0'
+  const bg = isDark ? DARK_BG_BY_CATEGORY[category] || '#3a2f1f' : BG_BY_CATEGORY[category] || '#fde8d0'
   return (
     <div className={className} style={{ background: bg }}>
       <div className="h-full w-full p-3">

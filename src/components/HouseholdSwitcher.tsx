@@ -36,10 +36,10 @@ export default function HouseholdSwitcher({ onOpenSettings }: { onOpenSettings: 
       </button>
 
       {open && (
-        <div className="absolute left-0 top-full z-30 mt-1.5 w-56 overflow-hidden rounded-xl border border-brand-100 bg-white py-1 text-slate-700 shadow-lg">
-          <div className="border-b border-slate-100 px-3 py-2">
+        <div className="absolute left-0 top-full z-30 mt-1.5 w-56 overflow-hidden rounded-xl border border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#241c15] py-1 text-slate-700 dark:text-slate-200 shadow-lg">
+          <div className="border-b border-slate-100 dark:border-white/5 px-3 py-2">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Foyer actif</p>
-            <p className="truncate text-sm font-bold text-brand-700">{active.name}</p>
+            <p className="truncate text-sm font-bold text-brand-700 dark:text-brand-300">{active.name}</p>
           </div>
           {others.length > 0 && (
             <ul>
@@ -51,7 +51,7 @@ export default function HouseholdSwitcher({ onOpenSettings }: { onOpenSettings: 
                       switchTo(h.code)
                       setOpen(false)
                     }}
-                    className="flex w-full items-center justify-between px-3 py-2 text-left text-sm font-semibold hover:bg-brand-50"
+                    className="flex w-full items-center justify-between px-3 py-2 text-left text-sm font-semibold hover:bg-brand-50 dark:hover:bg-brand-900/40"
                   >
                     <span className="truncate">{h.name}</span>
                     <span className="shrink-0 text-xs font-normal text-slate-400">{h.code}</span>
@@ -66,7 +66,7 @@ export default function HouseholdSwitcher({ onOpenSettings }: { onOpenSettings: 
               setOpen(false)
               onOpenSettings()
             }}
-            className="flex w-full items-center gap-2 border-t border-slate-100 px-3 py-2 text-left text-sm font-semibold text-brand-600 hover:bg-brand-50"
+            className="flex w-full items-center gap-2 border-t border-slate-100 dark:border-white/5 px-3 py-2 text-left text-sm font-semibold text-brand-600 dark:text-brand-300 hover:bg-brand-50 dark:hover:bg-brand-900/40"
           >
             <PlusIcon className="h-3.5 w-3.5" />
             Ajouter un foyer

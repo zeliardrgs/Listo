@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useAppStore } from '../store/useAppStore'
 import { useHouseholdStore } from '../store/useHouseholdStore'
+import { useThemeStore, type ThemeMode } from '../store/useThemeStore'
 import { useCategoryEmojiName } from '../hooks/useCategoryEmojiName'
 import { useStoreIcon } from '../hooks/useStoreIcon'
 import { DEFAULT_CATEGORY_EMOJI, DEFAULT_STORE_EMOJI } from '../data/fluentEmoji'
@@ -40,6 +41,7 @@ interface CategoryDraft {
 }
 
 const SECTIONS = [
+  { id: 'settings-appearance', label: 'Apparence' },
   { id: 'settings-household', label: 'Foyer' },
   { id: 'settings-stores', label: 'Magasins' },
   { id: 'settings-categories', label: 'Rayons / types' },
@@ -74,7 +76,7 @@ function SimpleDraftRow({
 
   if (editing) {
     return (
-      <li className="flex items-center rounded-lg border border-brand-300 bg-white px-1 py-1 text-sm">
+      <li className="flex items-center rounded-lg border border-brand-300 bg-white dark:bg-[#241c15] px-1 py-1 text-sm">
         <input
           ref={inputRef}
           autoFocus
@@ -106,7 +108,7 @@ function SimpleDraftRow({
           setEditing(true)
         }}
         title="Cliquer pour renommer"
-        className="flex-1 text-left font-medium text-slate-700 hover:text-brand-700"
+        className="flex-1 text-left font-medium text-slate-700 dark:text-slate-200 hover:text-brand-700 dark:hover:text-brand-300"
       >
         {draft.name}
       </button>
@@ -221,14 +223,14 @@ function HouseholdSection() {
 
   return (
     <section id="settings-household" className="scroll-mt-4">
-      <div className="mb-2 rounded-2xl bg-[#FFF1DC] px-4 py-3">
-        <h3 className="text-sm font-extrabold text-brand-700">Foyer</h3>
+      <div className="mb-2 rounded-2xl bg-[#FFF1DC] dark:bg-[#3a2f1f] px-4 py-3">
+        <h3 className="text-sm font-extrabold text-brand-700 dark:text-brand-300">Foyer</h3>
       </div>
 
-      <div className="space-y-3 rounded-2xl border border-slate-100 bg-white p-4">
+      <div className="space-y-3 rounded-2xl border border-slate-100 dark:border-white/5 bg-white dark:bg-[#241c15] p-4">
         {active ? (
           <div className="flex flex-col items-center gap-3 py-2 text-center">
-            <p className="text-sm text-slate-500">Foyer actif :</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Foyer actif :</p>
             {editingName ? (
               <input
                 autoFocus
@@ -244,27 +246,27 @@ function HouseholdSection() {
                   }
                 }}
                 onBlur={commitName}
-                className="rounded-lg border border-brand-300 px-3 py-1.5 text-center text-lg font-extrabold text-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-200"
+                className="rounded-lg border border-brand-300 px-3 py-1.5 text-center text-lg font-extrabold text-brand-700 dark:text-brand-300 focus:outline-none focus:ring-2 focus:ring-brand-200"
               />
             ) : (
               <button
                 type="button"
                 onClick={startEditingName}
                 title="Cliquer pour renommer"
-                className="text-lg font-extrabold text-brand-700 hover:text-brand-800"
+                className="text-lg font-extrabold text-brand-700 dark:text-brand-300 hover:text-brand-800 dark:hover:text-brand-200"
               >
                 {active.name}
               </button>
             )}
             <div className="flex items-center gap-2">
-              <span className="rounded-xl bg-brand-50 px-4 py-2 text-2xl font-extrabold tracking-[0.2em] text-brand-700">
+              <span className="rounded-xl bg-brand-50 dark:bg-brand-900/40 px-4 py-2 text-2xl font-extrabold tracking-[0.2em] text-brand-700 dark:text-brand-300">
                 {active.code}
               </span>
               <button
                 type="button"
                 onClick={() => handleCopy(active.code)}
                 title="Copier le code"
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-brand-200 text-brand-600 hover:bg-brand-50"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-brand-200 dark:border-brand-700/50 text-brand-600 dark:text-brand-300 hover:bg-brand-50 dark:hover:bg-brand-900/40"
               >
                 {copied ? <CheckIcon className="h-4 w-4" /> : <CopyIcon className="h-4 w-4" />}
               </button>
@@ -286,7 +288,7 @@ function HouseholdSection() {
             </button>
           </div>
         ) : (
-          <p className="text-center text-sm text-slate-500">Aucun foyer actif pour le moment.</p>
+          <p className="text-center text-sm text-slate-500 dark:text-slate-400">Aucun foyer actif pour le moment.</p>
         )}
 
         {showShare && active && (
@@ -294,13 +296,13 @@ function HouseholdSection() {
         )}
 
         {others.length > 0 && (
-          <ul className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-100">
+          <ul className="divide-y divide-slate-100 dark:divide-white/5 overflow-hidden rounded-xl border border-slate-100 dark:border-white/5">
             {others.map((h) => (
               <li key={h.code} className="flex items-center gap-2 px-3 py-2 text-sm">
                 <button
                   type="button"
                   onClick={() => handleSwitch(h)}
-                  className="flex-1 text-left font-medium text-slate-700 hover:text-brand-700"
+                  className="flex-1 text-left font-medium text-slate-700 dark:text-slate-200 hover:text-brand-700 dark:hover:text-brand-300"
                   title="Basculer sur ce foyer"
                 >
                   {h.name} <span className="font-normal text-slate-400">· {h.code}</span>
@@ -318,7 +320,7 @@ function HouseholdSection() {
           </ul>
         )}
 
-        <div className="space-y-3 border-t border-slate-100 pt-3">
+        <div className="space-y-3 border-t border-slate-100 dark:border-white/5 pt-3">
           <div className="flex justify-center gap-2">
             <input
               value={createNameDraft}
@@ -330,7 +332,7 @@ function HouseholdSection() {
                 }
               }}
               placeholder="Nom du foyer"
-              className="w-44 rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-brand-400 focus:outline-none"
+              className="w-44 rounded-lg border border-slate-200 dark:border-white/10 px-3 py-2 text-sm focus:border-brand-400 focus:outline-none"
             />
             <button
               type="button"
@@ -341,10 +343,10 @@ function HouseholdSection() {
               Créer un foyer
             </button>
           </div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-slate-300">
-            <div className="h-px flex-1 bg-slate-100" />
+          <div className="flex items-center gap-2 text-xs font-semibold text-slate-300 dark:text-slate-600">
+            <div className="h-px flex-1 bg-slate-100 dark:bg-white/10" />
             OU
-            <div className="h-px flex-1 bg-slate-100" />
+            <div className="h-px flex-1 bg-slate-100 dark:bg-white/10" />
           </div>
           <div className="flex justify-center gap-2">
             <input
@@ -358,13 +360,13 @@ function HouseholdSection() {
               }}
               placeholder="Code du foyer"
               maxLength={6}
-              className="w-36 rounded-lg border border-slate-200 px-3 py-2 text-center text-sm font-bold uppercase tracking-widest focus:border-brand-400 focus:outline-none"
+              className="w-36 rounded-lg border border-slate-200 dark:border-white/10 px-3 py-2 text-center text-sm font-bold uppercase tracking-widest focus:border-brand-400 focus:outline-none"
             />
             <button
               type="button"
               onClick={handleJoin}
               disabled={busy || !joinCode.trim()}
-              className="rounded-lg border border-brand-300 px-4 py-2 text-sm font-bold text-brand-600 hover:bg-brand-50 disabled:opacity-50"
+              className="rounded-lg border border-brand-300 px-4 py-2 text-sm font-bold text-brand-600 dark:text-brand-300 hover:bg-brand-50 dark:hover:bg-brand-900/40 disabled:opacity-50"
             >
               Rejoindre
             </button>
@@ -422,7 +424,7 @@ function StoreDraftRow({
             }
           }}
           onBlur={commit}
-          className="flex-1 rounded-md border border-brand-200 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-brand-200"
+          className="flex-1 rounded-md border border-brand-200 dark:border-brand-700/50 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-brand-200"
         />
       ) : (
         <button
@@ -432,7 +434,7 @@ function StoreDraftRow({
             setEditing(true)
           }}
           title="Cliquer pour renommer"
-          className="flex-1 text-left font-medium text-slate-700 hover:text-brand-700"
+          className="flex-1 text-left font-medium text-slate-700 dark:text-slate-200 hover:text-brand-700 dark:hover:text-brand-300"
         >
           {draft.name}
         </button>
@@ -494,7 +496,7 @@ function CategoryDraftRow({
             }
           }}
           onBlur={commit}
-          className="flex-1 rounded-md border border-brand-200 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-brand-200"
+          className="flex-1 rounded-md border border-brand-200 dark:border-brand-700/50 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-brand-200"
         />
       ) : (
         <button
@@ -504,7 +506,7 @@ function CategoryDraftRow({
             setEditing(true)
           }}
           title="Cliquer pour renommer"
-          className="flex-1 text-left font-medium text-slate-700 hover:text-brand-700"
+          className="flex-1 text-left font-medium text-slate-700 dark:text-slate-200 hover:text-brand-700 dark:hover:text-brand-300"
         >
           {draft.name}
         </button>
@@ -542,6 +544,8 @@ export default function SettingsPage({ onClose }: { onClose: () => void }) {
   const renameTag = useAppStore((s) => s.renameTag)
   const emojiFor = useCategoryEmojiName()
   const storeIconFor = useStoreIcon()
+  const themeMode = useThemeStore((s) => s.mode)
+  const setThemeMode = useThemeStore((s) => s.setMode)
 
   const [storeDrafts, setStoreDrafts] = useState<StoreDraft[]>(() =>
     stores.map((s) => ({ id: s, original: s, name: s, icon: storeIconFor(s) }))
@@ -628,7 +632,7 @@ export default function SettingsPage({ onClose }: { onClose: () => void }) {
   }
 
   const navButtonClass =
-    'w-full rounded-lg px-3 py-2 text-left text-sm font-semibold text-slate-600 hover:bg-brand-50 hover:text-brand-700'
+    'w-full rounded-lg px-3 py-2 text-left text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-brand-50 dark:hover:bg-brand-900/40 hover:text-brand-700 dark:hover:text-brand-300'
 
   return (
     <div className="mx-auto max-w-5xl px-3 pb-44 pt-4 sm:px-6 sm:pb-6">
@@ -637,11 +641,11 @@ export default function SettingsPage({ onClose }: { onClose: () => void }) {
           type="button"
           onClick={onClose}
           title="Fermer"
-          className="flex h-9 w-9 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100"
+          className="flex h-9 w-9 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10"
         >
           <CrossIcon className="h-4 w-4" />
         </button>
-        <h1 className="text-lg font-extrabold text-brand-800">Paramètres</h1>
+        <h1 className="text-lg font-extrabold text-brand-800 dark:text-brand-200">Paramètres</h1>
       </div>
 
       <nav className="mb-4 -mx-3 flex gap-2 overflow-x-auto px-3 pb-1 sm:hidden">
@@ -650,7 +654,7 @@ export default function SettingsPage({ onClose }: { onClose: () => void }) {
             key={s.id}
             type="button"
             onClick={() => scrollToSection(s.id)}
-            className="shrink-0 rounded-full bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-700"
+            className="shrink-0 rounded-full bg-brand-50 dark:bg-brand-900/40 px-3 py-1.5 text-xs font-semibold text-brand-700 dark:text-brand-300"
           >
             {s.label}
           </button>
@@ -665,7 +669,7 @@ export default function SettingsPage({ onClose }: { onClose: () => void }) {
                 {s.label}
               </button>
             ))}
-            <div className="mt-4 space-y-2 border-t border-brand-100 pt-4">
+            <div className="mt-4 space-y-2 border-t border-brand-100 dark:border-brand-800/50 pt-4">
               <button
                 type="button"
                 onClick={handleSave}
@@ -676,7 +680,7 @@ export default function SettingsPage({ onClose }: { onClose: () => void }) {
               <button
                 type="button"
                 onClick={onClose}
-                className="w-full rounded-lg px-4 py-2 text-sm font-semibold text-slate-500 hover:bg-slate-100"
+                className="w-full rounded-lg px-4 py-2 text-sm font-semibold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10"
               >
                 Annuler
               </button>
@@ -685,11 +689,40 @@ export default function SettingsPage({ onClose }: { onClose: () => void }) {
         </aside>
 
         <div className="min-w-0 flex-1 space-y-6">
+          <section id="settings-appearance" className="scroll-mt-4">
+            <div className="mb-2 flex items-center justify-between rounded-2xl bg-[#FFF1DC] dark:bg-[#3a2f1f] px-4 py-3">
+              <h3 className="text-sm font-extrabold text-brand-700 dark:text-brand-300">Apparence</h3>
+            </div>
+            <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 dark:border-white/5 bg-white dark:bg-[#241c15] px-3 py-2.5">
+              <span className="text-sm font-semibold text-slate-600 dark:text-slate-300">Thème</span>
+              <div className="flex items-center gap-1 rounded-full bg-brand-50 dark:bg-brand-900/40 p-1">
+                {([
+                  ['light', 'Clair'],
+                  ['dark', 'Sombre'],
+                  ['system', 'Système']
+                ] as [ThemeMode, string][]).map(([mode, label]) => (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => setThemeMode(mode)}
+                    className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
+                      themeMode === mode
+                        ? 'bg-brand-600 text-white'
+                        : 'text-brand-700 dark:text-brand-300 hover:bg-brand-100 dark:hover:bg-brand-900/60'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </section>
+
           <HouseholdSection />
 
           <section id="settings-stores" className="scroll-mt-4">
-            <div className="mb-2 flex items-center justify-between rounded-2xl bg-[#FFF1DC] px-4 py-3">
-              <h3 className="text-sm font-extrabold text-brand-700">Magasins</h3>
+            <div className="mb-2 flex items-center justify-between rounded-2xl bg-[#FFF1DC] dark:bg-[#3a2f1f] px-4 py-3">
+              <h3 className="text-sm font-extrabold text-brand-700 dark:text-brand-300">Magasins</h3>
               <button
                 type="button"
                 onClick={addStoreDraft}
@@ -699,15 +732,15 @@ export default function SettingsPage({ onClose }: { onClose: () => void }) {
                 <PlusIcon className="h-4 w-4" />
               </button>
             </div>
-            <div className="mb-2 flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-white px-3 py-2.5">
-              <label htmlFor="default-store-select" className="text-sm font-semibold text-slate-600">
+            <div className="mb-2 flex items-center justify-between gap-3 rounded-xl border border-slate-100 dark:border-white/5 bg-white dark:bg-[#241c15] px-3 py-2.5">
+              <label htmlFor="default-store-select" className="text-sm font-semibold text-slate-600 dark:text-slate-300">
                 Magasin par défaut
               </label>
               <select
                 id="default-store-select"
                 value={defaultStoreDraftId ?? ''}
                 onChange={(e) => setDefaultStoreDraftId(e.target.value || null)}
-                className="rounded-lg border border-slate-200 px-2 py-1.5 text-sm focus:border-brand-400 focus:outline-none"
+                className="rounded-lg border border-slate-200 dark:border-white/10 px-2 py-1.5 text-sm focus:border-brand-400 focus:outline-none"
               >
                 <option value="">Automatique (premier magasin)</option>
                 {storeDrafts.map((d) => (
@@ -717,7 +750,7 @@ export default function SettingsPage({ onClose }: { onClose: () => void }) {
                 ))}
               </select>
             </div>
-            <ul className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-100 bg-white">
+            <ul className="divide-y divide-slate-100 dark:divide-white/5 overflow-hidden rounded-2xl border border-slate-100 dark:border-white/5 bg-white dark:bg-[#241c15]">
               {storeDrafts.map((draft) => (
                 <StoreDraftRow
                   key={draft.id}
@@ -735,8 +768,8 @@ export default function SettingsPage({ onClose }: { onClose: () => void }) {
           </section>
 
           <section id="settings-categories" className="scroll-mt-4">
-            <div className="mb-2 flex items-center justify-between rounded-2xl bg-[#FFF1DC] px-4 py-3">
-              <h3 className="text-sm font-extrabold text-brand-700">Rayons</h3>
+            <div className="mb-2 flex items-center justify-between rounded-2xl bg-[#FFF1DC] dark:bg-[#3a2f1f] px-4 py-3">
+              <h3 className="text-sm font-extrabold text-brand-700 dark:text-brand-300">Rayons</h3>
               <button
                 type="button"
                 onClick={addCategoryDraft}
@@ -746,7 +779,7 @@ export default function SettingsPage({ onClose }: { onClose: () => void }) {
                 <PlusIcon className="h-4 w-4" />
               </button>
             </div>
-            <ul className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-100 bg-white">
+            <ul className="divide-y divide-slate-100 dark:divide-white/5 overflow-hidden rounded-2xl border border-slate-100 dark:border-white/5 bg-white dark:bg-[#241c15]">
               {categoryDrafts.map((draft) => (
                 <CategoryDraftRow
                   key={draft.id}
@@ -766,8 +799,8 @@ export default function SettingsPage({ onClose }: { onClose: () => void }) {
           </section>
 
           <section id="settings-tags" className="scroll-mt-4">
-            <div className="mb-2 flex items-center justify-between rounded-2xl bg-[#FFF1DC] px-4 py-3">
-              <h3 className="text-sm font-extrabold text-brand-700">Tags</h3>
+            <div className="mb-2 flex items-center justify-between rounded-2xl bg-[#FFF1DC] dark:bg-[#3a2f1f] px-4 py-3">
+              <h3 className="text-sm font-extrabold text-brand-700 dark:text-brand-300">Tags</h3>
               <button
                 type="button"
                 onClick={addTagDraft}
@@ -777,7 +810,7 @@ export default function SettingsPage({ onClose }: { onClose: () => void }) {
                 <PlusIcon className="h-4 w-4" />
               </button>
             </div>
-            <ul className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-100 bg-white">
+            <ul className="divide-y divide-slate-100 dark:divide-white/5 overflow-hidden rounded-2xl border border-slate-100 dark:border-white/5 bg-white dark:bg-[#241c15]">
               {tagDrafts.map((draft) => (
                 <SimpleDraftRow
                   key={draft.id}
@@ -796,11 +829,11 @@ export default function SettingsPage({ onClose }: { onClose: () => void }) {
         </div>
       </div>
 
-      <div className="fixed inset-x-0 bottom-16 z-30 flex gap-2 border-t border-brand-100 bg-white p-3 sm:hidden">
+      <div className="fixed inset-x-0 bottom-16 z-30 flex gap-2 border-t border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#241c15] p-3 sm:hidden">
         <button
           type="button"
           onClick={onClose}
-          className="flex-1 rounded-lg px-4 py-2.5 text-sm font-semibold text-slate-500 hover:bg-slate-100"
+          className="flex-1 rounded-lg px-4 py-2.5 text-sm font-semibold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10"
         >
           Annuler
         </button>

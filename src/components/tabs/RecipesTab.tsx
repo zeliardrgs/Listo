@@ -139,14 +139,14 @@ export default function RecipesTab() {
       style={isDesktop ? { maxWidth: hasValidSelection ? '1700px' : undefined, transition: 'max-width 300ms ease' } : undefined}
     >
       <div
-        className={`order-2 fixed inset-x-0 bottom-16 z-20 bg-cream px-3 py-2 transition-transform duration-200 sm:static sm:z-auto sm:order-none sm:mb-3 sm:translate-y-0 sm:bg-transparent sm:px-0 sm:py-0 ${
+        className={`order-2 fixed inset-x-0 bottom-16 z-20 bg-cream dark:bg-[#171310] px-3 py-2 transition-transform duration-200 sm:static sm:z-auto sm:order-none sm:mb-3 sm:translate-y-0 sm:bg-transparent sm:px-0 sm:py-0 ${
           scrollDirection === 'down' ? 'translate-y-[calc(100%+4rem)]' : 'translate-y-0'
         }`}
       >
         <div className="flex items-center gap-3">
           <div ref={searchRef} className="relative flex-1">
-            <div className="flex items-center gap-2 rounded-full bg-white px-4 py-3 shadow-sm">
-              <SearchIcon className="h-5 w-5 shrink-0 text-slate-300" />
+            <div className="flex items-center gap-2 rounded-full bg-white dark:bg-[#241c15] px-4 py-3 shadow-sm">
+              <SearchIcon className="h-5 w-5 shrink-0 text-slate-300 dark:text-slate-600" />
               <input
                 value={search}
                 onChange={(e) => {
@@ -161,19 +161,19 @@ export default function RecipesTab() {
                   }
                 }}
                 placeholder="Rechercher une recette"
-                className="w-full bg-transparent text-sm text-slate-700 focus:outline-none"
+                className="w-full bg-transparent text-sm text-slate-700 dark:text-slate-200 focus:outline-none"
               />
             </div>
 
             {searchOpen && search.trim() && (
-              <div className="absolute bottom-full z-30 mb-2 w-full overflow-hidden rounded-2xl border border-brand-100 bg-white shadow-lg sm:bottom-auto sm:top-full sm:mb-0 sm:mt-2">
+              <div className="absolute bottom-full z-30 mb-2 w-full overflow-hidden rounded-2xl border border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#241c15] shadow-lg sm:bottom-auto sm:top-full sm:mb-0 sm:mt-2">
                 <button
                   type="button"
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={quickCreateRecipeFromSearch}
-                  className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm font-semibold text-slate-500 hover:bg-brand-50"
+                  className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm font-semibold text-slate-500 dark:text-slate-400 hover:bg-brand-50 dark:hover:bg-brand-900/40"
                 >
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-50 dark:bg-brand-900/40 text-brand-600 dark:text-brand-300">
                     <RecipeIcon className="h-4 w-4" />
                   </span>
                   Créer la recette « {search.trim()} »
@@ -198,7 +198,7 @@ export default function RecipesTab() {
               key={tag}
               onClick={() => setTagFilter((t) => (t === tag ? null : tag))}
               className={`rounded-full px-2.5 py-1 text-[11px] font-semibold transition-colors ${
-                tagFilter === tag ? 'bg-brand-800 text-white' : 'bg-brand-50 text-brand-700 hover:bg-brand-100'
+                tagFilter === tag ? 'bg-brand-800 text-white' : 'bg-brand-50 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300 hover:bg-brand-100 dark:hover:bg-brand-900/50'
               }`}
             >
               {tag}
@@ -209,7 +209,7 @@ export default function RecipesTab() {
 
       {isLoading && (
         <div className="order-3 mt-10 flex flex-col items-center gap-3 text-sm text-slate-400 sm:order-none">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-200 border-t-brand-600" />
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-200 dark:border-brand-700/50 border-t-brand-600" />
           Chargement des recettes…
         </div>
       )}

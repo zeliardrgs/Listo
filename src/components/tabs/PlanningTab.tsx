@@ -139,8 +139,8 @@ export default function PlanningTab() {
     <div className="mx-auto max-w-[1800px] px-3 pt-4 pb-10 lg:px-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
         <aside className="w-full sm:w-72 sm:shrink-0">
-          <div className="mb-2 rounded-2xl bg-[#FFF1DC] px-4 py-3">
-            <h3 className="text-sm font-extrabold text-brand-700">Recettes</h3>
+          <div className="mb-2 rounded-2xl bg-[#FFF1DC] dark:bg-[#3a2f1f] px-4 py-3">
+            <h3 className="text-sm font-extrabold text-brand-700 dark:text-brand-300">Recettes</h3>
           </div>
           {planningQueue.length > 0 && (
             <p className="mb-2 text-xs text-slate-400 sm:hidden">
@@ -160,7 +160,7 @@ export default function PlanningTab() {
               if (id) returnToPlanningQueue(id)
             }}
             className={`space-y-2 rounded-xl p-1 transition-colors ${
-              queueDragOver ? 'bg-brand-50 ring-2 ring-inset ring-brand-300' : ''
+              queueDragOver ? 'bg-brand-50 dark:bg-brand-900/40 ring-2 ring-inset ring-brand-300' : ''
             }`}
           >
             {planningQueue.map((item) => {
@@ -187,7 +187,7 @@ export default function PlanningTab() {
             <button
               type="button"
               onClick={clearPlanningQueue}
-              className="mt-3 w-full text-center text-xs font-bold text-brand-600 hover:text-brand-700"
+              className="mt-3 w-full text-center text-xs font-bold text-brand-600 dark:text-brand-300 hover:text-brand-700 dark:hover:text-brand-300"
             >
               Vider la liste
             </button>
@@ -195,8 +195,8 @@ export default function PlanningTab() {
         </aside>
 
         <div className="min-w-0 flex-1">
-          <div className="mb-2 flex flex-col gap-2 rounded-2xl bg-[#FFF1DC] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-            <h3 className="text-sm font-extrabold text-brand-700">Planning</h3>
+          <div className="mb-2 flex flex-col gap-2 rounded-2xl bg-[#FFF1DC] dark:bg-[#3a2f1f] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <h3 className="text-sm font-extrabold text-brand-700 dark:text-brand-300">Planning</h3>
             <div className="flex flex-wrap items-center gap-3">
               {VIEW_MODES.map((m) => (
                 <button
@@ -206,7 +206,7 @@ export default function PlanningTab() {
                   className={
                     viewMode === m.key
                       ? 'rounded-full bg-brand-600 px-3 py-1.5 text-xs font-bold text-white'
-                      : 'px-1 text-xs font-bold text-brand-600 hover:text-brand-700'
+                      : 'px-1 text-xs font-bold text-brand-600 dark:text-brand-300 hover:text-brand-700 dark:hover:text-brand-300'
                   }
                 >
                   {m.label}
@@ -229,19 +229,19 @@ export default function PlanningTab() {
             </div>
           </div>
 
-          <div className="overflow-x-auto rounded-2xl border border-brand-100 bg-white shadow-sm">
+          <div className="overflow-x-auto rounded-2xl border border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#241c15] shadow-sm">
             <div
-              className="grid w-full bg-white"
+              className="grid w-full bg-white dark:bg-[#241c15]"
               style={{ gridTemplateColumns: `56px repeat(${totalColumns}, ${columnTemplate})` }}
             >
               {weekBlocks.length > 1 && (
                 <>
-                  <div className="border-b border-r border-brand-50" />
+                  <div className="border-b border-r border-brand-50 dark:border-brand-800/40" />
                   {weekBlocks.map((block) => (
                     <div
                       key={block.week}
                       style={{ gridColumn: `span ${block.days.length}` }}
-                      className="border-b border-r border-brand-50 bg-brand-50/50 px-2 py-1.5 text-center text-xs font-extrabold text-brand-700 last:border-r-0"
+                      className="border-b border-r border-brand-50 dark:border-brand-800/40 bg-brand-50/50 px-2 py-1.5 text-center text-xs font-extrabold text-brand-700 dark:text-brand-300 last:border-r-0"
                     >
                       {block.label}
                     </div>
@@ -249,12 +249,12 @@ export default function PlanningTab() {
                 </>
               )}
 
-              <div className="border-b border-r border-brand-50" />
+              <div className="border-b border-r border-brand-50 dark:border-brand-800/40" />
               {weekBlocks.flatMap((block) =>
                 block.days.map((day) => (
                   <div
                     key={`${block.week}-${day}`}
-                    className="border-b border-r border-brand-50 px-2 py-2 text-center text-xs font-extrabold text-brand-700 last:border-r-0"
+                    className="border-b border-r border-brand-50 dark:border-brand-800/40 px-2 py-2 text-center text-xs font-extrabold text-brand-700 dark:text-brand-300 last:border-r-0"
                   >
                     {day}
                   </div>
@@ -263,14 +263,14 @@ export default function PlanningTab() {
 
               {MEAL_SLOTS.map((slot) => (
                 <div key={slot} className="contents">
-                  <div className="flex items-center justify-center border-b border-r border-brand-50 px-1 py-2 text-center text-[11px] font-bold text-slate-400 last:border-b-0">
+                  <div className="flex items-center justify-center border-b border-r border-brand-50 dark:border-brand-800/40 px-1 py-2 text-center text-[11px] font-bold text-slate-400 last:border-b-0">
                     {slot}
                   </div>
                   {weekBlocks.flatMap((block) =>
                     block.days.map((day) => {
                       const key = planningKey(block.week, day, slot)
                       return (
-                        <div key={key} className="border-b border-r border-brand-50 last:border-r-0">
+                        <div key={key} className="border-b border-r border-brand-50 dark:border-brand-800/40 last:border-r-0">
                           <PlanningCell
                             items={planningSlots[key] || []}
                             note={planningNotes[key]}
@@ -309,14 +309,14 @@ export default function PlanningTab() {
             <div className="flex-1" />
             <button
               onClick={handleExportImage}
-              className="flex items-center gap-1.5 rounded-full border border-brand-300 bg-white px-4 py-2.5 text-sm font-bold text-brand-600 shadow-sm hover:bg-brand-50"
+              className="flex items-center gap-1.5 rounded-full border border-brand-300 bg-white dark:bg-[#241c15] px-4 py-2.5 text-sm font-bold text-brand-600 dark:text-brand-300 shadow-sm hover:bg-brand-50 dark:hover:bg-brand-900/40"
             >
               <ImageIcon className="h-4 w-4" />
               Télécharger Image
             </button>
             <button
               onClick={handleCopyText}
-              className="flex items-center gap-1.5 rounded-full border border-brand-300 bg-white px-4 py-2.5 text-sm font-bold text-brand-600 shadow-sm hover:bg-brand-50"
+              className="flex items-center gap-1.5 rounded-full border border-brand-300 bg-white dark:bg-[#241c15] px-4 py-2.5 text-sm font-bold text-brand-600 dark:text-brand-300 shadow-sm hover:bg-brand-50 dark:hover:bg-brand-900/40"
             >
               <CopyIcon className="h-4 w-4" />
               Copier texte

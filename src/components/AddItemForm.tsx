@@ -100,7 +100,7 @@ export default function AddItemForm({
   const iconBg = colorFor(form.category).iconBg
 
   return (
-    <div className="rounded-2xl border border-brand-100 bg-white px-4 py-4 shadow-sm">
+    <div className="rounded-2xl border border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#241c15] px-4 py-4 shadow-sm">
       <form onSubmit={submit} className="space-y-3">
         <div className="flex items-start gap-3">
           <div className={`mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${iconBg}`}>
@@ -118,21 +118,21 @@ export default function AddItemForm({
                   onFocus={() => setNameOpen(true)}
                   onBlur={() => setTimeout(() => setNameOpen(false), 120)}
                   placeholder="Nom de l'article"
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold focus:border-brand-400 focus:outline-none"
+                  className="w-full rounded-lg border border-slate-200 dark:border-white/10 px-3 py-2 text-sm font-semibold focus:border-brand-400 focus:outline-none"
                 />
                 {nameOpen && filteredSuggestions.length > 0 && (
-                  <ul className="absolute z-30 mt-1 max-h-56 w-full overflow-y-auto rounded-lg border border-brand-100 bg-white py-1 shadow-lg">
+                  <ul className="absolute z-30 mt-1 max-h-56 w-full overflow-y-auto rounded-lg border border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#241c15] py-1 shadow-lg">
                     {filteredSuggestions.map((p) => (
                       <li key={p.name}>
                         <button
                           type="button"
                           onMouseDown={(e) => e.preventDefault()}
                           onClick={() => pickSuggestion(p)}
-                          className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm hover:bg-brand-50"
+                          className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm hover:bg-brand-50 dark:hover:bg-brand-900/40"
                         >
                           <Emoji name={emojiFor(p.category)} size={18} />
                           <span className="flex-1">{p.name}</span>
-                          <span className="rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-semibold text-brand-700">
+                          <span className="rounded-full bg-brand-50 dark:bg-brand-900/40 px-2 py-0.5 text-[11px] font-semibold text-brand-700 dark:text-brand-300">
                             {p.category}
                           </span>
                         </button>
@@ -144,20 +144,20 @@ export default function AddItemForm({
               <StoreSelect
                 value={form.store}
                 onChange={(v) => setForm((f) => ({ ...f, store: v }))}
-                className="w-40 shrink-0 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm sm:w-48"
+                className="w-40 shrink-0 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-[#241c15] px-3 py-2 text-sm sm:w-48"
               />
             </div>
             <div className="flex flex-wrap gap-2">
               <CategorySelect
                 value={form.category}
                 onChange={(v) => setForm((f) => ({ ...f, category: v }))}
-                className="w-36 rounded-lg border border-slate-200 bg-white px-2 py-2 text-sm"
+                className="w-36 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-[#241c15] px-2 py-2 text-sm"
               />
               <input
                 value={form.brand}
                 onChange={(e) => setForm((f) => ({ ...f, brand: e.target.value }))}
                 placeholder="Marque"
-                className="min-w-[100px] flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                className="min-w-[100px] flex-1 rounded-lg border border-slate-200 dark:border-white/10 px-3 py-2 text-sm"
               />
             </div>
           </div>
@@ -166,7 +166,7 @@ export default function AddItemForm({
             onClick={() => setForm((f) => ({ ...f, toBuy: !f.toBuy }))}
             title={form.toBuy ? 'Retirer de la liste à acheter' : 'Ajouter à la liste à acheter'}
             className={`mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors ${
-              form.toBuy ? 'bg-brand-600 text-white' : 'border border-brand-200 bg-brand-50 text-brand-600'
+              form.toBuy ? 'bg-brand-600 text-white' : 'border border-brand-200 dark:border-brand-700/50 bg-brand-50 dark:bg-brand-900/40 text-brand-600 dark:text-brand-300'
             }`}
           >
             {form.toBuy ? <ListCheckIcon className="h-4 w-4" /> : <PlusIcon className="h-4 w-4" />}
@@ -174,7 +174,7 @@ export default function AddItemForm({
         </div>
 
         <div className="flex items-center gap-5 pl-14">
-          <label className="flex items-center gap-2 text-sm font-medium text-slate-600">
+          <label className="flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-300">
             <input
               type="checkbox"
               checked={form.recurring}
@@ -183,7 +183,7 @@ export default function AddItemForm({
             />
             Favoris
           </label>
-          <label className="flex items-center gap-2 text-sm font-medium text-slate-600">
+          <label className="flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-300">
             <input
               type="checkbox"
               checked={form.onceOnly}
@@ -202,7 +202,7 @@ export default function AddItemForm({
               onCancel?.()
             }}
             title="Annuler"
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 hover:bg-slate-50"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5"
           >
             <CrossIcon className="h-4 w-4" />
           </button>
