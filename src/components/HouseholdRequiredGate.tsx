@@ -76,7 +76,7 @@ export default function HouseholdRequiredGate() {
         <div className="max-h-[85vh] overflow-y-auto rounded-3xl bg-white dark:bg-[#241c15] shadow-2xl">
           <div className="bg-[#FFF1DC] dark:bg-[#3a2f1f] px-6 py-6 text-center">
             <p className="flex flex-wrap items-center justify-center gap-2 text-xl font-extrabold text-brand-800 dark:text-brand-200 sm:text-2xl">
-              Bienvenue sur <ListoLogo className="h-[2.94rem] w-auto sm:h-[3.43rem]" color="#f5841f" />
+              Bienvenue sur <ListoLogo className="h-[2.94rem] w-auto sm:h-[3.43rem]" color="currentColor" />
             </p>
           </div>
 
@@ -86,7 +86,7 @@ export default function HouseholdRequiredGate() {
             </p>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="flex flex-col rounded-2xl bg-[#FFF8EE] px-5 py-6 text-center">
+              <div className="flex flex-col rounded-2xl bg-[#FFF8EE] dark:bg-[#241c15] px-5 py-6 text-center">
                 <h2 className="mb-3 text-sm font-extrabold text-brand-700 dark:text-brand-300">Créer un foyer</h2>
                 <img src={createCat} alt="" className="mx-auto mb-4 h-24 w-24" />
                 <div className="mt-auto">
@@ -109,7 +109,7 @@ export default function HouseholdRequiredGate() {
                 </div>
               </div>
 
-              <div className="flex flex-col rounded-2xl bg-[#FFF8EE] px-5 py-6 text-center">
+              <div className="flex flex-col rounded-2xl bg-[#FFF8EE] dark:bg-[#241c15] px-5 py-6 text-center">
                 <h2 className="mb-3 text-sm font-extrabold text-brand-700 dark:text-brand-300">Rejoindre un foyer</h2>
                 <img src={joinCats} alt="" className="mx-auto mb-4 h-[5.52rem] w-auto" />
                 <div className="mt-auto">

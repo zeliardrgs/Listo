@@ -2,6 +2,36 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* Brand accent, as "R G B" triples for Tailwind's rgb(... / <alpha-value>)
+     opacity syntax. Light mode keeps Listo's orange; dark mode below swaps
+     the same scale to purple, so every bg-brand and text-brand class
+     repaints automatically without per-component overrides. */
+  --brand-50: 255 247 237;
+  --brand-100: 255 237 213;
+  --brand-200: 255 217 168;
+  --brand-300: 255 189 112;
+  --brand-400: 255 162 61;
+  --brand-500: 251 139 30;
+  --brand-600: 245 132 31;
+  --brand-700: 201 101 15;
+  --brand-800: 156 77 12;
+  --brand-900: 107 53 10;
+}
+
+.dark {
+  --brand-50: 245 240 255;
+  --brand-100: 235 224 255;
+  --brand-200: 217 194 255;
+  --brand-300: 193 158 255;
+  --brand-400: 165 117 250;
+  --brand-500: 139 92 246;
+  --brand-600: 124 58 237;
+  --brand-700: 100 40 196;
+  --brand-800: 76 29 149;
+  --brand-900: 59 22 112;
+}
+
 @layer base {
   /* Form controls default to a white background regardless of theme unless
      styled explicitly, and most inputs across the app don't set one. */
@@ -41,17 +71,17 @@ body {
   height: 8px;
 }
 ::-webkit-scrollbar-thumb {
-  background: #ffd9a8;
+  background: rgb(var(--brand-200));
   border-radius: 8px;
 }
 .dark ::-webkit-scrollbar-thumb {
-  background: #4a3220;
+  background: rgb(var(--brand-800));
 }
 
 input[type='checkbox'].check-lg {
   width: 22px;
   height: 22px;
-  accent-color: #f5841f;
+  accent-color: rgb(var(--brand-600));
 }
 
 @keyframes celebration-pop {

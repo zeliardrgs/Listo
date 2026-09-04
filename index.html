@@ -21,7 +21,10 @@
         var stored = JSON.parse(localStorage.getItem('listo-theme') || 'null')
         var mode = stored && stored.state && stored.state.mode ? stored.state.mode : 'system'
         var isDark = mode === 'dark' || (mode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-        if (isDark) document.documentElement.classList.add('dark')
+        if (isDark) {
+          document.documentElement.classList.add('dark')
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#7c3aed')
+        }
       } catch (e) {}
     </script>
   </head>

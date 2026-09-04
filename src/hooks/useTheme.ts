@@ -13,6 +13,7 @@ export function useTheme() {
     function apply() {
       const isDark = mode === 'dark' || (mode === 'system' && query.matches)
       document.documentElement.classList.toggle('dark', isDark)
+      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', isDark ? '#7c3aed' : '#f5841f')
     }
 
     apply()
