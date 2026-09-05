@@ -162,7 +162,7 @@ export default function ItemRow({ item, onDelete }: { item: ShoppingItem; onDele
             onClick={() => updateItem(item.id, { toBuy: !item.toBuy })}
             title={item.toBuy ? 'Retirer de la liste à acheter' : 'Ajouter à la liste à acheter'}
             className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors ${
-              item.toBuy ? 'bg-brand-600 text-white' : 'border border-brand-200 dark:border-brand-700/50 bg-brand-50 dark:bg-brand-900/40 text-brand-600 dark:text-brand-300'
+              item.toBuy ? 'border border-brand-200 dark:border-brand-700/50 bg-brand-50 dark:bg-brand-900/40 text-brand-600 dark:text-brand-300' : 'bg-brand-600 text-white'
             }`}
           >
             {item.toBuy ? <ListCheckIcon className="h-4 w-4" /> : <PlusIcon className="h-4 w-4" />}
@@ -220,7 +220,7 @@ export default function ItemRow({ item, onDelete }: { item: ShoppingItem; onDele
             onClick={() => setDraft((d) => ({ ...d, toBuy: !d.toBuy }))}
             title={draft.toBuy ? 'Retirer de la liste à acheter' : 'Ajouter à la liste à acheter'}
             className={`mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors ${
-              draft.toBuy ? 'bg-brand-600 text-white' : 'border border-brand-200 dark:border-brand-700/50 bg-brand-50 dark:bg-brand-900/40 text-brand-600 dark:text-brand-300'
+              draft.toBuy ? 'border border-brand-200 dark:border-brand-700/50 bg-brand-50 dark:bg-brand-900/40 text-brand-600 dark:text-brand-300' : 'bg-brand-600 text-white'
             }`}
           >
             {draft.toBuy ? <ListCheckIcon className="h-4 w-4" /> : <PlusIcon className="h-4 w-4" />}
