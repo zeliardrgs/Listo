@@ -424,7 +424,7 @@ export default function RecipeDetailPane({
       <li
         key={ing.id}
         className={`flex items-center gap-2.5 rounded-xl px-3 py-1.5 shadow-sm ring-1 ring-slate-100 dark:ring-white/5 ${
-          deemphasized ? 'bg-slate-50 dark:bg-white/5' : 'bg-white dark:bg-[#241c15]'
+          deemphasized ? 'bg-slate-50 dark:bg-white/5' : 'bg-white dark:bg-[#5b3d94]'
         }`}
       >
         <div
@@ -449,7 +449,7 @@ export default function RecipeDetailPane({
           onClick={() => toggleIngredientInList(ing, qty)}
           title={inList ? 'Retirer de la liste à acheter' : 'Ajouter à la liste à acheter'}
           className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-colors ${
-            deemphasized ? 'text-slate-400 hover:bg-white dark:hover:bg-[#241c15]' : ''
+            deemphasized ? 'text-slate-400 hover:bg-white dark:hover:bg-[#5b3d94]' : ''
           } ${!deemphasized && (inList ? 'bg-brand-600 text-white' : 'border border-brand-200 dark:border-brand-700/50 bg-brand-50 dark:bg-brand-900/40 text-brand-600 dark:text-brand-300')}`}
         >
           {inList ? <ListCheckIcon className="h-3.5 w-3.5" /> : <PlusIcon className="h-3.5 w-3.5" />}
@@ -482,7 +482,7 @@ export default function RecipeDetailPane({
               type="button"
               onClick={() => switchMode('edit')}
               title="Modifier"
-              className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-brand-600 dark:text-brand-300 shadow-md hover:bg-white dark:hover:bg-[#241c15]"
+              className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-brand-600 dark:text-brand-300 shadow-md hover:bg-white dark:hover:bg-[#5b3d94]"
             >
               <EditIcon className="h-4 w-4" />
             </button>
@@ -494,14 +494,14 @@ export default function RecipeDetailPane({
                 type="button"
                 onClick={() => setShowImagePopover((v) => !v)}
                 title="Changer la photo"
-                className="flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-2 text-sm font-bold text-brand-600 dark:text-brand-300 shadow-md hover:bg-white dark:hover:bg-[#241c15]"
+                className="flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-2 text-sm font-bold text-brand-600 dark:text-brand-300 shadow-md hover:bg-white dark:hover:bg-[#5b3d94]"
               >
                 <ImageIcon className="h-4 w-4" />
                 Changer image
               </button>
               {showImagePopover && (
                 <div
-                  className="absolute bottom-11 right-0 z-10 w-64 space-y-2 rounded-xl border border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#241c15] p-2 shadow-lg"
+                  className="absolute bottom-11 right-0 z-10 w-64 space-y-2 rounded-xl border border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#5b3d94] p-2 shadow-lg"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <input
@@ -536,14 +536,14 @@ export default function RecipeDetailPane({
                 <button
                   type="button"
                   onClick={() => setTab('ingredients')}
-                  className={`rounded-full px-3 py-1.5 ${tab === 'ingredients' ? 'bg-white dark:bg-[#241c15] text-brand-700 dark:text-brand-300 shadow' : 'text-slate-500 dark:text-slate-400'}`}
+                  className={`rounded-full px-3 py-1.5 ${tab === 'ingredients' ? 'bg-white dark:bg-[#5b3d94] text-brand-700 dark:text-brand-300 shadow' : 'text-slate-500 dark:text-slate-400'}`}
                 >
                   Ingrédients
                 </button>
                 <button
                   type="button"
                   onClick={() => setTab('instructions')}
-                  className={`rounded-full px-3 py-1.5 ${tab === 'instructions' ? 'bg-white dark:bg-[#241c15] text-brand-700 dark:text-brand-300 shadow' : 'text-slate-500 dark:text-slate-400'}`}
+                  className={`rounded-full px-3 py-1.5 ${tab === 'instructions' ? 'bg-white dark:bg-[#5b3d94] text-brand-700 dark:text-brand-300 shadow' : 'text-slate-500 dark:text-slate-400'}`}
                 >
                   Instructions
                 </button>
@@ -659,14 +659,14 @@ export default function RecipeDetailPane({
                 <button
                   type="button"
                   onClick={() => setTab('ingredients')}
-                  className={`rounded-full px-3 py-1.5 ${tab === 'ingredients' ? 'bg-white dark:bg-[#241c15] text-brand-700 dark:text-brand-300 shadow' : 'text-slate-500 dark:text-slate-400'}`}
+                  className={`rounded-full px-3 py-1.5 ${tab === 'ingredients' ? 'bg-white dark:bg-[#5b3d94] text-brand-700 dark:text-brand-300 shadow' : 'text-slate-500 dark:text-slate-400'}`}
                 >
                   Ingrédients
                 </button>
                 <button
                   type="button"
                   onClick={() => setTab('instructions')}
-                  className={`rounded-full px-3 py-1.5 ${tab === 'instructions' ? 'bg-white dark:bg-[#241c15] text-brand-700 dark:text-brand-300 shadow' : 'text-slate-500 dark:text-slate-400'}`}
+                  className={`rounded-full px-3 py-1.5 ${tab === 'instructions' ? 'bg-white dark:bg-[#5b3d94] text-brand-700 dark:text-brand-300 shadow' : 'text-slate-500 dark:text-slate-400'}`}
                 >
                   Instructions
                 </button>
@@ -695,7 +695,7 @@ export default function RecipeDetailPane({
             {tab === 'ingredients' ? (
               <div className="space-y-2">
                 <div ref={ingredientSearchRef} className="relative">
-                  <div className="flex items-center gap-2 rounded-full bg-white dark:bg-[#241c15] px-4 py-2.5 shadow-sm ring-1 ring-slate-200 dark:ring-white/10">
+                  <div className="flex items-center gap-2 rounded-full bg-white dark:bg-[#5b3d94] px-4 py-2.5 shadow-sm ring-1 ring-slate-200 dark:ring-white/10">
                     <SearchIcon className="h-4 w-4 shrink-0 text-slate-300 dark:text-slate-600" />
                     <input
                       value={ingredientSearch}
@@ -716,7 +716,7 @@ export default function RecipeDetailPane({
                   </div>
 
                   {ingredientSearchOpen && ingredientTrimmed && (
-                    <div className="absolute left-0 right-0 top-full z-30 mt-1 overflow-hidden rounded-2xl border border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#241c15] shadow-lg">
+                    <div className="absolute left-0 right-0 top-full z-30 mt-1 overflow-hidden rounded-2xl border border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#5b3d94] shadow-lg">
                       {ingredientSuggestions.length > 0 && (
                         <ul className="max-h-56 overflow-y-auto py-1">
                           {ingredientSuggestions.map((p) => (
@@ -763,7 +763,7 @@ export default function RecipeDetailPane({
                       className={`flex flex-wrap items-center gap-2 rounded-2xl px-3 py-2 shadow-sm transition-colors ${
                         isIngredientChanged(ing)
                           ? 'bg-brand-50 dark:bg-brand-900/40 ring-2 ring-brand-400'
-                          : 'bg-white dark:bg-[#241c15] ring-1 ring-slate-100 dark:ring-white/5'
+                          : 'bg-white dark:bg-[#5b3d94] ring-1 ring-slate-100 dark:ring-white/5'
                       }`}
                     >
                       <div
@@ -794,7 +794,7 @@ export default function RecipeDetailPane({
                         onChange={(e) =>
                           updateIngredientField(ing.id, { unit: e.target.value === '' ? undefined : (e.target.value as Unit) })
                         }
-                        className="w-20 shrink-0 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-[#241c15] px-1 py-1.5 text-sm"
+                        className="w-20 shrink-0 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-[#5b3d94] px-1 py-1.5 text-sm"
                       >
                         <option value="">Unité</option>
                         <optgroup label="Solide">
@@ -973,7 +973,7 @@ export default function RecipeDetailPane({
       <div className="h-full" style={{ perspective: 1000 }}>
         <div
           ref={paneRef}
-          className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#241c15] shadow-sm"
+          className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#5b3d94] shadow-sm"
           style={tiltStyle}
         >
           {content}
@@ -990,7 +990,7 @@ export default function RecipeDetailPane({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative flex h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl bg-white dark:bg-[#241c15] shadow-xl sm:rounded-2xl lg:max-w-2xl"
+        className="relative flex h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl bg-white dark:bg-[#5b3d94] shadow-xl sm:rounded-2xl lg:max-w-2xl"
         style={tiltStyle}
       >
         {content}

@@ -38,7 +38,7 @@
   .dark input:not([type='checkbox']):not([type='radio']),
   .dark select,
   .dark textarea {
-    background-color: #241c15;
+    background-color: #5b3d94;
     color: #f3e9dc;
   }
   .dark input:not([type='checkbox'])::placeholder,
@@ -46,7 +46,7 @@
     color: #8d7c67;
   }
   .dark select option {
-    background-color: #241c15;
+    background-color: #5b3d94;
   }
 }
 
@@ -62,7 +62,7 @@ body {
 }
 
 .dark body {
-  background: #171310;
+  background: #2a1b4d;
   color: #f3e9dc;
 }
 

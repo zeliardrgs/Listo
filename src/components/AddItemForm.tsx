@@ -100,7 +100,7 @@ export default function AddItemForm({
   const iconBg = colorFor(form.category).iconBg
 
   return (
-    <div className="rounded-2xl border border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#241c15] px-4 py-4 shadow-sm">
+    <div className="rounded-2xl border border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#5b3d94] px-4 py-4 shadow-sm">
       <form onSubmit={submit} className="space-y-3">
         <div className="flex items-start gap-3">
           <div className={`mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${iconBg}`}>
@@ -121,7 +121,7 @@ export default function AddItemForm({
                   className="w-full rounded-lg border border-slate-200 dark:border-white/10 px-3 py-2 text-sm font-semibold focus:border-brand-400 focus:outline-none"
                 />
                 {nameOpen && filteredSuggestions.length > 0 && (
-                  <ul className="absolute z-30 mt-1 max-h-56 w-full overflow-y-auto rounded-lg border border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#241c15] py-1 shadow-lg">
+                  <ul className="absolute z-30 mt-1 max-h-56 w-full overflow-y-auto rounded-lg border border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#5b3d94] py-1 shadow-lg">
                     {filteredSuggestions.map((p) => (
                       <li key={p.name}>
                         <button
@@ -144,14 +144,14 @@ export default function AddItemForm({
               <StoreSelect
                 value={form.store}
                 onChange={(v) => setForm((f) => ({ ...f, store: v }))}
-                className="w-40 shrink-0 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-[#241c15] px-3 py-2 text-sm sm:w-48"
+                className="w-40 shrink-0 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-[#5b3d94] px-3 py-2 text-sm sm:w-48"
               />
             </div>
             <div className="flex flex-wrap gap-2">
               <CategorySelect
                 value={form.category}
                 onChange={(v) => setForm((f) => ({ ...f, category: v }))}
-                className="w-36 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-[#241c15] px-2 py-2 text-sm"
+                className="w-36 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-[#5b3d94] px-2 py-2 text-sm"
               />
               <input
                 value={form.brand}

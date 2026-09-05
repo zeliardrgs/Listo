@@ -44,7 +44,7 @@ export default function IngredientMatchModal({
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 px-4 sm:items-center" onClick={onClose}>
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md rounded-t-2xl bg-white dark:bg-[#241c15] shadow-xl sm:rounded-2xl"
+        className="w-full max-w-md rounded-t-2xl bg-white dark:bg-[#5b3d94] shadow-xl sm:rounded-2xl"
       >
         <div className="border-b border-slate-100 dark:border-white/5 px-5 py-4">
           <h2 className="text-base font-extrabold text-slate-800 dark:text-slate-100">Ingrédients de « {recipeName} »</h2>
@@ -77,7 +77,7 @@ export default function IngredientMatchModal({
                   <>
                     {pickerFor === r.createdItemId ? (
                       <div className="mt-2 space-y-1">
-                        <div className="flex items-center gap-1.5 rounded-lg bg-white dark:bg-[#241c15] px-2.5 py-1.5 ring-1 ring-slate-200 dark:ring-white/10">
+                        <div className="flex items-center gap-1.5 rounded-lg bg-white dark:bg-[#5b3d94] px-2.5 py-1.5 ring-1 ring-slate-200 dark:ring-white/10">
                           <SearchIcon className="h-3.5 w-3.5 shrink-0 text-slate-300 dark:text-slate-600" />
                           <input
                             autoFocus

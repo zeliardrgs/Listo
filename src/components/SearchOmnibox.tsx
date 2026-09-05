@@ -31,7 +31,7 @@ export default function SearchOmnibox({ value, onChange, onQuickCreate }: Props)
 
   return (
     <div ref={rootRef} className="relative flex-1">
-      <div className="flex items-center gap-2 rounded-full bg-white dark:bg-[#241c15] px-4 py-3 shadow-sm">
+      <div className="flex items-center gap-2 rounded-full bg-white dark:bg-[#5b3d94] px-4 py-3 shadow-sm">
         <SearchIcon className="h-5 w-5 shrink-0 text-slate-300 dark:text-slate-600" />
         <input
           value={value}
@@ -66,7 +66,7 @@ export default function SearchOmnibox({ value, onChange, onQuickCreate }: Props)
       </div>
 
       {open && trimmed && (
-        <div className="absolute bottom-full z-30 mb-2 w-full overflow-hidden rounded-2xl border border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#241c15] shadow-lg sm:bottom-auto sm:top-full sm:mb-0 sm:mt-2">
+        <div className="absolute bottom-full z-30 mb-2 w-full overflow-hidden rounded-2xl border border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#5b3d94] shadow-lg sm:bottom-auto sm:top-full sm:mb-0 sm:mt-2">
           <button
             type="button"
             onMouseDown={(e) => e.preventDefault()}

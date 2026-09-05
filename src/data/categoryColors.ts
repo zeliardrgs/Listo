@@ -65,7 +65,7 @@ export function categoryColor(category: string, overrides?: Record<string, strin
 }
 
 export const NEUTRAL_GROUP_COLOR: CategoryColor = {
-  cardBg: 'bg-[#fff1dc] dark:bg-brand-900/30',
+  cardBg: 'bg-[#fff1dc] dark:bg-[#4a3178]',
   headerText: 'text-brand-700 dark:text-brand-300',
   iconBg: 'bg-brand-50 dark:bg-brand-900/40'
 }

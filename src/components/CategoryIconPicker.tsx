@@ -54,7 +54,7 @@ export default function CategoryIconPicker({
       {open && pos && (
         <div
           style={{ position: 'fixed', top: pos.top, left: pos.left }}
-          className="z-50 w-64 rounded-xl border border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#241c15] p-2 shadow-lg"
+          className="z-50 w-64 rounded-xl border border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#5b3d94] p-2 shadow-lg"
         >
           <p className="mb-1.5 px-1 text-[11px] font-bold uppercase tracking-wide text-slate-400">Couleur</p>
           <div className="mb-2 grid grid-cols-5 gap-1.5">

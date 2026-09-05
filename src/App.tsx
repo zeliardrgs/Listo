@@ -134,7 +134,7 @@ function BottomTabBar({
         return (
           <button key={t.key} onClick={() => onSelect(t.key)} className="flex flex-1 items-center justify-center">
             {isActive ? (
-              <span className="flex items-center gap-1.5 rounded-full bg-cream dark:bg-[#171310] px-4 py-2 text-xs font-bold leading-none text-brand-700 dark:text-brand-300">
+              <span className="flex items-center gap-1.5 rounded-full bg-cream dark:bg-[#2a1b4d] px-4 py-2 text-xs font-bold leading-none text-brand-700 dark:text-brand-300">
                 <span className="relative h-4 w-4 shrink-0">
                   {t.icon}
                   {t.key === 'shopping' && <TabBadge count={toBuyCount} />}
@@ -171,7 +171,7 @@ export default function App() {
   }, [tab])
 
   return (
-    <div className="flex h-full flex-col bg-cream dark:bg-[#171310]">
+    <div className="flex h-full flex-col bg-cream dark:bg-[#2a1b4d]">
       <header
         className={`sticky top-0 z-30 bg-brand-600 px-3 pt-[calc(env(safe-area-inset-top)+0.5rem)] transition-all duration-200 sm:px-6 ${
           scrolled ? 'sm:pt-1' : 'sm:pt-2'
@@ -203,7 +203,7 @@ export default function App() {
                   scrolled ? 'h-7' : 'py-2.5'
                 } ${
                   !showSettings && tab === t.key
-                    ? `bg-cream dark:bg-[#171310] text-brand-700 dark:text-brand-300 ${scrolled ? 'rounded-full' : 'rounded-t-2xl'}`
+                    ? `bg-cream dark:bg-[#2a1b4d] text-brand-700 dark:text-brand-300 ${scrolled ? 'rounded-full' : 'rounded-t-2xl'}`
                     : 'text-white/85 hover:text-white'
                 }`}
               >

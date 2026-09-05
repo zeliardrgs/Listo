@@ -36,7 +36,7 @@ export default function HouseholdSwitcher({ onOpenSettings }: { onOpenSettings: 
       </button>
 
       {open && (
-        <div className="absolute left-0 top-full z-30 mt-1.5 w-56 overflow-hidden rounded-xl border border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#241c15] py-1 text-slate-700 dark:text-slate-200 shadow-lg">
+        <div className="absolute left-0 top-full z-30 mt-1.5 w-56 overflow-hidden rounded-xl border border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#5b3d94] py-1 text-slate-700 dark:text-slate-200 shadow-lg">
           <div className="border-b border-slate-100 dark:border-white/5 px-3 py-2">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Foyer actif</p>
             <p className="truncate text-sm font-bold text-brand-700 dark:text-brand-300">{active.name}</p>

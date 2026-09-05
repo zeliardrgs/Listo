@@ -61,7 +61,7 @@ export default function PlanningCell({
       onDrop={onDrop}
       onClick={onCellClick}
       className={`group/cell flex min-h-[64px] flex-col gap-1 border border-brand-50 dark:border-brand-800/40 p-1.5 transition-colors ${
-        dragOver ? 'bg-brand-50 dark:bg-brand-900/40 ring-2 ring-inset ring-brand-300' : armed && hasRoom ? 'cursor-pointer bg-brand-50/40 ring-1 ring-inset ring-brand-200' : 'bg-white dark:bg-[#241c15]'
+        dragOver ? 'bg-brand-50 dark:bg-brand-900/40 ring-2 ring-inset ring-brand-300' : armed && hasRoom ? 'cursor-pointer bg-brand-50/40 ring-1 ring-inset ring-brand-200' : 'bg-white dark:bg-[#5b3d94]'
       }`}
     >
       {validItems.map((item) => {

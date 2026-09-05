@@ -60,7 +60,7 @@ export default function HouseholdRequiredGate() {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-brand-900/60 px-4 py-10">
       <div className="relative w-full max-w-3xl">
         <div
-          className="absolute left-1/2 top-0 h-[51px] w-[104px] -translate-x-1/2 -translate-y-[calc(100%-3px)] bg-[#FFF1DC] dark:bg-brand-900/30"
+          className="absolute left-1/2 top-0 h-[51px] w-[104px] -translate-x-1/2 -translate-y-[calc(100%-3px)] bg-[#FFF1DC] dark:bg-[#4a3178]"
           style={{
             WebkitMaskImage: `url(${tagShape})`,
             maskImage: `url(${tagShape})`,
@@ -73,8 +73,8 @@ export default function HouseholdRequiredGate() {
           }}
         />
 
-        <div className="max-h-[85vh] overflow-y-auto rounded-3xl bg-white dark:bg-[#241c15] shadow-2xl">
-          <div className="bg-[#FFF1DC] dark:bg-brand-900/30 px-6 py-6 text-center">
+        <div className="max-h-[85vh] overflow-y-auto rounded-3xl bg-white dark:bg-[#5b3d94] shadow-2xl">
+          <div className="bg-[#FFF1DC] dark:bg-[#4a3178] px-6 py-6 text-center">
             <p className="flex flex-wrap items-center justify-center gap-2 text-xl font-extrabold text-brand-800 dark:text-brand-200 sm:text-2xl">
               Bienvenue sur <ListoLogo className="h-[2.94rem] w-auto sm:h-[3.43rem]" color="currentColor" />
             </p>
@@ -86,7 +86,7 @@ export default function HouseholdRequiredGate() {
             </p>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="flex flex-col rounded-2xl bg-[#FFF8EE] dark:bg-[#241c15] px-5 py-6 text-center">
+              <div className="flex flex-col rounded-2xl bg-[#FFF8EE] dark:bg-[#5b3d94] px-5 py-6 text-center">
                 <h2 className="mb-3 text-sm font-extrabold text-brand-700 dark:text-brand-300">Créer un foyer</h2>
                 <img src={createCat} alt="" className="mx-auto mb-4 h-24 w-24" />
                 <div className="mt-auto">
@@ -95,7 +95,7 @@ export default function HouseholdRequiredGate() {
                     onChange={(e) => setNameDraft(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && !busy && handleCreate()}
                     placeholder="Nom de votre foyer"
-                    className="mb-3 w-full rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-[#241c15] px-3 py-2 text-center text-sm focus:border-brand-400 focus:outline-none"
+                    className="mb-3 w-full rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-[#5b3d94] px-3 py-2 text-center text-sm focus:border-brand-400 focus:outline-none"
                   />
                   <button
                     type="button"
@@ -109,7 +109,7 @@ export default function HouseholdRequiredGate() {
                 </div>
               </div>
 
-              <div className="flex flex-col rounded-2xl bg-[#FFF8EE] dark:bg-[#241c15] px-5 py-6 text-center">
+              <div className="flex flex-col rounded-2xl bg-[#FFF8EE] dark:bg-[#5b3d94] px-5 py-6 text-center">
                 <h2 className="mb-3 text-sm font-extrabold text-brand-700 dark:text-brand-300">Rejoindre un foyer</h2>
                 <img src={joinCats} alt="" className="mx-auto mb-4 h-[5.52rem] w-auto" />
                 <div className="mt-auto">
@@ -120,7 +120,7 @@ export default function HouseholdRequiredGate() {
                       onKeyDown={(e) => e.key === 'Enter' && !busy && handleJoin()}
                       placeholder="Code du foyer"
                       maxLength={6}
-                      className="min-w-0 flex-1 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-[#241c15] px-3 py-2 text-center text-sm focus:border-brand-400 focus:outline-none"
+                      className="min-w-0 flex-1 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-[#5b3d94] px-3 py-2 text-center text-sm focus:border-brand-400 focus:outline-none"
                     />
                     <button
                       type="button"

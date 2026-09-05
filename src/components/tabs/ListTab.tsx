@@ -238,7 +238,7 @@ export default function ListTab() {
   return (
     <div className="mx-auto flex max-w-6xl flex-col px-3 pt-4 pb-36 sm:block sm:pb-8">
       <div
-        className={`hidden sm:sticky sm:top-0 sm:z-30 sm:-mx-3 sm:block sm:overflow-hidden sm:bg-cream dark:sm:bg-[#171310] sm:px-3 sm:transition-all sm:duration-200 ${
+        className={`hidden sm:sticky sm:top-0 sm:z-30 sm:-mx-3 sm:block sm:overflow-hidden sm:bg-cream dark:sm:bg-[#2a1b4d] sm:px-3 sm:transition-all sm:duration-200 ${
           scrolled ? 'sm:max-h-20 sm:py-2 sm:opacity-100' : 'sm:pointer-events-none sm:max-h-0 sm:py-0 sm:opacity-0'
         }`}
       >
@@ -257,7 +257,7 @@ export default function ListTab() {
       </div>
 
       <div
-        className={`order-2 fixed inset-x-0 bottom-16 z-20 bg-cream dark:bg-[#171310] px-3 py-2 transition-transform duration-200 sm:static sm:z-auto sm:order-none sm:mb-3 sm:translate-y-0 sm:bg-transparent sm:px-0 sm:py-0 ${
+        className={`order-2 fixed inset-x-0 bottom-16 z-20 bg-cream dark:bg-[#2a1b4d] px-3 py-2 transition-transform duration-200 sm:static sm:z-auto sm:order-none sm:mb-3 sm:translate-y-0 sm:bg-transparent sm:px-0 sm:py-0 ${
           scrollDirection === 'down' ? 'translate-y-[calc(100%+4rem)]' : 'translate-y-0'
         }`}
       >
@@ -387,7 +387,7 @@ export default function ListTab() {
                       type="button"
                       onClick={() => openAddForGroup(g)}
                       title={`Ajouter un article dans ${g.label}`}
-                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/60 normal-case tracking-normal hover:bg-white dark:hover:bg-[#241c15]"
+                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/60 normal-case tracking-normal hover:bg-white dark:hover:bg-[#5b3d94]"
                     >
                       <PlusIcon className="h-3.5 w-3.5" />
                     </button>

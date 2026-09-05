@@ -76,7 +76,7 @@ function SimpleDraftRow({
 
   if (editing) {
     return (
-      <li className="flex items-center rounded-lg border border-brand-300 bg-white dark:bg-[#241c15] px-1 py-1 text-sm">
+      <li className="flex items-center rounded-lg border border-brand-300 bg-white dark:bg-[#5b3d94] px-1 py-1 text-sm">
         <input
           ref={inputRef}
           autoFocus
@@ -223,11 +223,11 @@ function HouseholdSection() {
 
   return (
     <section id="settings-household" className="scroll-mt-4">
-      <div className="mb-2 rounded-2xl bg-[#FFF1DC] dark:bg-brand-900/30 px-4 py-3">
+      <div className="mb-2 rounded-2xl bg-[#FFF1DC] dark:bg-[#4a3178] px-4 py-3">
         <h3 className="text-sm font-extrabold text-brand-700 dark:text-brand-300">Foyer</h3>
       </div>
 
-      <div className="space-y-3 rounded-2xl border border-slate-100 dark:border-white/5 bg-white dark:bg-[#241c15] p-4">
+      <div className="space-y-3 rounded-2xl border border-slate-100 dark:border-white/5 bg-white dark:bg-[#5b3d94] p-4">
         {active ? (
           <div className="flex flex-col items-center gap-3 py-2 text-center">
             <p className="text-sm text-slate-500 dark:text-slate-400">Foyer actif :</p>
@@ -690,10 +690,10 @@ export default function SettingsPage({ onClose }: { onClose: () => void }) {
 
         <div className="min-w-0 flex-1 space-y-6">
           <section id="settings-appearance" className="scroll-mt-4">
-            <div className="mb-2 flex items-center justify-between rounded-2xl bg-[#FFF1DC] dark:bg-brand-900/30 px-4 py-3">
+            <div className="mb-2 flex items-center justify-between rounded-2xl bg-[#FFF1DC] dark:bg-[#4a3178] px-4 py-3">
               <h3 className="text-sm font-extrabold text-brand-700 dark:text-brand-300">Apparence</h3>
             </div>
-            <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 dark:border-white/5 bg-white dark:bg-[#241c15] px-3 py-2.5">
+            <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 dark:border-white/5 bg-white dark:bg-[#5b3d94] px-3 py-2.5">
               <span className="text-sm font-semibold text-slate-600 dark:text-slate-300">Thème</span>
               <div className="flex items-center gap-1 rounded-full bg-brand-50 dark:bg-brand-900/40 p-1">
                 {([
@@ -721,7 +721,7 @@ export default function SettingsPage({ onClose }: { onClose: () => void }) {
           <HouseholdSection />
 
           <section id="settings-stores" className="scroll-mt-4">
-            <div className="mb-2 flex items-center justify-between rounded-2xl bg-[#FFF1DC] dark:bg-brand-900/30 px-4 py-3">
+            <div className="mb-2 flex items-center justify-between rounded-2xl bg-[#FFF1DC] dark:bg-[#4a3178] px-4 py-3">
               <h3 className="text-sm font-extrabold text-brand-700 dark:text-brand-300">Magasins</h3>
               <button
                 type="button"
@@ -732,7 +732,7 @@ export default function SettingsPage({ onClose }: { onClose: () => void }) {
                 <PlusIcon className="h-4 w-4" />
               </button>
             </div>
-            <div className="mb-2 flex items-center justify-between gap-3 rounded-xl border border-slate-100 dark:border-white/5 bg-white dark:bg-[#241c15] px-3 py-2.5">
+            <div className="mb-2 flex items-center justify-between gap-3 rounded-xl border border-slate-100 dark:border-white/5 bg-white dark:bg-[#5b3d94] px-3 py-2.5">
               <label htmlFor="default-store-select" className="text-sm font-semibold text-slate-600 dark:text-slate-300">
                 Magasin par défaut
               </label>
@@ -750,7 +750,7 @@ export default function SettingsPage({ onClose }: { onClose: () => void }) {
                 ))}
               </select>
             </div>
-            <ul className="divide-y divide-slate-100 dark:divide-white/5 overflow-hidden rounded-2xl border border-slate-100 dark:border-white/5 bg-white dark:bg-[#241c15]">
+            <ul className="divide-y divide-slate-100 dark:divide-white/5 overflow-hidden rounded-2xl border border-slate-100 dark:border-white/5 bg-white dark:bg-[#5b3d94]">
               {storeDrafts.map((draft) => (
                 <StoreDraftRow
                   key={draft.id}
@@ -768,7 +768,7 @@ export default function SettingsPage({ onClose }: { onClose: () => void }) {
           </section>
 
           <section id="settings-categories" className="scroll-mt-4">
-            <div className="mb-2 flex items-center justify-between rounded-2xl bg-[#FFF1DC] dark:bg-brand-900/30 px-4 py-3">
+            <div className="mb-2 flex items-center justify-between rounded-2xl bg-[#FFF1DC] dark:bg-[#4a3178] px-4 py-3">
               <h3 className="text-sm font-extrabold text-brand-700 dark:text-brand-300">Rayons</h3>
               <button
                 type="button"
@@ -779,7 +779,7 @@ export default function SettingsPage({ onClose }: { onClose: () => void }) {
                 <PlusIcon className="h-4 w-4" />
               </button>
             </div>
-            <ul className="divide-y divide-slate-100 dark:divide-white/5 overflow-hidden rounded-2xl border border-slate-100 dark:border-white/5 bg-white dark:bg-[#241c15]">
+            <ul className="divide-y divide-slate-100 dark:divide-white/5 overflow-hidden rounded-2xl border border-slate-100 dark:border-white/5 bg-white dark:bg-[#5b3d94]">
               {categoryDrafts.map((draft) => (
                 <CategoryDraftRow
                   key={draft.id}
@@ -799,7 +799,7 @@ export default function SettingsPage({ onClose }: { onClose: () => void }) {
           </section>
 
           <section id="settings-tags" className="scroll-mt-4">
-            <div className="mb-2 flex items-center justify-between rounded-2xl bg-[#FFF1DC] dark:bg-brand-900/30 px-4 py-3">
+            <div className="mb-2 flex items-center justify-between rounded-2xl bg-[#FFF1DC] dark:bg-[#4a3178] px-4 py-3">
               <h3 className="text-sm font-extrabold text-brand-700 dark:text-brand-300">Tags</h3>
               <button
                 type="button"
@@ -810,7 +810,7 @@ export default function SettingsPage({ onClose }: { onClose: () => void }) {
                 <PlusIcon className="h-4 w-4" />
               </button>
             </div>
-            <ul className="divide-y divide-slate-100 dark:divide-white/5 overflow-hidden rounded-2xl border border-slate-100 dark:border-white/5 bg-white dark:bg-[#241c15]">
+            <ul className="divide-y divide-slate-100 dark:divide-white/5 overflow-hidden rounded-2xl border border-slate-100 dark:border-white/5 bg-white dark:bg-[#5b3d94]">
               {tagDrafts.map((draft) => (
                 <SimpleDraftRow
                   key={draft.id}
@@ -829,7 +829,7 @@ export default function SettingsPage({ onClose }: { onClose: () => void }) {
         </div>
       </div>
 
-      <div className="fixed inset-x-0 bottom-16 z-30 flex gap-2 border-t border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#241c15] p-3 sm:hidden">
+      <div className="fixed inset-x-0 bottom-16 z-30 flex gap-2 border-t border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#5b3d94] p-3 sm:hidden">
         <button
           type="button"
           onClick={onClose}

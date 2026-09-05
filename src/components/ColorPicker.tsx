@@ -41,7 +41,7 @@ export default function ColorPicker({ value, onChange }: { value: string; onChan
       {open && pos && (
         <div
           style={{ position: 'fixed', top: pos.top, left: pos.left }}
-          className="z-50 w-48 rounded-xl border border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#241c15] p-2 shadow-lg"
+          className="z-50 w-48 rounded-xl border border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#5b3d94] p-2 shadow-lg"
         >
           <div className="grid grid-cols-5 gap-1.5">
             {COLOR_SWATCHES.map((c) => (

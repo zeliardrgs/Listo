@@ -44,7 +44,7 @@ export default function QuantityModal({
           <select
             value={unit}
             onChange={(e) => setUnit(e.target.value as Unit | '')}
-            className="flex-1 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-[#241c15] px-2 py-2 text-sm focus:border-brand-400 focus:outline-none"
+            className="flex-1 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-[#5b3d94] px-2 py-2 text-sm focus:border-brand-400 focus:outline-none"
           >
             <option value="">Unité</option>
             <optgroup label="Solide">

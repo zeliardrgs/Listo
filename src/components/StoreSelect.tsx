@@ -94,7 +94,7 @@ export default function StoreSelect({
       </button>
 
       {open && (
-        <div className="absolute z-30 mt-1 max-h-64 w-full min-w-[180px] overflow-y-auto rounded-lg border border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#241c15] py-1 shadow-lg">
+        <div className="absolute z-30 mt-1 max-h-64 w-full min-w-[180px] overflow-y-auto rounded-lg border border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#5b3d94] py-1 shadow-lg">
           {stores.map((s) => (
             <button
               key={s}

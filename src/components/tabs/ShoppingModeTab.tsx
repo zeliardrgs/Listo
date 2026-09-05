@@ -266,7 +266,7 @@ export default function ShoppingModeTab() {
             {storeCounts.map(([store, count]) => (
               <div
                 key={store}
-                className="flex w-full items-center gap-1 rounded-xl border border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#241c15] pr-1.5 shadow-sm hover:bg-brand-50/60"
+                className="flex w-full items-center gap-1 rounded-xl border border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#5b3d94] pr-1.5 shadow-sm hover:bg-brand-50/60"
               >
                 <button
                   onClick={() => setActiveStore(store)}
@@ -303,7 +303,7 @@ export default function ShoppingModeTab() {
   return (
     <div className="mx-auto max-w-lg px-3 pb-24 pt-4 sm:pb-4 lg:max-w-3xl">
       <div className="mb-2 flex items-center gap-2">
-        <div className="flex min-w-0 flex-1 items-center gap-2 rounded-full bg-white dark:bg-[#241c15] px-4 py-3 shadow-sm">
+        <div className="flex min-w-0 flex-1 items-center gap-2 rounded-full bg-white dark:bg-[#5b3d94] px-4 py-3 shadow-sm">
           <button
             onClick={() => setActiveStore(null)}
             className="shrink-0 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
@@ -323,12 +323,12 @@ export default function ShoppingModeTab() {
           <button
             onClick={() => setMenuOpen((v) => !v)}
             title="Plus d'options"
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-white dark:bg-[#241c15] text-slate-500 dark:text-slate-400 shadow-sm hover:bg-slate-50 dark:hover:bg-white/5"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-white dark:bg-[#5b3d94] text-slate-500 dark:text-slate-400 shadow-sm hover:bg-slate-50 dark:hover:bg-white/5"
           >
             <MoreIcon className="h-5 w-5 rotate-90" />
           </button>
           {menuOpen && (
-            <div className="absolute right-0 top-full z-30 mt-1.5 w-56 overflow-hidden rounded-xl border border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#241c15] py-1 shadow-lg">
+            <div className="absolute right-0 top-full z-30 mt-1.5 w-56 overflow-hidden rounded-xl border border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#5b3d94] py-1 shadow-lg">
               <button
                 type="button"
                 onClick={() => {
@@ -366,7 +366,7 @@ export default function ShoppingModeTab() {
       </div>
 
       {storeRecipes.length > 0 && (
-        <div className="mb-4 overflow-hidden rounded-2xl bg-[#FFF1DC] dark:bg-brand-900/30">
+        <div className="mb-4 overflow-hidden rounded-2xl bg-[#FFF1DC] dark:bg-[#4a3178]">
           <button
             type="button"
             onClick={() => setRecipesOpen((v) => !v)}
@@ -385,7 +385,7 @@ export default function ShoppingModeTab() {
           {recipesOpen && (
             <div className="space-y-2 px-3 pb-3">
               {storeRecipes.map((r) => (
-                <div key={r.id} className="flex items-center justify-between gap-2 rounded-xl bg-white dark:bg-[#241c15] px-3 py-2.5">
+                <div key={r.id} className="flex items-center justify-between gap-2 rounded-xl bg-white dark:bg-[#5b3d94] px-3 py-2.5">
                   <span className="min-w-0 flex-1 truncate text-sm font-bold text-slate-800 dark:text-slate-100">
                     {r.name}
                     <span className="ml-1.5 font-normal text-slate-400">
@@ -437,7 +437,7 @@ export default function ShoppingModeTab() {
                 <Emoji name={emojiFor(cat)} size={16} />
                 {cat} <span className="font-medium opacity-70">· {list.length}</span>
               </div>
-              <ul className="bg-white dark:bg-[#241c15]">
+              <ul className="bg-white dark:bg-[#5b3d94]">
                 {list.map((it) => (
                   <li
                     key={it.id}
@@ -451,7 +451,7 @@ export default function ShoppingModeTab() {
                         updateItem(it.id, { checked: !it.checked })
                       }}
                       className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border-2 transition-colors ${
-                        it.checked ? 'border-brand-600 bg-brand-600 text-white' : 'border-slate-200 dark:border-white/10 bg-white dark:bg-[#241c15]'
+                        it.checked ? 'border-brand-600 bg-brand-600 text-white' : 'border-slate-200 dark:border-white/10 bg-white dark:bg-[#5b3d94]'
                       }`}
                     >
                       {it.checked && <CheckIcon className="h-3.5 w-3.5" />}
@@ -516,7 +516,7 @@ export default function ShoppingModeTab() {
               </span>
             ))}
           </div>
-          <div className="celebration-card relative z-10 flex flex-col items-center gap-3 rounded-3xl bg-white dark:bg-[#241c15] px-10 py-8 text-center shadow-xl">
+          <div className="celebration-card relative z-10 flex flex-col items-center gap-3 rounded-3xl bg-white dark:bg-[#5b3d94] px-10 py-8 text-center shadow-xl">
             <span className="text-5xl">🎉</span>
             <p className="text-xl font-extrabold text-brand-700 dark:text-brand-300">{celebration.message}</p>
           </div>

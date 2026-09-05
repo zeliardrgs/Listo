@@ -139,7 +139,7 @@ export default function PlanningTab() {
     <div className="mx-auto max-w-[1800px] px-3 pt-4 pb-10 lg:px-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
         <aside className="w-full sm:w-72 sm:shrink-0">
-          <div className="mb-2 rounded-2xl bg-[#FFF1DC] dark:bg-brand-900/30 px-4 py-3">
+          <div className="mb-2 rounded-2xl bg-[#FFF1DC] dark:bg-[#4a3178] px-4 py-3">
             <h3 className="text-sm font-extrabold text-brand-700 dark:text-brand-300">Recettes</h3>
           </div>
           {planningQueue.length > 0 && (
@@ -195,7 +195,7 @@ export default function PlanningTab() {
         </aside>
 
         <div className="min-w-0 flex-1">
-          <div className="mb-2 flex flex-col gap-2 rounded-2xl bg-[#FFF1DC] dark:bg-brand-900/30 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="mb-2 flex flex-col gap-2 rounded-2xl bg-[#FFF1DC] dark:bg-[#4a3178] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
             <h3 className="text-sm font-extrabold text-brand-700 dark:text-brand-300">Planning</h3>
             <div className="flex flex-wrap items-center gap-3">
               {VIEW_MODES.map((m) => (
@@ -229,9 +229,9 @@ export default function PlanningTab() {
             </div>
           </div>
 
-          <div className="overflow-x-auto rounded-2xl border border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#241c15] shadow-sm">
+          <div className="overflow-x-auto rounded-2xl border border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#5b3d94] shadow-sm">
             <div
-              className="grid w-full bg-white dark:bg-[#241c15]"
+              className="grid w-full bg-white dark:bg-[#5b3d94]"
               style={{ gridTemplateColumns: `56px repeat(${totalColumns}, ${columnTemplate})` }}
             >
               {weekBlocks.length > 1 && (
@@ -309,14 +309,14 @@ export default function PlanningTab() {
             <div className="flex-1" />
             <button
               onClick={handleExportImage}
-              className="flex items-center gap-1.5 rounded-full border border-brand-300 bg-white dark:bg-[#241c15] px-4 py-2.5 text-sm font-bold text-brand-600 dark:text-brand-300 shadow-sm hover:bg-brand-50 dark:hover:bg-brand-900/40"
+              className="flex items-center gap-1.5 rounded-full border border-brand-300 bg-white dark:bg-[#5b3d94] px-4 py-2.5 text-sm font-bold text-brand-600 dark:text-brand-300 shadow-sm hover:bg-brand-50 dark:hover:bg-brand-900/40"
             >
               <ImageIcon className="h-4 w-4" />
               Télécharger Image
             </button>
             <button
               onClick={handleCopyText}
-              className="flex items-center gap-1.5 rounded-full border border-brand-300 bg-white dark:bg-[#241c15] px-4 py-2.5 text-sm font-bold text-brand-600 dark:text-brand-300 shadow-sm hover:bg-brand-50 dark:hover:bg-brand-900/40"
+              className="flex items-center gap-1.5 rounded-full border border-brand-300 bg-white dark:bg-[#5b3d94] px-4 py-2.5 text-sm font-bold text-brand-600 dark:text-brand-300 shadow-sm hover:bg-brand-50 dark:hover:bg-brand-900/40"
             >
               <CopyIcon className="h-4 w-4" />
               Copier texte

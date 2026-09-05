@@ -139,13 +139,13 @@ export default function RecipesTab() {
       style={isDesktop ? { maxWidth: hasValidSelection ? '1700px' : undefined, transition: 'max-width 300ms ease' } : undefined}
     >
       <div
-        className={`order-2 fixed inset-x-0 bottom-16 z-20 bg-cream dark:bg-[#171310] px-3 py-2 transition-transform duration-200 sm:static sm:z-auto sm:order-none sm:mb-3 sm:translate-y-0 sm:bg-transparent sm:px-0 sm:py-0 ${
+        className={`order-2 fixed inset-x-0 bottom-16 z-20 bg-cream dark:bg-[#2a1b4d] px-3 py-2 transition-transform duration-200 sm:static sm:z-auto sm:order-none sm:mb-3 sm:translate-y-0 sm:bg-transparent sm:px-0 sm:py-0 ${
           scrollDirection === 'down' ? 'translate-y-[calc(100%+4rem)]' : 'translate-y-0'
         }`}
       >
         <div className="flex items-center gap-3">
           <div ref={searchRef} className="relative flex-1">
-            <div className="flex items-center gap-2 rounded-full bg-white dark:bg-[#241c15] px-4 py-3 shadow-sm">
+            <div className="flex items-center gap-2 rounded-full bg-white dark:bg-[#5b3d94] px-4 py-3 shadow-sm">
               <SearchIcon className="h-5 w-5 shrink-0 text-slate-300 dark:text-slate-600" />
               <input
                 value={search}
@@ -166,7 +166,7 @@ export default function RecipesTab() {
             </div>
 
             {searchOpen && search.trim() && (
-              <div className="absolute bottom-full z-30 mb-2 w-full overflow-hidden rounded-2xl border border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#241c15] shadow-lg sm:bottom-auto sm:top-full sm:mb-0 sm:mt-2">
+              <div className="absolute bottom-full z-30 mb-2 w-full overflow-hidden rounded-2xl border border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#5b3d94] shadow-lg sm:bottom-auto sm:top-full sm:mb-0 sm:mt-2">
                 <button
                   type="button"
                   onMouseDown={(e) => e.preventDefault()}

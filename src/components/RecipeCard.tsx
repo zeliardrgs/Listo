@@ -30,7 +30,7 @@ export default function RecipeCard({
   return (
     <div
       onClick={onOpen}
-      className={`flex cursor-pointer gap-3 overflow-hidden rounded-2xl border bg-white dark:bg-[#241c15] shadow-sm transition-shadow hover:shadow-md sm:block sm:gap-0 ${
+      className={`flex cursor-pointer gap-3 overflow-hidden rounded-2xl border bg-white dark:bg-[#5b3d94] shadow-sm transition-shadow hover:shadow-md sm:block sm:gap-0 ${
         selected ? 'border-brand-500 ring-2 ring-brand-200' : 'border-brand-100 dark:border-brand-800/50'
       }`}
     >

@@ -101,8 +101,8 @@ export default function ImportReviewModal({
 
   return createPortal(
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
-      <div className="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white dark:bg-[#241c15] shadow-2xl">
-        <div className="shrink-0 bg-[#FFF1DC] dark:bg-brand-900/30 px-6 py-4 text-center">
+      <div className="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white dark:bg-[#5b3d94] shadow-2xl">
+        <div className="shrink-0 bg-[#FFF1DC] dark:bg-[#4a3178] px-6 py-4 text-center">
           <h2 className="text-lg font-extrabold text-brand-800 dark:text-brand-200 sm:text-xl">Correspondance des ingrédients</h2>
         </div>
 
@@ -137,12 +137,12 @@ export default function ImportReviewModal({
             </span>
           </div>
 
-          <div className="mx-auto max-w-3xl space-y-2 rounded-2xl bg-[#FFF1DC] dark:bg-brand-900/30 p-3">
+          <div className="mx-auto max-w-3xl space-y-2 rounded-2xl bg-[#FFF1DC] dark:bg-[#4a3178] p-3">
             {ingredients.map((ing) => {
               const resolution = resolutionFor(ing)
               return (
                 <div key={ing.id} className="grid grid-cols-2 items-start gap-3">
-                  <div className="flex items-center gap-1.5 rounded-xl bg-white dark:bg-[#241c15] px-3 py-2.5 ring-1 ring-slate-100 dark:ring-white/5">
+                  <div className="flex items-center gap-1.5 rounded-xl bg-white dark:bg-[#5b3d94] px-3 py-2.5 ring-1 ring-slate-100 dark:ring-white/5">
                     <input
                       value={ing.name}
                       onChange={(e) => renameIngredient(ing.id, e.target.value)}
@@ -162,7 +162,7 @@ export default function ImportReviewModal({
                     <button
                       type="button"
                       onClick={() => setPickerFor((v) => (v === ing.id ? null : ing.id))}
-                      className="flex w-full items-center gap-2 rounded-xl bg-white dark:bg-[#241c15] px-3 py-2.5 text-left ring-1 ring-slate-100 dark:ring-white/5"
+                      className="flex w-full items-center gap-2 rounded-xl bg-white dark:bg-[#5b3d94] px-3 py-2.5 text-left ring-1 ring-slate-100 dark:ring-white/5"
                     >
                       {resolution.mode === 'existing' ? (
                         <>
@@ -187,7 +187,7 @@ export default function ImportReviewModal({
                     </button>
 
                     {pickerFor === ing.id && (
-                      <div className="absolute left-0 right-0 top-full z-10 mt-1.5 space-y-1 rounded-xl border border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#241c15] p-2 shadow-lg">
+                      <div className="absolute left-0 right-0 top-full z-10 mt-1.5 space-y-1 rounded-xl border border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#5b3d94] p-2 shadow-lg">
                         <div className="flex items-center gap-1.5 rounded-lg bg-slate-50 dark:bg-white/5 px-2.5 py-1.5">
                           <SearchIcon className="h-3.5 w-3.5 shrink-0 text-slate-300 dark:text-slate-600" />
                           <input

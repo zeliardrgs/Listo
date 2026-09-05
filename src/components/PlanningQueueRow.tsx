@@ -27,7 +27,7 @@ export default function PlanningQueueRow({
       onClick={onSelect}
       title="Toucher pour sélectionner, puis toucher un créneau pour la placer"
       className={`group flex cursor-grab items-start gap-2 rounded-xl border p-2 shadow-sm transition-colors active:cursor-grabbing ${
-        armed ? 'border-brand-400 bg-brand-50 dark:bg-brand-900/40 ring-2 ring-brand-300' : 'border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#241c15]'
+        armed ? 'border-brand-400 bg-brand-50 dark:bg-brand-900/40 ring-2 ring-brand-300' : 'border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#5b3d94]'
       }`}
     >
       <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-brand-50 dark:bg-brand-900/40">
