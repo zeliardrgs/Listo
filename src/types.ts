@@ -31,6 +31,16 @@ export interface ShoppingItem {
   // Only ever set for recipe-linked items — a manually added article has no
   // quantity, matching one recipe's contribution per entry.
   recipeQuantities?: RecipeQuantityContribution[]
+  // Manually set quantity for this shopping trip, via "Ajuster la quantité".
+  // Cleared whenever the item leaves the "to buy" list, same lifecycle as
+  // recipeQuantities.
+  quantity?: number
+  unit?: Unit
+  // Remembered quantity/unit ("conserver pour les prochaines fois"), applied
+  // automatically the next time the item is added back to the list. Unlike
+  // quantity/unit above, this survives leaving the list.
+  defaultQuantity?: number
+  defaultUnit?: Unit
 }
 
 export interface ProductSuggestion {

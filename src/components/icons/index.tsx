@@ -288,3 +288,32 @@ export function ClipboardIcon({ className }: IconProps) {
     </svg>
   )
 }
+
+export function SunIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+      <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d="M12 2V4M12 20V22M4 12H2M22 12H20M5.63611 5.63604L4.22189 4.22183M19.7781 19.7782L18.3639 18.364M18.3639 5.63604L19.7781 4.22183M4.22189 19.7782L5.63611 18.364"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+export function MoonIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+      <path
+        d="M21 12.7929C19.9319 13.7616 18.5177 14.3529 16.9642 14.3529C13.6153 14.3529 10.8971 11.6347 10.8971 8.28575C10.8971 6.73224 11.4884 5.31801 12.4571 4.24988C7.87096 4.68356 4.28571 8.54344 4.28571 13.2429C4.28571 18.2314 8.33427 22.2799 13.3228 22.2799C18.0222 22.2799 21.8821 18.6947 22.3158 14.1086C21.7434 14.4335 21.1357 14.7 21 12.7929Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}

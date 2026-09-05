@@ -60,7 +60,7 @@ export default function HouseholdRequiredGate() {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-brand-900/60 px-4 py-10">
       <div className="relative w-full max-w-3xl">
         <div
-          className="absolute left-1/2 top-0 h-[51px] w-[104px] -translate-x-1/2 -translate-y-[calc(100%-3px)] bg-[#FFF1DC] dark:bg-[#3a2f1f]"
+          className="absolute left-1/2 top-0 h-[51px] w-[104px] -translate-x-1/2 -translate-y-[calc(100%-3px)] bg-[#FFF1DC] dark:bg-brand-900/30"
           style={{
             WebkitMaskImage: `url(${tagShape})`,
             maskImage: `url(${tagShape})`,
@@ -74,7 +74,7 @@ export default function HouseholdRequiredGate() {
         />
 
         <div className="max-h-[85vh] overflow-y-auto rounded-3xl bg-white dark:bg-[#241c15] shadow-2xl">
-          <div className="bg-[#FFF1DC] dark:bg-[#3a2f1f] px-6 py-6 text-center">
+          <div className="bg-[#FFF1DC] dark:bg-brand-900/30 px-6 py-6 text-center">
             <p className="flex flex-wrap items-center justify-center gap-2 text-xl font-extrabold text-brand-800 dark:text-brand-200 sm:text-2xl">
               Bienvenue sur <ListoLogo className="h-[2.94rem] w-auto sm:h-[3.43rem]" color="currentColor" />
             </p>

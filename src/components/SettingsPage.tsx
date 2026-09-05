@@ -223,7 +223,7 @@ function HouseholdSection() {
 
   return (
     <section id="settings-household" className="scroll-mt-4">
-      <div className="mb-2 rounded-2xl bg-[#FFF1DC] dark:bg-[#3a2f1f] px-4 py-3">
+      <div className="mb-2 rounded-2xl bg-[#FFF1DC] dark:bg-brand-900/30 px-4 py-3">
         <h3 className="text-sm font-extrabold text-brand-700 dark:text-brand-300">Foyer</h3>
       </div>
 
@@ -690,7 +690,7 @@ export default function SettingsPage({ onClose }: { onClose: () => void }) {
 
         <div className="min-w-0 flex-1 space-y-6">
           <section id="settings-appearance" className="scroll-mt-4">
-            <div className="mb-2 flex items-center justify-between rounded-2xl bg-[#FFF1DC] dark:bg-[#3a2f1f] px-4 py-3">
+            <div className="mb-2 flex items-center justify-between rounded-2xl bg-[#FFF1DC] dark:bg-brand-900/30 px-4 py-3">
               <h3 className="text-sm font-extrabold text-brand-700 dark:text-brand-300">Apparence</h3>
             </div>
             <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 dark:border-white/5 bg-white dark:bg-[#241c15] px-3 py-2.5">
@@ -721,7 +721,7 @@ export default function SettingsPage({ onClose }: { onClose: () => void }) {
           <HouseholdSection />
 
           <section id="settings-stores" className="scroll-mt-4">
-            <div className="mb-2 flex items-center justify-between rounded-2xl bg-[#FFF1DC] dark:bg-[#3a2f1f] px-4 py-3">
+            <div className="mb-2 flex items-center justify-between rounded-2xl bg-[#FFF1DC] dark:bg-brand-900/30 px-4 py-3">
               <h3 className="text-sm font-extrabold text-brand-700 dark:text-brand-300">Magasins</h3>
               <button
                 type="button"
@@ -768,7 +768,7 @@ export default function SettingsPage({ onClose }: { onClose: () => void }) {
           </section>
 
           <section id="settings-categories" className="scroll-mt-4">
-            <div className="mb-2 flex items-center justify-between rounded-2xl bg-[#FFF1DC] dark:bg-[#3a2f1f] px-4 py-3">
+            <div className="mb-2 flex items-center justify-between rounded-2xl bg-[#FFF1DC] dark:bg-brand-900/30 px-4 py-3">
               <h3 className="text-sm font-extrabold text-brand-700 dark:text-brand-300">Rayons</h3>
               <button
                 type="button"
@@ -799,7 +799,7 @@ export default function SettingsPage({ onClose }: { onClose: () => void }) {
           </section>
 
           <section id="settings-tags" className="scroll-mt-4">
-            <div className="mb-2 flex items-center justify-between rounded-2xl bg-[#FFF1DC] dark:bg-[#3a2f1f] px-4 py-3">
+            <div className="mb-2 flex items-center justify-between rounded-2xl bg-[#FFF1DC] dark:bg-brand-900/30 px-4 py-3">
               <h3 className="text-sm font-extrabold text-brand-700 dark:text-brand-300">Tags</h3>
               <button
                 type="button"

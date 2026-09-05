@@ -6,12 +6,14 @@ import ShoppingModeTab from './components/tabs/ShoppingModeTab'
 import SettingsPage from './components/SettingsPage'
 import ListoLogo from './components/ListoLogo'
 import SettingsIcon from './components/SettingsIcon'
-import { ClipboardIcon, CalendarIcon, MoreIcon } from './components/icons'
+import { ClipboardIcon, CalendarIcon, MoreIcon, SunIcon, MoonIcon } from './components/icons'
 import { useScrolled } from './hooks/useScrolled'
 import { useScrollDirection } from './hooks/useScrollDirection'
 import { useHouseholdSync } from './hooks/useHouseholdSync'
 import { useTheme } from './hooks/useTheme'
+import { useIsDark } from './hooks/useIsDark'
 import { useAppStore } from './store/useAppStore'
+import { useThemeStore } from './store/useThemeStore'
 import JoinInvite from './components/JoinInvite'
 import InstallBanner from './components/InstallBanner'
 import HouseholdRequiredGate from './components/HouseholdRequiredGate'
@@ -89,6 +91,21 @@ function SettingsButton({
       className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white transition-colors hover:bg-white/15 ${className ?? ''}`}
     >
       <Icon className="h-5 w-5" />
+    </button>
+  )
+}
+
+function ThemeToggleButton() {
+  const isDark = useIsDark()
+  const setThemeMode = useThemeStore((s) => s.setMode)
+
+  return (
+    <button
+      onClick={() => setThemeMode(isDark ? 'light' : 'dark')}
+      title={isDark ? 'Passer au thème clair' : 'Passer au thème sombre'}
+      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white transition-colors hover:bg-white/15"
+    >
+      {isDark ? <MoonIcon className="h-5 w-5" /> : <SunIcon className="h-5 w-5" />}
     </button>
   )
 }
@@ -203,6 +220,7 @@ export default function App() {
 
           <div className={`hidden items-center gap-2 sm:flex ${scrolled ? 'pb-1' : 'pb-2'}`}>
             <HouseholdSwitcher onOpenSettings={() => setShowSettings(true)} />
+            <ThemeToggleButton />
             <SettingsButton onClick={() => setShowSettings(true)} />
           </div>
         </div>

@@ -124,6 +124,7 @@ interface AppStore {
 
   addItem: (item: Omit<ShoppingItem, 'id' | 'checked' | 'updatedAt'>) => void
   updateItem: (id: string, patch: Partial<ShoppingItem>) => void
+  setItemQuantity: (id: string, quantity: number | undefined, unit: Unit | undefined, keepAsDefault: boolean) => void
   removeItem: (id: string) => void
   toggleChecked: (id: string) => void
   resetCheckedForStore: (store: string) => void
@@ -246,6 +247,12 @@ export const useAppStore = create<AppStore>()(
           if (patch.toBuy === true && !current.toBuy && patch.fromRecipes === undefined) {
             updated.fromRecipes = undefined
             updated.recipeQuantities = undefined
+            // Re-apply a remembered quantity ("conserver pour les prochaines
+            // fois") unless this same call is already setting one explicitly.
+            if (patch.quantity === undefined && patch.unit === undefined) {
+              updated.quantity = current.defaultQuantity
+              updated.unit = current.defaultUnit
+            }
           }
 
           // Taking an item off the "to buy" list closes out whatever recipe
@@ -256,6 +263,8 @@ export const useAppStore = create<AppStore>()(
           if (patch.toBuy === false && current.toBuy) {
             updated.fromRecipes = undefined
             updated.recipeQuantities = undefined
+            updated.quantity = undefined
+            updated.unit = undefined
           }
 
           const oldNameKey = current.name.trim().toLowerCase()
@@ -290,6 +299,21 @@ export const useAppStore = create<AppStore>()(
           return { items: s.items.map((it) => (it.id === id ? updated : it)), recipes }
         }),
 
+      setItemQuantity: (id, quantity, unit, keepAsDefault) =>
+        set((s) => ({
+          items: s.items.map((it) =>
+            it.id === id
+              ? {
+                  ...it,
+                  quantity,
+                  unit,
+                  ...(keepAsDefault ? { defaultQuantity: quantity, defaultUnit: unit } : {}),
+                  updatedAt: Date.now()
+                }
+              : it
+          )
+        })),
+
       removeItem: (id) => set((s) => ({ items: s.items.filter((it) => it.id !== id) })),
 
       replaceItems: (items) => set({ items }),
@@ -298,7 +322,7 @@ export const useAppStore = create<AppStore>()(
         set((s) => ({
           items: s.items.map((it) =>
             it.toBuy || it.checked
-              ? { ...it, toBuy: false, checked: false, fromRecipes: undefined, recipeQuantities: undefined }
+              ? { ...it, toBuy: false, checked: false, fromRecipes: undefined, recipeQuantities: undefined, quantity: undefined, unit: undefined }
               : it
           )
         })),
@@ -307,7 +331,7 @@ export const useAppStore = create<AppStore>()(
         set((s) => ({
           items: s.items.map((it) =>
             it.store === store && (it.toBuy || it.checked)
-              ? { ...it, toBuy: false, checked: false, fromRecipes: undefined, recipeQuantities: undefined }
+              ? { ...it, toBuy: false, checked: false, fromRecipes: undefined, recipeQuantities: undefined, quantity: undefined, unit: undefined }
               : it
           )
         })),
@@ -328,7 +352,15 @@ export const useAppStore = create<AppStore>()(
             .filter((it) => !(it.store === store && it.checked && it.onceOnly))
             .map((it) =>
               it.store === store && it.checked
-                ? { ...it, toBuy: it.recurring, checked: false, fromRecipes: undefined, recipeQuantities: undefined }
+                ? {
+                    ...it,
+                    toBuy: it.recurring,
+                    checked: false,
+                    fromRecipes: undefined,
+                    recipeQuantities: undefined,
+                    quantity: it.recurring ? it.defaultQuantity : undefined,
+                    unit: it.recurring ? it.defaultUnit : undefined
+                  }
                 : it
             )
         })),

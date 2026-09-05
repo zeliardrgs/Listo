@@ -20,6 +20,7 @@ import StoreIconView from '../StoreIconView'
 import Emoji from '../Emoji'
 import ShoppingListPrintable from '../ShoppingListPrintable'
 import { formatRecipeQuantity } from '../../utils/formatRecipeQuantity'
+import { pluralizeUnit } from '../../utils/pluralizeUnit'
 import type { ShoppingItem } from '../../types'
 
 const CELEBRATIONS = [
@@ -134,6 +135,10 @@ export default function ShoppingModeTab() {
   function recipesUsing(item: ShoppingItem): string[] {
     if (!item.fromRecipes || item.fromRecipes.length === 0) return []
     return item.fromRecipes.map((id) => recipes.find((r) => r.id === id)?.name).filter(Boolean) as string[]
+  }
+
+  function quantityText(item: ShoppingItem): string {
+    return formatRecipeQuantity(item.recipeQuantities) || (item.quantity != null ? `${item.quantity} ${pluralizeUnit(item.unit, item.quantity)}`.trim() : '')
   }
 
   function showToast(message: string, snapshot?: ShoppingItem[]) {
@@ -361,7 +366,7 @@ export default function ShoppingModeTab() {
       </div>
 
       {storeRecipes.length > 0 && (
-        <div className="mb-4 overflow-hidden rounded-2xl bg-[#FFF1DC] dark:bg-[#3a2f1f]">
+        <div className="mb-4 overflow-hidden rounded-2xl bg-[#FFF1DC] dark:bg-brand-900/30">
           <button
             type="button"
             onClick={() => setRecipesOpen((v) => !v)}
@@ -458,10 +463,8 @@ export default function ShoppingModeTab() {
                         >
                           {it.name}
                         </span>
-                        {formatRecipeQuantity(it.recipeQuantities) && (
-                          <span className="shrink-0 text-xs font-medium text-slate-400">
-                            • {formatRecipeQuantity(it.recipeQuantities)}
-                          </span>
+                        {quantityText(it) && (
+                          <span className="shrink-0 text-xs font-medium text-slate-400">• {quantityText(it)}</span>
                         )}
                       </div>
                       {(it.brand || recipesUsing(it).length > 0) && (

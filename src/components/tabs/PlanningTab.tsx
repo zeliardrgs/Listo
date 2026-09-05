@@ -139,7 +139,7 @@ export default function PlanningTab() {
     <div className="mx-auto max-w-[1800px] px-3 pt-4 pb-10 lg:px-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
         <aside className="w-full sm:w-72 sm:shrink-0">
-          <div className="mb-2 rounded-2xl bg-[#FFF1DC] dark:bg-[#3a2f1f] px-4 py-3">
+          <div className="mb-2 rounded-2xl bg-[#FFF1DC] dark:bg-brand-900/30 px-4 py-3">
             <h3 className="text-sm font-extrabold text-brand-700 dark:text-brand-300">Recettes</h3>
           </div>
           {planningQueue.length > 0 && (
@@ -195,7 +195,7 @@ export default function PlanningTab() {
         </aside>
 
         <div className="min-w-0 flex-1">
-          <div className="mb-2 flex flex-col gap-2 rounded-2xl bg-[#FFF1DC] dark:bg-[#3a2f1f] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="mb-2 flex flex-col gap-2 rounded-2xl bg-[#FFF1DC] dark:bg-brand-900/30 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
             <h3 className="text-sm font-extrabold text-brand-700 dark:text-brand-300">Planning</h3>
             <div className="flex flex-wrap items-center gap-3">
               {VIEW_MODES.map((m) => (
