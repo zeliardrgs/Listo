@@ -96,13 +96,20 @@ export default function ShoppingModeTab() {
   const [reorderMode, setReorderMode] = useState(false)
   const [orderDraft, setOrderDraft] = useState<string[] | null>(null)
   const [draggingCat, setDraggingCat] = useState<string | null>(null)
+  const [ghostPos, setGhostPos] = useState<{ x: number; y: number } | null>(null)
+  const [insertIndex, setInsertIndex] = useState<number | null>(null)
   // Pointer events can fire faster than React re-renders (especially in
   // quick succession), so the drag math reads/writes these refs instead of
   // the state above — the state is only for triggering the visual re-render.
   const draggingCatRef = useRef<string | null>(null)
-  const dragOrderRef = useRef<string[] | null>(null)
+  const insertIndexRef = useRef<number | null>(null)
+  const grabOffsetRef = useRef({ x: 0, y: 0 })
+  const ghostWidthRef = useRef(0)
+  // Rects of the OTHER (non-dragged) rayons, captured once when the drag
+  // starts and relative to groupsContainerRef — they don't move again until
+  // the drag ends, only the insertion line does.
+  const otherSlotsRef = useRef<{ cat: string; top: number; bottom: number }[]>([])
   const groupNodeRefs = useRef<Record<string, HTMLDivElement | null>>({})
-  const slotRectsRef = useRef<DOMRect[]>([])
   const groupsContainerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -165,11 +172,10 @@ export default function ShoppingModeTab() {
     ? (orderDraft.map((cat) => baseGroups.find(([c]) => c === cat)).filter(Boolean) as [string, ShoppingItem[]][])
     : baseGroups
 
-  // Animate rayons sliding into their new spot while dragging, and when a
-  // checked item settles at the bottom of its rayon. The dragged rayon
-  // itself is skipped so it snaps instantly under the pointer instead of
-  // trailing behind.
-  useFlip(groupsContainerRef, [groups], draggingCat)
+  // Animate rayons sliding into their new spot once a drag is dropped (the
+  // reordered list only changes at that point — see handleGripPointerUp),
+  // and when a checked item settles at the bottom of its rayon.
+  useFlip(groupsContainerRef, [groups])
 
   function startReorder() {
     setOrderDraft(baseGroups.map(([c]) => c))
@@ -187,39 +193,72 @@ export default function ShoppingModeTab() {
     setOrderDraft(null)
   }
 
+  function computeInsertIndex(clientY: number): number {
+    const slots = otherSlotsRef.current
+    const containerEl = groupsContainerRef.current
+    if (!containerEl || slots.length === 0) return 0
+    const y = clientY - containerEl.getBoundingClientRect().top
+    const idx = slots.findIndex((s) => y < (s.top + s.bottom) / 2)
+    return idx === -1 ? slots.length : idx
+  }
+
+  function lineTopFor(idx: number): number {
+    const slots = otherSlotsRef.current
+    if (slots.length === 0) return 0
+    if (idx <= 0) return slots[0].top - 8
+    if (idx >= slots.length) return slots[slots.length - 1].bottom + 8
+    return (slots[idx - 1].bottom + slots[idx].top) / 2
+  }
+
   function handleGripPointerDown(e: React.PointerEvent<HTMLButtonElement>, cat: string) {
     e.preventDefault()
     const order = orderDraft ?? baseGroups.map(([c]) => c)
+    const cardEl = groupNodeRefs.current[cat]
+    const containerEl = groupsContainerRef.current
+    if (!cardEl || !containerEl) return
+    const cardRect = cardEl.getBoundingClientRect()
+    const containerRect = containerEl.getBoundingClientRect()
+    grabOffsetRef.current = { x: e.clientX - cardRect.left, y: e.clientY - cardRect.top }
+    ghostWidthRef.current = cardRect.width
+    otherSlotsRef.current = order
+      .filter((c) => c !== cat)
+      .map((c) => {
+        const r = groupNodeRefs.current[c]?.getBoundingClientRect()
+        return r ? { cat: c, top: r.top - containerRect.top, bottom: r.bottom - containerRect.top } : null
+      })
+      .filter((s): s is { cat: string; top: number; bottom: number } => !!s)
     draggingCatRef.current = cat
-    dragOrderRef.current = order
     setDraggingCat(cat)
-    slotRectsRef.current = order
-      .map((c) => groupNodeRefs.current[c]?.getBoundingClientRect())
-      .filter((r): r is DOMRect => !!r)
+    setGhostPos({ x: e.clientX, y: e.clientY })
+    const idx = computeInsertIndex(e.clientY)
+    insertIndexRef.current = idx
+    setInsertIndex(idx)
     e.currentTarget.setPointerCapture(e.pointerId)
   }
 
   function handleGripPointerMove(e: React.PointerEvent<HTMLButtonElement>) {
-    const dragging = draggingCatRef.current
-    const prev = dragOrderRef.current
-    if (!dragging || !prev || slotRectsRef.current.length === 0) return
-    const y = e.clientY
-    let targetIndex = slotRectsRef.current.findIndex((r) => y >= r.top && y <= r.bottom)
-    if (targetIndex === -1) targetIndex = y < slotRectsRef.current[0].top ? 0 : slotRectsRef.current.length - 1
-    const from = prev.indexOf(dragging)
-    if (from === -1 || from === targetIndex) return
-    const next = [...prev]
-    next.splice(from, 1)
-    next.splice(targetIndex, 0, dragging)
-    dragOrderRef.current = next
-    setOrderDraft(next)
+    if (!draggingCatRef.current) return
+    setGhostPos({ x: e.clientX, y: e.clientY })
+    const idx = computeInsertIndex(e.clientY)
+    if (idx !== insertIndexRef.current) {
+      insertIndexRef.current = idx
+      setInsertIndex(idx)
+    }
   }
 
   function handleGripPointerUp() {
+    const dragging = draggingCatRef.current
+    const idx = insertIndexRef.current
+    if (dragging && idx != null) {
+      const others = otherSlotsRef.current.map((s) => s.cat)
+      setOrderDraft([...others.slice(0, idx), dragging, ...others.slice(idx)])
+    }
     draggingCatRef.current = null
-    dragOrderRef.current = null
+    insertIndexRef.current = null
+    otherSlotsRef.current = []
     setDraggingCat(null)
-    slotRectsRef.current = []
+    setGhostPos(null)
+    setInsertIndex(null)
   }
 
   function showToast(message: string, snapshot?: ShoppingItem[]) {
@@ -550,7 +589,13 @@ export default function ShoppingModeTab() {
         </div>
       )}
 
-      <div ref={groupsContainerRef} className="space-y-4 pb-20">
+      <div ref={groupsContainerRef} className="relative space-y-4 pb-20">
+        {draggingCat && insertIndex != null && (
+          <div
+            className="pointer-events-none absolute inset-x-0 z-40 h-[3px] rounded-full bg-brand-500 shadow-[0_0_6px_rgba(124,58,237,0.5)]"
+            style={{ top: lineTopFor(insertIndex) }}
+          />
+        )}
         {groups.map(([cat, list], idx) => {
           const color = colorFor(cat)
           const jiggling = reorderMode && draggingCat !== cat
@@ -563,9 +608,11 @@ export default function ShoppingModeTab() {
               }}
             >
               <div
-                className={`overflow-hidden rounded-2xl shadow-sm transition-opacity ${draggingCat === cat ? 'opacity-60' : ''} ${
-                  jiggling ? (idx % 2 === 0 ? 'animate-jiggle-a' : 'animate-jiggle-b') : ''
-                }`}
+                className={`overflow-hidden rounded-2xl shadow-sm transition-opacity ${
+                  draggingCat === cat
+                    ? 'opacity-30 outline outline-2 outline-dashed outline-brand-300 dark:outline-brand-700'
+                    : ''
+                } ${jiggling ? (idx % 2 === 0 ? 'animate-jiggle-a' : 'animate-jiggle-b') : ''}`}
               >
                 <div className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold uppercase tracking-wide ${color.cardBg} ${color.headerText}`}>
                   {reorderMode && (
@@ -629,6 +676,38 @@ export default function ShoppingModeTab() {
           )
         })}
       </div>
+
+      {draggingCat &&
+        ghostPos &&
+        (() => {
+          const dragged = groups.find(([c]) => c === draggingCat)
+          if (!dragged) return null
+          const [cat, list] = dragged
+          const color = colorFor(cat)
+          return (
+            <div
+              className="pointer-events-none fixed z-50 rotate-2 scale-[1.03] rounded-2xl shadow-xl"
+              style={{
+                left: ghostPos.x - grabOffsetRef.current.x,
+                top: ghostPos.y - grabOffsetRef.current.y,
+                width: ghostWidthRef.current
+              }}
+            >
+              <div className="overflow-hidden rounded-2xl opacity-95">
+                <div
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold uppercase tracking-wide ${color.cardBg} ${color.headerText}`}
+                >
+                  <GripIcon className="-ml-1 h-4 w-4 shrink-0" />
+                  <Emoji name={emojiFor(cat)} size={16} />
+                  {cat} <span className="font-medium opacity-70">· {list.length}</span>
+                </div>
+                <div className="bg-white px-3 py-2 text-xs font-semibold text-slate-400 dark:bg-[#5b3d94] dark:text-slate-500">
+                  {list.length} article{list.length > 1 ? 's' : ''}
+                </div>
+              </div>
+            </div>
+          )
+        })()}
 
       {checkedCount > 0 && !reorderMode && (
         <button

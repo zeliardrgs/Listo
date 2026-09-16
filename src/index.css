@@ -136,12 +136,12 @@ input[type='checkbox'].check-lg {
    variants run at slightly different speeds so neighbouring cards drift out
    of phase instead of wobbling in perfect unison. */
 @keyframes rayon-jiggle-a {
-  0%, 100% { transform: rotate(-1deg); }
-  50% { transform: rotate(1deg); }
+  0%, 100% { transform: rotate(-0.4deg); }
+  50% { transform: rotate(0.4deg); }
 }
 @keyframes rayon-jiggle-b {
-  0%, 100% { transform: rotate(1deg); }
-  50% { transform: rotate(-1deg); }
+  0%, 100% { transform: rotate(0.4deg); }
+  50% { transform: rotate(-0.4deg); }
 }
 .animate-jiggle-a {
   animation: rayon-jiggle-a 180ms ease-in-out infinite;
