@@ -4,7 +4,6 @@ import { groupByCategory, copyListToClipboard, exportListAsImage } from '../../u
 import { useCategoryEmojiName } from '../../hooks/useCategoryEmojiName'
 import { useCategoryColor } from '../../hooks/useCategoryColor'
 import { useStoreIcon } from '../../hooks/useStoreIcon'
-import { useFlip } from '../../hooks/useFlip'
 import {
   CheckIcon,
   ChevronDownIcon,
@@ -171,11 +170,6 @@ export default function ShoppingModeTab() {
   const groups = reorderMode && orderDraft
     ? (orderDraft.map((cat) => baseGroups.find(([c]) => c === cat)).filter(Boolean) as [string, ShoppingItem[]][])
     : baseGroups
-
-  // Animate rayons sliding into their new spot once a drag is dropped (the
-  // reordered list only changes at that point — see handleGripPointerUp),
-  // and when a checked item settles at the bottom of its rayon.
-  useFlip(groupsContainerRef, [groups])
 
   function startReorder() {
     setOrderDraft(baseGroups.map(([c]) => c))
@@ -602,40 +596,36 @@ export default function ShoppingModeTab() {
           return (
             <div
               key={cat}
-              data-flip-id={cat}
               ref={(node) => {
                 groupNodeRefs.current[cat] = node
               }}
+              className={`overflow-hidden rounded-2xl shadow-lg shadow-slate-900/10 transition-opacity dark:shadow-black/30 ${
+                draggingCat === cat
+                  ? 'opacity-30 outline outline-2 outline-dashed outline-brand-300 dark:outline-brand-700'
+                  : ''
+              } ${jiggling ? (idx % 2 === 0 ? 'animate-jiggle-a' : 'animate-jiggle-b') : ''}`}
             >
-              <div
-                className={`overflow-hidden rounded-2xl shadow-sm transition-opacity ${
-                  draggingCat === cat
-                    ? 'opacity-30 outline outline-2 outline-dashed outline-brand-300 dark:outline-brand-700'
-                    : ''
-                } ${jiggling ? (idx % 2 === 0 ? 'animate-jiggle-a' : 'animate-jiggle-b') : ''}`}
-              >
-                <div className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold uppercase tracking-wide ${color.cardBg} ${color.headerText}`}>
-                  {reorderMode && (
-                    <button
-                      type="button"
-                      title="Glisser pour réordonner les rayons"
-                      onPointerDown={(e) => handleGripPointerDown(e, cat)}
-                      onPointerMove={handleGripPointerMove}
-                      onPointerUp={handleGripPointerUp}
-                      onPointerCancel={handleGripPointerUp}
-                      className="-ml-1 flex h-6 w-6 shrink-0 cursor-grab touch-none items-center justify-center rounded-md normal-case tracking-normal opacity-60 hover:opacity-100 active:cursor-grabbing"
-                    >
-                      <GripIcon className="h-4 w-4" />
-                    </button>
-                  )}
-                  <Emoji name={emojiFor(cat)} size={16} />
-                  {cat} <span className="font-medium opacity-70">· {list.length}</span>
-                </div>
-                <ul className={`bg-white dark:bg-[#5b3d94] ${reorderMode ? 'pointer-events-none' : ''}`}>
+              <div className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold uppercase tracking-wide ${color.cardBg} ${color.headerText}`}>
+                {reorderMode && (
+                  <button
+                    type="button"
+                    title="Glisser pour réordonner les rayons"
+                    onPointerDown={(e) => handleGripPointerDown(e, cat)}
+                    onPointerMove={handleGripPointerMove}
+                    onPointerUp={handleGripPointerUp}
+                    onPointerCancel={handleGripPointerUp}
+                    className="-ml-1 flex h-6 w-6 shrink-0 cursor-grab touch-none items-center justify-center rounded-md normal-case tracking-normal opacity-60 hover:opacity-100 active:cursor-grabbing"
+                  >
+                    <GripIcon className="h-4 w-4" />
+                  </button>
+                )}
+                <Emoji name={emojiFor(cat)} size={16} />
+                {cat} <span className="font-medium opacity-70">· {list.length}</span>
+              </div>
+              <ul className={`bg-white dark:bg-[#5b3d94] ${reorderMode ? 'pointer-events-none' : ''}`}>
                 {list.map((it) => (
                   <li
                     key={it.id}
-                    data-flip-id={it.id}
                     onClick={() => updateItem(it.id, { checked: !it.checked })}
                     className="flex cursor-pointer items-center gap-3 border-b border-slate-50 dark:border-white/5 px-3 py-2.5 last:border-b-0 bg-white dark:bg-[#5b3d94]"
                   >
@@ -670,8 +660,7 @@ export default function ShoppingModeTab() {
                     </div>
                   </li>
                 ))}
-                </ul>
-              </div>
+              </ul>
             </div>
           )
         })}
