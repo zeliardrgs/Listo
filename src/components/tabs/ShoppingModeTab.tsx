@@ -4,6 +4,7 @@ import { groupByCategory, copyListToClipboard, exportListAsImage } from '../../u
 import { useCategoryEmojiName } from '../../hooks/useCategoryEmojiName'
 import { useCategoryColor } from '../../hooks/useCategoryColor'
 import { useStoreIcon } from '../../hooks/useStoreIcon'
+import { useFlip } from '../../hooks/useFlip'
 import {
   CheckIcon,
   ChevronDownIcon,
@@ -101,6 +102,7 @@ export default function ShoppingModeTab() {
   const dragOrderRef = useRef<string[] | null>(null)
   const groupNodeRefs = useRef<Record<string, HTMLDivElement | null>>({})
   const slotRectsRef = useRef<DOMRect[]>([])
+  const groupsContainerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!menuOpen) return
@@ -161,6 +163,12 @@ export default function ShoppingModeTab() {
   const groups = dragOrder
     ? (dragOrder.map((cat) => baseGroups.find(([c]) => c === cat)).filter(Boolean) as [string, ShoppingItem[]][])
     : baseGroups
+
+  // Animate rayons sliding into their new spot when reordered (live while
+  // dragging, and when a checked item settles at the bottom of its rayon).
+  // The dragged rayon itself is skipped so it snaps instantly under the
+  // pointer instead of trailing behind.
+  useFlip(groupsContainerRef, [groups], draggingCat)
 
   function handleGripPointerDown(e: React.PointerEvent<HTMLButtonElement>, cat: string) {
     e.preventDefault()
@@ -489,12 +497,13 @@ export default function ShoppingModeTab() {
         </div>
       )}
 
-      <div className="space-y-4 pb-20">
+      <div ref={groupsContainerRef} className="space-y-4 pb-20">
         {groups.map(([cat, list]) => {
           const color = colorFor(cat)
           return (
             <div
               key={cat}
+              data-flip-id={cat}
               ref={(node) => {
                 groupNodeRefs.current[cat] = node
               }}
@@ -521,8 +530,9 @@ export default function ShoppingModeTab() {
                 {list.map((it) => (
                   <li
                     key={it.id}
+                    data-flip-id={it.id}
                     onClick={() => updateItem(it.id, { checked: !it.checked })}
-                    className="flex cursor-pointer items-center gap-3 border-b border-slate-50 dark:border-white/5 px-3 py-2.5 last:border-b-0"
+                    className="flex cursor-pointer items-center gap-3 border-b border-slate-50 dark:border-white/5 px-3 py-2.5 last:border-b-0 bg-white dark:bg-[#5b3d94]"
                   >
                     <button
                       type="button"
