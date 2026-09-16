@@ -113,6 +113,10 @@ interface AppStore {
   categoryColorOverrides: Record<string, string>
   storeIconOverrides: Record<string, StoreIconValue>
   defaultStore: string
+  // Custom rayon display order per store (Courses tab), so it can match the
+  // real walking path through that specific store. Categories not listed
+  // fall back to alphabetical, after the ordered ones.
+  categoryOrderByStore: Record<string, string[]>
   listSortMode: 'name' | 'store' | 'category' | 'favorite'
   // Servings each recipe's contribution to the shopping list was last
   // computed at, so the Courses recipes panel can show/adjust "N pers."
@@ -162,6 +166,7 @@ interface AppStore {
   setStoreIcon: (name: string, icon: StoreIconValue) => void
   setDefaultStore: (name: string) => void
   getDefaultStore: () => string
+  setCategoryOrderForStore: (store: string, order: string[]) => void
   setListSortMode: (mode: 'name' | 'store' | 'category' | 'favorite') => void
   addCategory: (name: string, emojiName: string) => void
   removeCategory: (name: string) => void
@@ -195,6 +200,7 @@ export const useAppStore = create<AppStore>()(
       categoryColorOverrides: {},
       storeIconOverrides: {},
       defaultStore: '',
+      categoryOrderByStore: {},
       listSortMode: 'name',
       recipeServingsInList: {},
       planningQueue: [],
@@ -637,13 +643,16 @@ export const useAppStore = create<AppStore>()(
         set((s) => {
           const iconOverrides = { ...s.storeIconOverrides }
           delete iconOverrides[name]
+          const categoryOrderByStore = { ...s.categoryOrderByStore }
+          delete categoryOrderByStore[name]
           return {
             customStores: s.customStores.filter((n) => n !== name),
             removedDefaultStores: (DEFAULT_STORES as readonly string[]).includes(name)
               ? Array.from(new Set([...s.removedDefaultStores, name]))
               : s.removedDefaultStores,
             storeIconOverrides: iconOverrides,
-            defaultStore: s.defaultStore === name ? '' : s.defaultStore
+            defaultStore: s.defaultStore === name ? '' : s.defaultStore,
+            categoryOrderByStore
           }
         }),
       renameStore: (oldName, newName) =>
@@ -655,6 +664,11 @@ export const useAppStore = create<AppStore>()(
           if (iconOverrides[oldName] != null) {
             iconOverrides[trimmed] = iconOverrides[oldName]
             delete iconOverrides[oldName]
+          }
+          const categoryOrderByStore = { ...s.categoryOrderByStore }
+          if (categoryOrderByStore[oldName] != null) {
+            categoryOrderByStore[trimmed] = categoryOrderByStore[oldName]
+            delete categoryOrderByStore[oldName]
           }
           return {
             customStores: isDefault
@@ -668,6 +682,7 @@ export const useAppStore = create<AppStore>()(
             ).filter((n) => n !== trimmed),
             storeIconOverrides: iconOverrides,
             defaultStore: s.defaultStore === oldName ? trimmed : s.defaultStore,
+            categoryOrderByStore,
             items: s.items.map((it) => (it.store === oldName ? { ...it, store: trimmed, updatedAt: Date.now() } : it))
           }
         }),
@@ -675,6 +690,8 @@ export const useAppStore = create<AppStore>()(
         set((s) => ({ storeIconOverrides: { ...s.storeIconOverrides, [name]: icon } })),
       setDefaultStore: (name) => set({ defaultStore: name.trim() }),
       getDefaultStore: () => pickDefaultStore(get()),
+      setCategoryOrderForStore: (store, order) =>
+        set((s) => ({ categoryOrderByStore: { ...s.categoryOrderByStore, [store]: order } })),
       setListSortMode: (mode) => set({ listSortMode: mode }),
 
       addCategory: (name, emojiName) =>

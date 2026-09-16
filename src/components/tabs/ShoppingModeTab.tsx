@@ -10,6 +10,7 @@ import {
   ClipboardIcon,
   CopyIcon,
   CrossIcon,
+  GripIcon,
   ImageIcon,
   MinusIcon,
   MoreIcon,
@@ -77,6 +78,8 @@ export default function ShoppingModeTab() {
   const recipeServingsInList = useAppStore((s) => s.recipeServingsInList)
   const setRecipeServingsInList = useAppStore((s) => s.setRecipeServingsInList)
   const replaceItems = useAppStore((s) => s.replaceItems)
+  const categoryOrderByStore = useAppStore((s) => s.categoryOrderByStore)
+  const setCategoryOrderForStore = useAppStore((s) => s.setCategoryOrderForStore)
 
   const [activeStore, setActiveStore] = useState<string | null>(null)
   const [toast, setToast] = useState<Toast | null>(null)
@@ -88,6 +91,16 @@ export default function ShoppingModeTab() {
   const printableRef = useRef<HTMLDivElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
   const toastTimer = useRef<ReturnType<typeof setTimeout>>()
+
+  const [draggingCat, setDraggingCat] = useState<string | null>(null)
+  const [dragOrder, setDragOrder] = useState<string[] | null>(null)
+  // Pointer events can fire faster than React re-renders (especially in
+  // quick succession), so the drag math reads/writes these refs instead of
+  // the state above — the state is only for triggering the visual re-render.
+  const draggingCatRef = useRef<string | null>(null)
+  const dragOrderRef = useRef<string[] | null>(null)
+  const groupNodeRefs = useRef<Record<string, HTMLDivElement | null>>({})
+  const slotRectsRef = useRef<DOMRect[]>([])
 
   useEffect(() => {
     if (!menuOpen) return
@@ -141,6 +154,54 @@ export default function ShoppingModeTab() {
     return formatRecipeQuantity(item.recipeQuantities) || (item.quantity != null ? `${item.quantity} ${pluralizeUnit(item.unit, item.quantity)}`.trim() : '')
   }
 
+  const baseGroups = useMemo(
+    () => groupByCategory(storeItems, activeStore ? categoryOrderByStore[activeStore] : undefined),
+    [storeItems, activeStore, categoryOrderByStore]
+  )
+  const groups = dragOrder
+    ? (dragOrder.map((cat) => baseGroups.find(([c]) => c === cat)).filter(Boolean) as [string, ShoppingItem[]][])
+    : baseGroups
+
+  function handleGripPointerDown(e: React.PointerEvent<HTMLButtonElement>, cat: string) {
+    e.preventDefault()
+    const order = baseGroups.map(([c]) => c)
+    draggingCatRef.current = cat
+    dragOrderRef.current = order
+    setDraggingCat(cat)
+    setDragOrder(order)
+    slotRectsRef.current = order
+      .map((c) => groupNodeRefs.current[c]?.getBoundingClientRect())
+      .filter((r): r is DOMRect => !!r)
+    e.currentTarget.setPointerCapture(e.pointerId)
+  }
+
+  function handleGripPointerMove(e: React.PointerEvent<HTMLButtonElement>) {
+    const dragging = draggingCatRef.current
+    const prev = dragOrderRef.current
+    if (!dragging || !prev || slotRectsRef.current.length === 0) return
+    const y = e.clientY
+    let targetIndex = slotRectsRef.current.findIndex((r) => y >= r.top && y <= r.bottom)
+    if (targetIndex === -1) targetIndex = y < slotRectsRef.current[0].top ? 0 : slotRectsRef.current.length - 1
+    const from = prev.indexOf(dragging)
+    if (from === -1 || from === targetIndex) return
+    const next = [...prev]
+    next.splice(from, 1)
+    next.splice(targetIndex, 0, dragging)
+    dragOrderRef.current = next
+    setDragOrder(next)
+  }
+
+  function handleGripPointerUp() {
+    const dragging = draggingCatRef.current
+    const order = dragOrderRef.current
+    if (dragging && order && activeStore) setCategoryOrderForStore(activeStore, order)
+    draggingCatRef.current = null
+    dragOrderRef.current = null
+    setDraggingCat(null)
+    setDragOrder(null)
+    slotRectsRef.current = []
+  }
+
   function showToast(message: string, snapshot?: ShoppingItem[]) {
     clearTimeout(toastTimer.current)
     setToast({ message, snapshot })
@@ -157,7 +218,7 @@ export default function ShoppingModeTab() {
   async function handleCopy() {
     if (!activeStore) return
     try {
-      await copyListToClipboard(activeStore, storeItems)
+      await copyListToClipboard(activeStore, storeItems, categoryOrderByStore[activeStore])
       showToast('Liste copiée dans le presse-papiers')
     } catch {
       showToast('Impossible de copier la liste')
@@ -429,11 +490,30 @@ export default function ShoppingModeTab() {
       )}
 
       <div className="space-y-4 pb-20">
-        {groupByCategory(storeItems).map(([cat, list]) => {
+        {groups.map(([cat, list]) => {
           const color = colorFor(cat)
           return (
-            <div key={cat} className="overflow-hidden rounded-2xl shadow-sm">
+            <div
+              key={cat}
+              ref={(node) => {
+                groupNodeRefs.current[cat] = node
+              }}
+              className={`overflow-hidden rounded-2xl shadow-sm transition-opacity ${draggingCat === cat ? 'opacity-60' : ''}`}
+            >
               <div className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold uppercase tracking-wide ${color.cardBg} ${color.headerText}`}>
+                {groups.length > 1 && (
+                  <button
+                    type="button"
+                    title="Glisser pour réordonner les rayons"
+                    onPointerDown={(e) => handleGripPointerDown(e, cat)}
+                    onPointerMove={handleGripPointerMove}
+                    onPointerUp={handleGripPointerUp}
+                    onPointerCancel={handleGripPointerUp}
+                    className="-ml-1 flex h-6 w-6 shrink-0 cursor-grab touch-none items-center justify-center rounded-md normal-case tracking-normal opacity-60 hover:opacity-100 active:cursor-grabbing"
+                  >
+                    <GripIcon className="h-4 w-4" />
+                  </button>
+                )}
                 <Emoji name={emojiFor(cat)} size={16} />
                 {cat} <span className="font-medium opacity-70">· {list.length}</span>
               </div>

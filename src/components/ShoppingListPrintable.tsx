@@ -29,7 +29,8 @@ const today = () =>
 
 const ShoppingListPrintable = forwardRef<HTMLDivElement, { store: string; items: ShoppingItem[] }>(
   ({ store, items }, ref) => {
-    const groups = groupByCategory(items)
+    const categoryOrderByStore = useAppStore((s) => s.categoryOrderByStore)
+    const groups = groupByCategory(items, categoryOrderByStore[store])
     const recipes = useAppStore((s) => s.recipes)
     const emojiFor = useCategoryEmojiName()
     const colorFor = useCategoryColor()

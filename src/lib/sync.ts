@@ -17,6 +17,7 @@ export interface SharedConfig {
   categoryColorOverrides: Record<string, string>
   storeIconOverrides: Record<string, StoreIconValue>
   defaultStore: string
+  categoryOrderByStore: Record<string, string[]>
 }
 
 const CONFIG_KEYS: (keyof SharedConfig)[] = [
@@ -30,7 +31,8 @@ const CONFIG_KEYS: (keyof SharedConfig)[] = [
   'categoryEmojiOverrides',
   'categoryColorOverrides',
   'storeIconOverrides',
-  'defaultStore'
+  'defaultStore',
+  'categoryOrderByStore'
 ]
 
 export function pickConfig<T extends SharedConfig>(state: T): SharedConfig {
@@ -53,7 +55,8 @@ export function emptyConfig(): SharedConfig {
     categoryEmojiOverrides: {},
     categoryColorOverrides: {},
     storeIconOverrides: {},
-    defaultStore: ''
+    defaultStore: '',
+    categoryOrderByStore: {}
   }
 }
 
