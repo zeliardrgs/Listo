@@ -598,7 +598,9 @@ export default function ShoppingModeTab() {
               ref={(node) => {
                 groupNodeRefs.current[cat] = node
               }}
-              className={`overflow-hidden rounded-2xl shadow-lg shadow-slate-900/10 transition-opacity dark:shadow-black/30 ${
+              className={`overflow-hidden rounded-2xl transition-opacity ${
+                reorderMode ? 'shadow-lg shadow-slate-900/10 dark:shadow-black/30' : ''
+              } ${
                 draggingCat === cat
                   ? 'opacity-30 outline outline-2 outline-dashed outline-brand-300 dark:outline-brand-700'
                   : ''
