@@ -590,9 +590,8 @@ export default function ShoppingModeTab() {
             style={{ top: lineTopFor(insertIndex) }}
           />
         )}
-        {groups.map(([cat, list], idx) => {
+        {groups.map(([cat, list]) => {
           const color = colorFor(cat)
-          const jiggling = reorderMode && draggingCat !== cat
           return (
             <div
               key={cat}
@@ -603,7 +602,7 @@ export default function ShoppingModeTab() {
                 draggingCat === cat
                   ? 'opacity-30 outline outline-2 outline-dashed outline-brand-300 dark:outline-brand-700'
                   : ''
-              } ${jiggling ? (idx % 2 === 0 ? 'animate-jiggle-a' : 'animate-jiggle-b') : ''}`}
+              }`}
             >
               <div className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold uppercase tracking-wide ${color.cardBg} ${color.headerText}`}>
                 {reorderMode && (
