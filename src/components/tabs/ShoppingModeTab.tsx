@@ -93,8 +93,9 @@ export default function ShoppingModeTab() {
   const menuRef = useRef<HTMLDivElement>(null)
   const toastTimer = useRef<ReturnType<typeof setTimeout>>()
 
+  const [reorderMode, setReorderMode] = useState(false)
+  const [orderDraft, setOrderDraft] = useState<string[] | null>(null)
   const [draggingCat, setDraggingCat] = useState<string | null>(null)
-  const [dragOrder, setDragOrder] = useState<string[] | null>(null)
   // Pointer events can fire faster than React re-renders (especially in
   // quick succession), so the drag math reads/writes these refs instead of
   // the state above — the state is only for triggering the visual re-render.
@@ -160,23 +161,38 @@ export default function ShoppingModeTab() {
     () => groupByCategory(storeItems, activeStore ? categoryOrderByStore[activeStore] : undefined),
     [storeItems, activeStore, categoryOrderByStore]
   )
-  const groups = dragOrder
-    ? (dragOrder.map((cat) => baseGroups.find(([c]) => c === cat)).filter(Boolean) as [string, ShoppingItem[]][])
+  const groups = reorderMode && orderDraft
+    ? (orderDraft.map((cat) => baseGroups.find(([c]) => c === cat)).filter(Boolean) as [string, ShoppingItem[]][])
     : baseGroups
 
-  // Animate rayons sliding into their new spot when reordered (live while
-  // dragging, and when a checked item settles at the bottom of its rayon).
-  // The dragged rayon itself is skipped so it snaps instantly under the
-  // pointer instead of trailing behind.
+  // Animate rayons sliding into their new spot while dragging, and when a
+  // checked item settles at the bottom of its rayon. The dragged rayon
+  // itself is skipped so it snaps instantly under the pointer instead of
+  // trailing behind.
   useFlip(groupsContainerRef, [groups], draggingCat)
+
+  function startReorder() {
+    setOrderDraft(baseGroups.map(([c]) => c))
+    setReorderMode(true)
+  }
+
+  function saveReorder() {
+    if (activeStore && orderDraft) setCategoryOrderForStore(activeStore, orderDraft)
+    setReorderMode(false)
+    setOrderDraft(null)
+  }
+
+  function cancelReorder() {
+    setReorderMode(false)
+    setOrderDraft(null)
+  }
 
   function handleGripPointerDown(e: React.PointerEvent<HTMLButtonElement>, cat: string) {
     e.preventDefault()
-    const order = baseGroups.map(([c]) => c)
+    const order = orderDraft ?? baseGroups.map(([c]) => c)
     draggingCatRef.current = cat
     dragOrderRef.current = order
     setDraggingCat(cat)
-    setDragOrder(order)
     slotRectsRef.current = order
       .map((c) => groupNodeRefs.current[c]?.getBoundingClientRect())
       .filter((r): r is DOMRect => !!r)
@@ -196,17 +212,13 @@ export default function ShoppingModeTab() {
     next.splice(from, 1)
     next.splice(targetIndex, 0, dragging)
     dragOrderRef.current = next
-    setDragOrder(next)
+    setOrderDraft(next)
   }
 
   function handleGripPointerUp() {
-    const dragging = draggingCatRef.current
-    const order = dragOrderRef.current
-    if (dragging && order && activeStore) setCategoryOrderForStore(activeStore, order)
     draggingCatRef.current = null
     dragOrderRef.current = null
     setDraggingCat(null)
-    setDragOrder(null)
     slotRectsRef.current = []
   }
 
@@ -388,51 +400,92 @@ export default function ShoppingModeTab() {
             {checkedCount} / {storeItems.length} Article{storeItems.length > 1 ? 's' : ''}
           </span>
         </div>
-        <div ref={menuRef} className="relative shrink-0">
-          <button
-            onClick={() => setMenuOpen((v) => !v)}
-            title="Plus d'options"
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-white dark:bg-[#5b3d94] text-slate-500 dark:text-slate-400 shadow-sm hover:bg-slate-50 dark:hover:bg-white/5"
-          >
-            <MoreIcon className="h-5 w-5 rotate-90" />
-          </button>
-          {menuOpen && (
-            <div className="absolute right-0 top-full z-30 mt-1.5 w-56 overflow-hidden rounded-xl border border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#5b3d94] py-1 shadow-lg">
-              <button
-                type="button"
-                onClick={() => {
-                  setMenuOpen(false)
-                  handleCopy()
-                }}
-                className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-brand-50 dark:hover:bg-brand-900/40"
-              >
-                <CopyIcon className="h-4 w-4 shrink-0 text-brand-500 dark:text-brand-300" />
-                Copier le texte
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setMenuOpen(false)
-                  handleExportImage()
-                }}
-                className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-brand-50 dark:hover:bg-brand-900/40"
-              >
-                <ImageIcon className="h-4 w-4 shrink-0 text-brand-500 dark:text-brand-300" />
-                Télécharger l'image
-              </button>
-              <button
-                type="button"
-                onClick={() => handleClearStore(activeStore)}
-                onBlur={() => setConfirmClearStore((s) => (s === activeStore ? null : s))}
-                className="flex w-full items-center gap-2.5 border-t border-slate-100 dark:border-white/5 px-3.5 py-2.5 text-left text-sm font-semibold text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40"
-              >
-                <TrashIcon className="h-4 w-4 shrink-0" />
-                {confirmClearStore === activeStore ? 'Cliquer à nouveau pour confirmer' : 'Vider la liste'}
-              </button>
-            </div>
-          )}
-        </div>
+        {reorderMode ? (
+          <div className="flex shrink-0 items-center gap-1.5">
+            <button
+              type="button"
+              onClick={cancelReorder}
+              title="Annuler"
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-white dark:bg-[#5b3d94] text-slate-400 dark:text-slate-400 shadow-sm hover:bg-slate-50 dark:hover:bg-white/5"
+            >
+              <CrossIcon className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={saveReorder}
+              title="Enregistrer l'ordre"
+              className="flex h-11 items-center gap-1.5 rounded-full bg-brand-600 px-4 text-sm font-bold text-white shadow-sm hover:bg-brand-700"
+            >
+              <CheckIcon className="h-4 w-4" />
+              Enregistrer
+            </button>
+          </div>
+        ) : (
+          <div ref={menuRef} className="relative shrink-0">
+            <button
+              onClick={() => setMenuOpen((v) => !v)}
+              title="Plus d'options"
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-white dark:bg-[#5b3d94] text-slate-500 dark:text-slate-400 shadow-sm hover:bg-slate-50 dark:hover:bg-white/5"
+            >
+              <MoreIcon className="h-5 w-5 rotate-90" />
+            </button>
+            {menuOpen && (
+              <div className="absolute right-0 top-full z-30 mt-1.5 w-56 overflow-hidden rounded-xl border border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#5b3d94] py-1 shadow-lg">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMenuOpen(false)
+                    handleCopy()
+                  }}
+                  className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-brand-50 dark:hover:bg-brand-900/40"
+                >
+                  <CopyIcon className="h-4 w-4 shrink-0 text-brand-500 dark:text-brand-300" />
+                  Copier le texte
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMenuOpen(false)
+                    handleExportImage()
+                  }}
+                  className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-brand-50 dark:hover:bg-brand-900/40"
+                >
+                  <ImageIcon className="h-4 w-4 shrink-0 text-brand-500 dark:text-brand-300" />
+                  Télécharger l'image
+                </button>
+                {baseGroups.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMenuOpen(false)
+                      startReorder()
+                    }}
+                    className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-brand-50 dark:hover:bg-brand-900/40"
+                  >
+                    <GripIcon className="h-4 w-4 shrink-0 text-brand-500 dark:text-brand-300" />
+                    Changer l'ordre des rayons
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => handleClearStore(activeStore)}
+                  onBlur={() => setConfirmClearStore((s) => (s === activeStore ? null : s))}
+                  className="flex w-full items-center gap-2.5 border-t border-slate-100 dark:border-white/5 px-3.5 py-2.5 text-left text-sm font-semibold text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40"
+                >
+                  <TrashIcon className="h-4 w-4 shrink-0" />
+                  {confirmClearStore === activeStore ? 'Cliquer à nouveau pour confirmer' : 'Vider la liste'}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
+
+      {reorderMode && (
+        <p className="mb-3 text-center text-xs font-semibold text-slate-400 dark:text-slate-500">
+          Fais glisser un rayon pour le déplacer, puis enregistre.
+        </p>
+      )}
 
       {storeRecipes.length > 0 && (
         <div className="mb-4 overflow-hidden rounded-2xl bg-[#FFF1DC] dark:bg-[#4a3178]">
@@ -498,8 +551,9 @@ export default function ShoppingModeTab() {
       )}
 
       <div ref={groupsContainerRef} className="space-y-4 pb-20">
-        {groups.map(([cat, list]) => {
+        {groups.map(([cat, list], idx) => {
           const color = colorFor(cat)
+          const jiggling = reorderMode && draggingCat !== cat
           return (
             <div
               key={cat}
@@ -507,26 +561,30 @@ export default function ShoppingModeTab() {
               ref={(node) => {
                 groupNodeRefs.current[cat] = node
               }}
-              className={`overflow-hidden rounded-2xl shadow-sm transition-opacity ${draggingCat === cat ? 'opacity-60' : ''}`}
             >
-              <div className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold uppercase tracking-wide ${color.cardBg} ${color.headerText}`}>
-                {groups.length > 1 && (
-                  <button
-                    type="button"
-                    title="Glisser pour réordonner les rayons"
-                    onPointerDown={(e) => handleGripPointerDown(e, cat)}
-                    onPointerMove={handleGripPointerMove}
-                    onPointerUp={handleGripPointerUp}
-                    onPointerCancel={handleGripPointerUp}
-                    className="-ml-1 flex h-6 w-6 shrink-0 cursor-grab touch-none items-center justify-center rounded-md normal-case tracking-normal opacity-60 hover:opacity-100 active:cursor-grabbing"
-                  >
-                    <GripIcon className="h-4 w-4" />
-                  </button>
-                )}
-                <Emoji name={emojiFor(cat)} size={16} />
-                {cat} <span className="font-medium opacity-70">· {list.length}</span>
-              </div>
-              <ul className="bg-white dark:bg-[#5b3d94]">
+              <div
+                className={`overflow-hidden rounded-2xl shadow-sm transition-opacity ${draggingCat === cat ? 'opacity-60' : ''} ${
+                  jiggling ? (idx % 2 === 0 ? 'animate-jiggle-a' : 'animate-jiggle-b') : ''
+                }`}
+              >
+                <div className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold uppercase tracking-wide ${color.cardBg} ${color.headerText}`}>
+                  {reorderMode && (
+                    <button
+                      type="button"
+                      title="Glisser pour réordonner les rayons"
+                      onPointerDown={(e) => handleGripPointerDown(e, cat)}
+                      onPointerMove={handleGripPointerMove}
+                      onPointerUp={handleGripPointerUp}
+                      onPointerCancel={handleGripPointerUp}
+                      className="-ml-1 flex h-6 w-6 shrink-0 cursor-grab touch-none items-center justify-center rounded-md normal-case tracking-normal opacity-60 hover:opacity-100 active:cursor-grabbing"
+                    >
+                      <GripIcon className="h-4 w-4" />
+                    </button>
+                  )}
+                  <Emoji name={emojiFor(cat)} size={16} />
+                  {cat} <span className="font-medium opacity-70">· {list.length}</span>
+                </div>
+                <ul className={`bg-white dark:bg-[#5b3d94] ${reorderMode ? 'pointer-events-none' : ''}`}>
                 {list.map((it) => (
                   <li
                     key={it.id}
@@ -565,13 +623,14 @@ export default function ShoppingModeTab() {
                     </div>
                   </li>
                 ))}
-              </ul>
+                </ul>
+              </div>
             </div>
           )
         })}
       </div>
 
-      {checkedCount > 0 && (
+      {checkedCount > 0 && !reorderMode && (
         <button
           onClick={finishShopping}
           className="fixed bottom-20 left-1/2 z-10 flex w-[calc(100%-1.5rem)] max-w-lg -translate-x-1/2 items-center justify-center gap-2 rounded-xl bg-brand-700 py-3 text-sm font-bold text-white shadow-lg sm:bottom-4 lg:max-w-3xl"
