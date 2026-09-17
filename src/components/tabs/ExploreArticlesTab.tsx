@@ -5,7 +5,7 @@ import { isInSeason } from '../../data/seasonalProduce'
 import { useCategoryEmojiName } from '../../hooks/useCategoryEmojiName'
 import { useCategoryColor } from '../../hooks/useCategoryColor'
 import Emoji from '../Emoji'
-import { ListCheckIcon, PlusIcon } from '../icons'
+import { ListCheckIcon, PlusIcon, SearchIcon } from '../icons'
 import type { ProductSuggestion } from '../../types'
 
 interface Toast {
@@ -27,6 +27,7 @@ export default function ExploreArticlesTab() {
   const colorFor = useCategoryColor()
   const [toast, setToast] = useState<Toast | null>(null)
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null)
+  const [search, setSearch] = useState('')
   const toastTimer = useRef<ReturnType<typeof setTimeout>>()
 
   function showToast(message: string) {
@@ -36,8 +37,10 @@ export default function ExploreArticlesTab() {
   }
 
   const groups = useMemo(() => {
+    const trimmed = search.trim().toLowerCase()
+    const filtered = trimmed ? PRODUCT_SUGGESTIONS.filter((p) => p.name.toLowerCase().includes(trimmed)) : PRODUCT_SUGGESTIONS
     const map = new Map<string, ProductSuggestion[]>()
-    PRODUCT_SUGGESTIONS.forEach((p) => {
+    filtered.forEach((p) => {
       const key = p.category || 'Autre'
       if (!map.has(key)) map.set(key, [])
       map.get(key)!.push(p)
@@ -45,7 +48,7 @@ export default function ExploreArticlesTab() {
     return Array.from(map.entries())
       .sort((a, b) => a[0].localeCompare(b[0]))
       .map(([cat, list]) => [cat, [...list].sort((a, b) => a.name.localeCompare(b.name))] as [string, ProductSuggestion[]])
-  }, [])
+  }, [search])
 
   useEffect(() => {
     if (groups.length === 0) {
@@ -108,10 +111,24 @@ export default function ExploreArticlesTab() {
   }
 
   return (
-    <div className="mx-auto max-w-lg px-3 pb-24 sm:pb-8 lg:max-w-4xl">
+    <div className="mx-auto max-w-6xl px-3 pb-24 sm:pb-8">
       <p className="mb-4 text-sm text-slate-400">
         Une sélection d'articles courants — ajoute-les directement à ta liste de courses ou à ton catalogue.
       </p>
+
+      <div className="mb-4 flex items-center gap-2 rounded-full bg-white dark:bg-[#5b3d94] px-4 py-3 shadow-sm">
+        <SearchIcon className="h-5 w-5 shrink-0 text-slate-300 dark:text-slate-600" />
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Rechercher un article"
+          className="w-full bg-transparent text-sm text-slate-700 dark:text-slate-200 focus:outline-none"
+        />
+      </div>
+
+      {groups.length === 0 && (
+        <p className="mt-10 text-center text-sm text-slate-400">Aucun article ne correspond à « {search.trim()} ».</p>
+      )}
 
       <div className="flex gap-6">
         <aside className="hidden shrink-0 sm:block sm:w-44">
