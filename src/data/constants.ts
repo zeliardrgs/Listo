@@ -21,6 +21,29 @@ export const CATEGORIES = [
   'Autre'
 ] as const
 
+// Ordre d'affichage pour l'onglet Explorer (nourriture d'abord, puis produits
+// non-alimentaires), plutôt que l'ordre alphabétique.
+export const EXPLORE_CATEGORY_ORDER = [
+  'Légumes',
+  'Fruits',
+  'Viande',
+  'Poisson',
+  'Conserves',
+  'Crémerie',
+  'Fromage',
+  'Boulangerie',
+  'Pâtes & Riz',
+  'Épicerie salée',
+  'Épicerie sucrée',
+  'Surgelés',
+  'Boissons',
+  'Hygiène',
+  'Entretien',
+  'Bébé',
+  'Animaux',
+  'Autre'
+]
+
 export const CATEGORY_EMOJIS: Record<string, string> = {
   Fruits: '🍎',
   Légumes: '🥕',

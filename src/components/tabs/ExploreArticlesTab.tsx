@@ -1,15 +1,36 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useAppStore } from '../../store/useAppStore'
-import { PRODUCT_SUGGESTIONS } from '../../data/constants'
+import { EXPLORE_CATEGORY_ORDER, PRODUCT_SUGGESTIONS } from '../../data/constants'
 import { isInSeason } from '../../data/seasonalProduce'
 import { useCategoryEmojiName } from '../../hooks/useCategoryEmojiName'
 import { useCategoryColor } from '../../hooks/useCategoryColor'
 import Emoji from '../Emoji'
-import { ListCheckIcon, PlusIcon, SearchIcon } from '../icons'
+import { ChevronDownIcon, EyeIcon, EyeOffIcon, ListCheckIcon, PlusIcon, SearchIcon } from '../icons'
 import type { ProductSuggestion } from '../../types'
 
 interface Toast {
   message: string
+}
+
+const HIDDEN_CATEGORIES_KEY = 'listo-explore-hidden-categories'
+
+function loadHiddenCategories(): string[] {
+  try {
+    const raw = localStorage.getItem(HIDDEN_CATEGORIES_KEY)
+    const parsed = raw ? JSON.parse(raw) : []
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
+function categoryRank(cat: string) {
+  const idx = EXPLORE_CATEGORY_ORDER.indexOf(cat)
+  return idx === -1 ? EXPLORE_CATEGORY_ORDER.length : idx
+}
+
+function sortByCategoryOrder<T extends [string, unknown]>(entries: T[]): T[] {
+  return [...entries].sort((a, b) => categoryRank(a[0]) - categoryRank(b[0]) || a[0].localeCompare(b[0]))
 }
 
 function sectionId(label: string) {
@@ -28,7 +49,17 @@ export default function ExploreArticlesTab() {
   const [toast, setToast] = useState<Toast | null>(null)
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null)
   const [search, setSearch] = useState('')
+  const [hiddenCategories, setHiddenCategories] = useState<string[]>(loadHiddenCategories)
+  const [showHiddenPanel, setShowHiddenPanel] = useState(false)
   const toastTimer = useRef<ReturnType<typeof setTimeout>>()
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(HIDDEN_CATEGORIES_KEY, JSON.stringify(hiddenCategories))
+    } catch {
+      // ignore storage errors (private mode, quota, ...)
+    }
+  }, [hiddenCategories])
 
   function showToast(message: string) {
     clearTimeout(toastTimer.current)
@@ -36,19 +67,38 @@ export default function ExploreArticlesTab() {
     toastTimer.current = setTimeout(() => setToast(null), 2000)
   }
 
+  function hideCategory(cat: string) {
+    setHiddenCategories((prev) => (prev.includes(cat) ? prev : [...prev, cat]))
+  }
+
+  function unhideCategory(cat: string) {
+    setHiddenCategories((prev) => prev.filter((c) => c !== cat))
+  }
+
+  const allCategoriesInCatalog = useMemo(() => {
+    const set = new Set(PRODUCT_SUGGESTIONS.map((p) => p.category || 'Autre'))
+    return sortByCategoryOrder(Array.from(set).map((cat) => [cat, null] as [string, null])).map(([cat]) => cat)
+  }, [])
+
+  const hiddenCategoryList = useMemo(
+    () => allCategoriesInCatalog.filter((cat) => hiddenCategories.includes(cat)),
+    [allCategoriesInCatalog, hiddenCategories]
+  )
+
   const groups = useMemo(() => {
     const trimmed = search.trim().toLowerCase()
     const filtered = trimmed ? PRODUCT_SUGGESTIONS.filter((p) => p.name.toLowerCase().includes(trimmed)) : PRODUCT_SUGGESTIONS
     const map = new Map<string, ProductSuggestion[]>()
     filtered.forEach((p) => {
       const key = p.category || 'Autre'
+      if (hiddenCategories.includes(key)) return
       if (!map.has(key)) map.set(key, [])
       map.get(key)!.push(p)
     })
-    return Array.from(map.entries())
-      .sort((a, b) => a[0].localeCompare(b[0]))
-      .map(([cat, list]) => [cat, [...list].sort((a, b) => a.name.localeCompare(b.name))] as [string, ProductSuggestion[]])
-  }, [search])
+    return sortByCategoryOrder(Array.from(map.entries())).map(
+      ([cat, list]) => [cat, [...list].sort((a, b) => a.name.localeCompare(b.name))] as [string, ProductSuggestion[]]
+    )
+  }, [search, hiddenCategories])
 
   useEffect(() => {
     if (groups.length === 0) {
@@ -126,8 +176,12 @@ export default function ExploreArticlesTab() {
         />
       </div>
 
-      {groups.length === 0 && (
+      {groups.length === 0 && search.trim() && (
         <p className="mt-10 text-center text-sm text-slate-400">Aucun article ne correspond à « {search.trim()} ».</p>
+      )}
+
+      {groups.length === 0 && !search.trim() && hiddenCategoryList.length > 0 && (
+        <p className="mt-10 text-center text-sm text-slate-400">Toutes les catégories sont masquées.</p>
       )}
 
       <div className="flex gap-6">
@@ -162,7 +216,15 @@ export default function ExploreArticlesTab() {
               <div key={cat} id={sectionId(cat)} className={`scroll-mt-4 rounded-2xl p-3 ${color.cardBg}`}>
                 <div className={`mb-2 flex items-center gap-1.5 px-1 text-xs font-bold uppercase tracking-wide ${color.headerText}`}>
                   <Emoji name={emojiFor(cat)} size={16} />
-                  {cat}
+                  <span className="flex-1">{cat}</span>
+                  <button
+                    type="button"
+                    onClick={() => hideCategory(cat)}
+                    title="Masquer cette catégorie"
+                    className="shrink-0 rounded-full p-1 normal-case text-current opacity-60 hover:bg-black/5 hover:opacity-100 dark:hover:bg-white/10"
+                  >
+                    <EyeOffIcon className="h-3.5 w-3.5" />
+                  </button>
                 </div>
                 <ul className="grid grid-cols-1 gap-2 lg:grid-cols-2 xl:grid-cols-3">
                   {list.map((p) => {
@@ -208,6 +270,38 @@ export default function ExploreArticlesTab() {
           })}
         </div>
       </div>
+
+      {hiddenCategoryList.length > 0 && (
+        <div className="mt-6">
+          <button
+            type="button"
+            onClick={() => setShowHiddenPanel((v) => !v)}
+            className="mx-auto flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+          >
+            Voir les catégories masquées ({hiddenCategoryList.length})
+            <ChevronDownIcon className={`h-3.5 w-3.5 transition-transform ${showHiddenPanel ? 'rotate-180' : ''}`} />
+          </button>
+
+          {showHiddenPanel && (
+            <ul className="mt-2 flex flex-wrap justify-center gap-2">
+              {hiddenCategoryList.map((cat) => (
+                <li key={cat}>
+                  <button
+                    type="button"
+                    onClick={() => unhideCategory(cat)}
+                    title="Afficher cette catégorie"
+                    className="flex items-center gap-1.5 rounded-full bg-white dark:bg-[#5b3d94] px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 shadow-sm hover:text-brand-700 dark:hover:text-brand-300"
+                  >
+                    <Emoji name={emojiFor(cat)} size={14} />
+                    {cat}
+                    <EyeIcon className="h-3.5 w-3.5" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
 
       {toast && (
         <div className="fixed inset-x-0 bottom-32 z-50 flex justify-center px-4 sm:bottom-6">

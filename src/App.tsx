@@ -230,9 +230,10 @@ export default function App() {
               type="button"
               onClick={() => setShowWhatsNew(true)}
               title="Quoi de neuf"
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white transition-colors hover:bg-white/15"
+              className="flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3 text-xs font-bold text-white transition-colors hover:bg-white/15"
             >
-              <SparkleIcon className="h-5 w-5" />
+              <SparkleIcon className="h-4 w-4 shrink-0" />
+              <span className="whitespace-nowrap">Quoi de neuf</span>
             </button>
             <HouseholdSwitcher onOpenSettings={() => setShowSettings(true)} />
             <ThemeToggleButton />
