@@ -15,6 +15,7 @@ export default function AddWishlistItemForm({ onAdded, onCancel }: { onAdded?: (
   const [store, setStore] = useState('')
   const [imageUrl, setImageUrl] = useState('')
   const [sourceUrl, setSourceUrl] = useState('')
+  const [price, setPrice] = useState('')
   const abortRef = useRef<AbortController | null>(null)
 
   function reset() {
@@ -23,6 +24,7 @@ export default function AddWishlistItemForm({ onAdded, onCancel }: { onAdded?: (
     setStore('')
     setImageUrl('')
     setSourceUrl('')
+    setPrice('')
     setImportError('')
   }
 
@@ -39,6 +41,7 @@ export default function AddWishlistItemForm({ onAdded, onCancel }: { onAdded?: (
       setImageUrl(imported.imageUrl || '')
       setStore(imported.store)
       setSourceUrl(trimmed)
+      setPrice(imported.price != null ? String(imported.price) : '')
     } catch (err) {
       if (controller.signal.aborted) return
       setImportError(err instanceof Error ? err.message : "Échec de l'import")
@@ -50,11 +53,13 @@ export default function AddWishlistItemForm({ onAdded, onCancel }: { onAdded?: (
   function submit(e: React.FormEvent) {
     e.preventDefault()
     if (!name.trim()) return
+    const parsedPrice = price.trim() ? parseFloat(price.trim().replace(',', '.')) : undefined
     addWishlistItem({
       name: name.trim(),
       store: store.trim() || getDefaultStore(),
       imageUrl: imageUrl.trim() || undefined,
-      sourceUrl: sourceUrl.trim() || undefined
+      sourceUrl: sourceUrl.trim() || undefined,
+      price: parsedPrice != null && Number.isFinite(parsedPrice) ? parsedPrice : undefined
     })
     reset()
     onAdded?.()
@@ -112,6 +117,17 @@ export default function AddWishlistItemForm({ onAdded, onCancel }: { onAdded?: (
                 onChange={setStore}
                 className="w-40 shrink-0 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-[#5b3d94] px-3 py-2 text-sm sm:w-48"
               />
+              <div className="relative w-24 shrink-0">
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  placeholder="Prix"
+                  className="w-full rounded-lg border border-slate-200 dark:border-white/10 px-3 py-2 pr-6 text-sm"
+                />
+                <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-sm text-slate-400">€</span>
+              </div>
               <input
                 value={imageUrl}
                 onChange={(e) => setImageUrl(e.target.value)}

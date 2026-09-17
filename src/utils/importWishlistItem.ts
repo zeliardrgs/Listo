@@ -4,6 +4,7 @@ export interface ImportedWishlistItem {
   name: string
   imageUrl?: string
   store: string
+  price?: number
 }
 
 function metaContent(doc: Document, selectors: string[]): string | undefined {
@@ -29,6 +30,25 @@ function extractJsonLdProduct(doc: Document): any | null {
     }
   }
   return null
+}
+
+// Structured price values (meta tags, JSON-LD) are plain decimals like
+// "19.99" per spec, but a stray comma-decimal is handled just in case a site
+// doesn't follow it.
+function parsePrice(raw: unknown): number | undefined {
+  if (raw == null) return undefined
+  let str = String(raw).trim()
+  if (!str) return undefined
+  if (!str.includes('.') && str.includes(',')) str = str.replace(',', '.')
+  str = str.replace(/[^\d.-]/g, '')
+  const n = parseFloat(str)
+  return Number.isFinite(n) ? n : undefined
+}
+
+function extractOfferPrice(product: any): number | undefined {
+  if (!product?.offers) return undefined
+  const offer = Array.isArray(product.offers) ? product.offers[0] : product.offers
+  return parsePrice(offer?.price ?? offer?.lowPrice)
 }
 
 // Falls back to the site's domain (e.g. "amazon.fr" -> "Amazon") when no
@@ -77,5 +97,9 @@ export async function importWishlistItemFromUrl(url: string, signal?: AbortSigna
   const brandName = typeof product?.brand === 'string' ? product.brand : product?.brand?.name
   const store = metaContent(doc, ['meta[property="og:site_name"]']) || brandName || hostnameLabel(url)
 
-  return { name, imageUrl, store }
+  const price =
+    parsePrice(metaContent(doc, ['meta[property="product:price:amount"]', 'meta[property="og:price:amount"]'])) ??
+    extractOfferPrice(product)
+
+  return { name, imageUrl, store, price }
 }

@@ -85,6 +85,7 @@ export interface WishlistItem {
   store: string
   imageUrl?: string
   sourceUrl?: string
+  price?: number
   createdAt: number
 }
 

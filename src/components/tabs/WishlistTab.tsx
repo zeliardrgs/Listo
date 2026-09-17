@@ -6,6 +6,7 @@ import { useStoreIcon } from '../../hooks/useStoreIcon'
 import StoreIconView from '../StoreIconView'
 import AddWishlistItemForm from '../AddWishlistItemForm'
 import { CheckIcon, CrossIcon, HeartIcon, LinkIcon, PlusIcon, TrashIcon } from '../icons'
+import { formatPrice } from '../../utils/formatPrice'
 import type { WishlistItem } from '../../types'
 
 interface Toast {
@@ -131,6 +132,11 @@ export default function WishlistTab() {
                   </div>
                   <div className="p-2">
                     <p className="break-words text-xs font-semibold text-slate-700 dark:text-slate-200">{it.name}</p>
+                    {it.price != null && (
+                      <p className="mt-0.5 text-sm font-extrabold text-brand-600 dark:text-brand-300">
+                        {formatPrice(it.price)}
+                      </p>
+                    )}
                     <div className="mt-1.5 flex items-center justify-end gap-1">
                       {it.sourceUrl && (
                         <a
