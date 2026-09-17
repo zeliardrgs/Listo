@@ -76,6 +76,18 @@ export interface Recipe {
   createdAt: number
 }
 
+// An item the household wants but isn't on the shopping list — separate from
+// ShoppingItem since it has no category/checked/toBuy state, just what's
+// needed to browse it (grouped by store) and follow its source link.
+export interface WishlistItem {
+  id: string
+  name: string
+  store: string
+  imageUrl?: string
+  sourceUrl?: string
+  createdAt: number
+}
+
 export interface PlanningItem {
   id: string
   recipeId: string

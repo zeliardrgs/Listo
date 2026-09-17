@@ -3,6 +3,7 @@ import ListTab from './components/tabs/ListTab'
 import RecipesTab from './components/tabs/RecipesTab'
 import PlanningTab from './components/tabs/PlanningTab'
 import ShoppingModeTab from './components/tabs/ShoppingModeTab'
+import WishlistTab from './components/tabs/WishlistTab'
 import SettingsPage from './components/SettingsPage'
 import ListoLogo from './components/ListoLogo'
 import SettingsIcon from './components/SettingsIcon'
@@ -19,10 +20,10 @@ import InstallBanner from './components/InstallBanner'
 import HouseholdRequiredGate from './components/HouseholdRequiredGate'
 import HouseholdSwitcher from './components/HouseholdSwitcher'
 
-type Tab = 'list' | 'recipes' | 'planning' | 'shopping'
+type Tab = 'list' | 'recipes' | 'planning' | 'shopping' | 'wishlist'
 
 const ACTIVE_TAB_KEY = 'listo-active-tab'
-const VALID_TABS: Tab[] = ['list', 'recipes', 'planning', 'shopping']
+const VALID_TABS: Tab[] = ['list', 'recipes', 'planning', 'shopping', 'wishlist']
 
 function loadActiveTab(): Tab {
   const stored = localStorage.getItem(ACTIVE_TAB_KEY)
@@ -57,6 +58,15 @@ const TABS: { key: Tab; label: string; icon: JSX.Element }[] = [
         <circle cx="9" cy="21" r="1" />
         <circle cx="19" cy="21" r="1" />
         <path d="M2.5 3h2l2.6 12.4a2 2 0 0 0 2 1.6h8.9a2 2 0 0 0 2-1.6L22 7H6" />
+      </svg>
+    )
+  },
+  {
+    key: 'wishlist',
+    label: 'Souhaits',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
       </svg>
     )
   }
@@ -237,6 +247,7 @@ export default function App() {
             {tab === 'recipes' && <RecipesTab />}
             {tab === 'planning' && <PlanningTab />}
             {tab === 'shopping' && <ShoppingModeTab />}
+            {tab === 'wishlist' && <WishlistTab />}
           </>
         )}
       </main>

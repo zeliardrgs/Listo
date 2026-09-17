@@ -6,7 +6,7 @@ import { useHouseholdStore } from '../store/useHouseholdStore'
 import { useSyncStatusStore } from '../store/useSyncStatusStore'
 import { emptySyncedAppData, pickConfig, type SharedConfig } from '../lib/sync'
 import { syncKeyedCollection } from '../lib/collectionSync'
-import type { PlanningItem, Recipe, ShoppingItem } from '../types'
+import type { PlanningItem, Recipe, ShoppingItem, WishlistItem } from '../types'
 
 const PUSH_DEBOUNCE_MS = 400
 
@@ -47,8 +47,8 @@ function applySlotsLocal(next: Record<string, SlotValue>) {
 
 // Keeps the app store in sync with the active household: the small,
 // rarely-changed settings (stores/categories/tags/overrides) sync as one
-// document, while items/recipes/planning queue/planning slots each sync as
-// their own Firestore subcollection (one doc per entity) via
+// document, while items/recipes/wishlist items/planning queue/planning slots
+// each sync as their own Firestore subcollection (one doc per entity) via
 // syncKeyedCollection — so two devices editing different things offline
 // never clobber each other's changes when they reconnect.
 export function useHouseholdSync() {
@@ -85,6 +85,15 @@ export function useHouseholdSync() {
         () => arrayToRecord(useAppStore.getState().recipes),
         (rec) => useAppStore.setState({ recipes: Object.values(rec) }),
         () => useSyncStatusStore.getState().markLoaded('recipes')
+      )
+    )
+    stopFns.push(
+      syncKeyedCollection<WishlistItem>(
+        activeCode,
+        'wishlistItems',
+        () => arrayToRecord(useAppStore.getState().wishlistItems),
+        (rec) => useAppStore.setState({ wishlistItems: Object.values(rec) }),
+        () => useSyncStatusStore.getState().markLoaded('wishlistItems')
       )
     )
     stopFns.push(

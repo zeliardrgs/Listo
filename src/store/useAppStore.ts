@@ -8,7 +8,8 @@ import type {
   RecipeQuantityContribution,
   ShoppingItem,
   StoreIconValue,
-  Unit
+  Unit,
+  WishlistItem
 } from '../types'
 import {
   CATEGORIES,
@@ -102,6 +103,7 @@ function buildItemContributions(ings: RecipeIngredient[], recipeId: string): Rec
 interface AppStore {
   items: ShoppingItem[]
   recipes: Recipe[]
+  wishlistItems: WishlistItem[]
   customCategories: string[]
   customStores: string[]
   customBrands: string[]
@@ -139,6 +141,11 @@ interface AppStore {
   addRecipe: (recipe: Omit<Recipe, 'id' | 'createdAt'>) => string
   updateRecipe: (id: string, patch: Partial<Recipe>) => void
   removeRecipe: (id: string) => void
+
+  addWishlistItem: (item: Omit<WishlistItem, 'id' | 'createdAt'>) => void
+  updateWishlistItem: (id: string, patch: Partial<WishlistItem>) => void
+  removeWishlistItem: (id: string) => void
+  replaceWishlistItems: (items: WishlistItem[]) => void
   addIngredientsToList: (recipeId: string) => IngredientMatchResult[]
   // Folds a mistakenly-created item (e.g. a plural/singular mismatch the
   // fuzzy matcher missed) into an existing one the user picks instead.
@@ -189,6 +196,7 @@ export const useAppStore = create<AppStore>()(
     (set, get) => ({
       items: [],
       recipes: [],
+      wishlistItems: [],
       customCategories: [],
       customStores: [],
       customBrands: [],
@@ -404,6 +412,16 @@ export const useAppStore = create<AppStore>()(
             })
           }
         }),
+
+      addWishlistItem: (item) =>
+        set((s) => ({ wishlistItems: [...s.wishlistItems, { ...item, id: makeId(), createdAt: Date.now() }] })),
+
+      updateWishlistItem: (id, patch) =>
+        set((s) => ({ wishlistItems: s.wishlistItems.map((w) => (w.id === id ? { ...w, ...patch } : w)) })),
+
+      removeWishlistItem: (id) => set((s) => ({ wishlistItems: s.wishlistItems.filter((w) => w.id !== id) })),
+
+      replaceWishlistItems: (wishlistItems) => set({ wishlistItems }),
 
       addIngredientsToList: (recipeId) => {
         const recipe = get().recipes.find((r) => r.id === recipeId)
@@ -683,7 +701,8 @@ export const useAppStore = create<AppStore>()(
             storeIconOverrides: iconOverrides,
             defaultStore: s.defaultStore === oldName ? trimmed : s.defaultStore,
             categoryOrderByStore,
-            items: s.items.map((it) => (it.store === oldName ? { ...it, store: trimmed, updatedAt: Date.now() } : it))
+            items: s.items.map((it) => (it.store === oldName ? { ...it, store: trimmed, updatedAt: Date.now() } : it)),
+            wishlistItems: s.wishlistItems.map((w) => (w.store === oldName ? { ...w, store: trimmed } : w))
           }
         }),
       setStoreIcon: (name, icon) =>

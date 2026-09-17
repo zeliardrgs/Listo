@@ -1,4 +1,4 @@
-import type { PlanningItem, Recipe, ShoppingItem, StoreIconValue } from '../types'
+import type { PlanningItem, Recipe, ShoppingItem, StoreIconValue, WishlistItem } from '../types'
 
 // Settings-ish fields, shared within a household as one small document since
 // they change rarely and concurrent edits are unlikely. Everything else
@@ -67,6 +67,7 @@ export function emptyConfig(): SharedConfig {
 export interface SyncedAppData extends SharedConfig {
   items: ShoppingItem[]
   recipes: Recipe[]
+  wishlistItems: WishlistItem[]
   planningQueue: PlanningItem[]
   planningSlots: Record<string, PlanningItem[]>
   planningNotes: Record<string, string>
@@ -77,6 +78,7 @@ export function emptySyncedAppData(): SyncedAppData {
     ...emptyConfig(),
     items: [],
     recipes: [],
+    wishlistItems: [],
     planningQueue: [],
     planningSlots: {},
     planningNotes: {}

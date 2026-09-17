@@ -26,14 +26,21 @@ export default function StoreSelect({
     if (!open) return
     function onMouseDown(e: MouseEvent) {
       if (rootRef.current && !rootRef.current.contains(e.target as Node)) {
-        setOpen(false)
-        setAdding(false)
-        setDraft('')
+        // Clicking away while typing a new store name (e.g. straight onto a
+        // form's submit button, without pressing Enter first) used to just
+        // discard the draft — commit it instead, same as blur/Enter do.
+        if (adding && draft.trim()) {
+          commit()
+        } else {
+          setOpen(false)
+          setAdding(false)
+          setDraft('')
+        }
       }
     }
     document.addEventListener('mousedown', onMouseDown)
     return () => document.removeEventListener('mousedown', onMouseDown)
-  }, [open])
+  }, [open, adding, draft])
 
   function commit() {
     const v = draft.trim()
