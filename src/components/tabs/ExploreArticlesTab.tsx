@@ -2,10 +2,11 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useAppStore } from '../../store/useAppStore'
 import { EXPLORE_CATEGORY_ORDER, PRODUCT_SUGGESTIONS } from '../../data/constants'
 import { isInSeason } from '../../data/seasonalProduce'
+import { matchExistingItem } from '../../utils/matchItem'
 import { useCategoryEmojiName } from '../../hooks/useCategoryEmojiName'
 import { useCategoryColor } from '../../hooks/useCategoryColor'
 import Emoji from '../Emoji'
-import { ChevronDownIcon, EyeIcon, EyeOffIcon, ListCheckIcon, PlusIcon, SearchIcon } from '../icons'
+import { CheckIcon, ChevronDownIcon, EyeIcon, EyeOffIcon, ListCheckIcon, PlusIcon, SearchIcon } from '../icons'
 import type { ProductSuggestion } from '../../types'
 
 interface Toast {
@@ -43,6 +44,8 @@ function scrollToSection(label: string) {
 
 export default function ExploreArticlesTab() {
   const addItem = useAppStore((s) => s.addItem)
+  const updateItem = useAppStore((s) => s.updateItem)
+  const items = useAppStore((s) => s.items)
   const getDefaultStore = useAppStore((s) => s.getDefaultStore)
   const emojiFor = useCategoryEmojiName()
   const colorFor = useCategoryColor()
@@ -136,7 +139,13 @@ export default function ExploreArticlesTab() {
     return () => observer.disconnect()
   }, [groups])
 
-  function handleAddToShoppingList(p: ProductSuggestion) {
+  function handleToggleShoppingList(p: ProductSuggestion) {
+    const existing = matchExistingItem(p.name, items)
+    if (existing?.toBuy) {
+      updateItem(existing.id, { toBuy: false })
+      showToast(`« ${p.name} » retiré de la liste de courses`)
+      return
+    }
     addItem({
       name: p.name,
       category: p.category,
@@ -229,6 +238,7 @@ export default function ExploreArticlesTab() {
                 <ul className="grid grid-cols-1 gap-2 lg:grid-cols-2 xl:grid-cols-3">
                   {list.map((p) => {
                     const seasonal = showSeasons && isInSeason(p.name)
+                    const inCourses = !!matchExistingItem(p.name, items)?.toBuy
                     return (
                       <li key={p.name} className="rounded-xl bg-white dark:bg-[#5b3d94] px-3 py-2.5">
                         <div className="mb-2 flex items-center gap-1.5">
@@ -253,11 +263,19 @@ export default function ExploreArticlesTab() {
                           </button>
                           <button
                             type="button"
-                            onClick={() => handleAddToShoppingList(p)}
-                            title="Ajouter aux courses"
-                            className="flex flex-1 items-center justify-center gap-1 rounded-full bg-brand-600 px-2 py-1.5 text-[11px] font-bold text-white hover:bg-brand-700"
+                            onClick={() => handleToggleShoppingList(p)}
+                            title={inCourses ? 'Retirer de la liste de courses' : 'Ajouter aux courses'}
+                            className={`flex flex-1 items-center justify-center gap-1 rounded-full px-2 py-1.5 text-[11px] font-bold ${
+                              inCourses
+                                ? 'border border-brand-200 dark:border-brand-700/50 bg-brand-50 dark:bg-brand-900/40 text-brand-600 dark:text-brand-300 hover:bg-brand-100 dark:hover:bg-brand-900/60'
+                                : 'bg-brand-600 text-white hover:bg-brand-700'
+                            }`}
                           >
-                            <ListCheckIcon className="h-3.5 w-3.5 shrink-0" />
+                            {inCourses ? (
+                              <CheckIcon className="h-3.5 w-3.5 shrink-0" />
+                            ) : (
+                              <ListCheckIcon className="h-3.5 w-3.5 shrink-0" />
+                            )}
                             Courses
                           </button>
                         </div>
