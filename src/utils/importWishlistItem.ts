@@ -1,4 +1,4 @@
-import { fetchHtml } from './fetchViaProxy'
+import { BOT_BLOCKED_MESSAGE, fetchHtml } from './fetchViaProxy'
 
 export interface ImportedWishlistItem {
   name: string
@@ -50,6 +50,9 @@ export async function importWishlistItemFromUrl(url: string, signal?: AbortSigna
     html = await fetchHtml(url, signal)
   } catch (err) {
     if (signal?.aborted) throw err
+    if (err instanceof Error && err.message === BOT_BLOCKED_MESSAGE) {
+      throw new Error("Ce site bloque la récupération automatique (protection anti-robot). Ajoute l'article manuellement.")
+    }
     throw new Error("Impossible de récupérer la page. Vérifie le lien ou ajoute l'article manuellement.")
   }
   const doc = new DOMParser().parseFromString(html, 'text/html')

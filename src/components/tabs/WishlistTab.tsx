@@ -5,7 +5,7 @@ import { useSyncStatusStore } from '../../store/useSyncStatusStore'
 import { useStoreIcon } from '../../hooks/useStoreIcon'
 import StoreIconView from '../StoreIconView'
 import AddWishlistItemForm from '../AddWishlistItemForm'
-import { CrossIcon, HeartIcon, LinkIcon, PlusIcon, TrashIcon } from '../icons'
+import { CheckIcon, CrossIcon, HeartIcon, LinkIcon, PlusIcon, TrashIcon } from '../icons'
 import type { WishlistItem } from '../../types'
 
 interface Toast {
@@ -17,6 +17,7 @@ export default function WishlistTab() {
   const wishlistItems = useAppStore((s) => s.wishlistItems)
   const removeWishlistItem = useAppStore((s) => s.removeWishlistItem)
   const replaceWishlistItems = useAppStore((s) => s.replaceWishlistItems)
+  const addItem = useAppStore((s) => s.addItem)
   const storeIconFor = useStoreIcon()
   const activeHousehold = useHouseholdStore((s) => s.activeCode)
   const wishlistLoaded = useSyncStatusStore((s) => s.loaded.wishlistItems ?? false)
@@ -44,6 +45,20 @@ export default function WishlistTab() {
     const snapshot = wishlistItems
     removeWishlistItem(item.id)
     showToast(`« ${item.name} » supprimé`, snapshot)
+  }
+
+  function handleValidatePurchase(item: WishlistItem) {
+    const snapshot = wishlistItems
+    addItem({
+      name: item.name,
+      category: 'Autre',
+      brand: '',
+      store: item.store,
+      recurring: false,
+      toBuy: true
+    })
+    removeWishlistItem(item.id)
+    showToast(`« ${item.name} » ajouté à la liste de courses`, snapshot)
   }
 
   const groups = useMemo(() => {
@@ -114,29 +129,37 @@ export default function WishlistTab() {
                       <HeartIcon className="h-8 w-8 text-slate-300" />
                     )}
                   </div>
-                  <div className="flex items-start gap-1 p-2">
-                    <span className="min-w-0 flex-1 truncate text-xs font-semibold text-slate-700 dark:text-slate-200">
-                      {it.name}
-                    </span>
-                    {it.sourceUrl && (
-                      <a
-                        href={it.sourceUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        title="Ouvrir le lien"
+                  <div className="p-2">
+                    <p className="break-words text-xs font-semibold text-slate-700 dark:text-slate-200">{it.name}</p>
+                    <div className="mt-1.5 flex items-center justify-end gap-1">
+                      {it.sourceUrl && (
+                        <a
+                          href={it.sourceUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          title="Ouvrir le lien"
+                          className="shrink-0 rounded-full p-1 text-slate-300 hover:bg-brand-50 hover:text-brand-600 dark:hover:bg-brand-900/40 dark:hover:text-brand-300"
+                        >
+                          <LinkIcon className="h-3.5 w-3.5" />
+                        </a>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => handleValidatePurchase(it)}
+                        title="Valider l'achat (ajoute à la liste de courses)"
                         className="shrink-0 rounded-full p-1 text-slate-300 hover:bg-brand-50 hover:text-brand-600 dark:hover:bg-brand-900/40 dark:hover:text-brand-300"
                       >
-                        <LinkIcon className="h-3.5 w-3.5" />
-                      </a>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(it)}
-                      title="Supprimer"
-                      className="shrink-0 rounded-full p-1 text-slate-300 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-950/40"
-                    >
-                      <TrashIcon className="h-3.5 w-3.5" />
-                    </button>
+                        <CheckIcon className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(it)}
+                        title="Supprimer"
+                        className="shrink-0 rounded-full p-1 text-slate-300 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-950/40"
+                      >
+                        <TrashIcon className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
                   </div>
                 </li>
               ))}
