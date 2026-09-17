@@ -1,13 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import ListTab from './components/tabs/ListTab'
 import RecipesTab from './components/tabs/RecipesTab'
-import PlanningTab from './components/tabs/PlanningTab'
 import ShoppingModeTab from './components/tabs/ShoppingModeTab'
 import WishlistTab from './components/tabs/WishlistTab'
 import SettingsPage from './components/SettingsPage'
 import ListoLogo from './components/ListoLogo'
 import SettingsIcon from './components/SettingsIcon'
-import { ClipboardIcon, CalendarIcon, MoreIcon, SunIcon, MoonIcon } from './components/icons'
+import { ClipboardIcon, MoreIcon, SunIcon, MoonIcon } from './components/icons'
 import { useScrolled } from './hooks/useScrolled'
 import { useScrollDirection } from './hooks/useScrollDirection'
 import { useHouseholdSync } from './hooks/useHouseholdSync'
@@ -20,10 +19,10 @@ import InstallBanner from './components/InstallBanner'
 import HouseholdRequiredGate from './components/HouseholdRequiredGate'
 import HouseholdSwitcher from './components/HouseholdSwitcher'
 
-type Tab = 'list' | 'recipes' | 'planning' | 'shopping' | 'wishlist'
+type Tab = 'list' | 'recipes' | 'shopping' | 'wishlist'
 
 const ACTIVE_TAB_KEY = 'listo-active-tab'
-const VALID_TABS: Tab[] = ['list', 'recipes', 'planning', 'shopping', 'wishlist']
+const VALID_TABS: Tab[] = ['list', 'recipes', 'shopping', 'wishlist']
 
 function loadActiveTab(): Tab {
   const stored = localStorage.getItem(ACTIVE_TAB_KEY)
@@ -44,11 +43,6 @@ const TABS: { key: Tab; label: string; icon: JSX.Element }[] = [
         <path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z" />
       </svg>
     )
-  },
-  {
-    key: 'planning',
-    label: 'Planning',
-    icon: <CalendarIcon className="h-full w-full" />
   },
   {
     key: 'shopping',
@@ -245,7 +239,6 @@ export default function App() {
           <>
             {tab === 'list' && <ListTab />}
             {tab === 'recipes' && <RecipesTab />}
-            {tab === 'planning' && <PlanningTab />}
             {tab === 'shopping' && <ShoppingModeTab />}
             {tab === 'wishlist' && <WishlistTab />}
           </>

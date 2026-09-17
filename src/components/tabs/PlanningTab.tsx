@@ -136,7 +136,7 @@ export default function PlanningTab() {
   }
 
   return (
-    <div className="mx-auto max-w-[1800px] px-3 pt-4 pb-10 lg:px-6">
+    <div className="mx-auto max-w-[1800px] px-3 pb-10 lg:px-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
         <aside className="w-full sm:w-72 sm:shrink-0">
           <div className="mb-2 rounded-2xl bg-[#FFF1DC] dark:bg-[#4a3178] px-4 py-3">

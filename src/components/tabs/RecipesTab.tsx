@@ -7,6 +7,7 @@ import { useIsDesktop } from '../../hooks/useIsDesktop'
 import RecipeCard from '../RecipeCard'
 import RecipeDetailPane from '../RecipeDetailPane'
 import IngredientMatchModal from '../IngredientMatchModal'
+import PlanningTab from './PlanningTab'
 import { SearchIcon, PlusIcon, CrossIcon, RecipeIcon } from '../icons'
 import type { IngredientMatchResult, Recipe, ShoppingItem } from '../../types'
 
@@ -16,6 +17,14 @@ interface Toast {
 }
 
 const SELECTION_KEY = 'listo-recipes-selection'
+const SUBTAB_KEY = 'listo-recipes-subtab'
+
+type RecipesSubTab = 'recipes' | 'planning'
+
+const SUBTABS: { key: RecipesSubTab; label: string }[] = [
+  { key: 'recipes', label: 'Mes recettes' },
+  { key: 'planning', label: 'Planning' }
+]
 
 export default function RecipesTab() {
   const recipes = useAppStore((s) => s.recipes)
@@ -36,6 +45,9 @@ export default function RecipesTab() {
   const [tagFilter, setTagFilter] = useState<string | null>(null)
   const [addPrefillName, setAddPrefillName] = useState('')
   const [selection, setSelection] = useState<string | 'new' | null>(() => localStorage.getItem(SELECTION_KEY))
+  const [subTab, setSubTab] = useState<RecipesSubTab>(() =>
+    localStorage.getItem(SUBTAB_KEY) === 'planning' ? 'planning' : 'recipes'
+  )
   const [toast, setToast] = useState<Toast | null>(null)
   const [matchModal, setMatchModal] = useState<{ recipeName: string; results: IngredientMatchResult[] } | null>(null)
   const toastTimer = useRef<ReturnType<typeof setTimeout>>()
@@ -52,6 +64,10 @@ export default function RecipesTab() {
       localStorage.removeItem(SELECTION_KEY)
     }
   }, [selection])
+
+  useEffect(() => {
+    localStorage.setItem(SUBTAB_KEY, subTab)
+  }, [subTab])
 
   useEffect(() => {
     if (!isLoading && selection && selection !== 'new' && !recipes.find((r) => r.id === selection)) {
@@ -131,9 +147,40 @@ export default function RecipesTab() {
     setSearch('')
   }
 
+  const subTabBar = (
+    <div className="mx-auto max-w-[1800px] px-3 pt-4 lg:px-6">
+      <div className="mb-1 flex gap-2">
+        {SUBTABS.map((t) => (
+          <button
+            key={t.key}
+            onClick={() => setSubTab(t.key)}
+            className={`rounded-full px-4 py-2 text-sm font-bold transition-colors ${
+              subTab === t.key
+                ? 'bg-brand-600 text-white'
+                : 'bg-brand-100 dark:bg-brand-900/50 text-brand-700 dark:text-brand-300 hover:bg-brand-200 dark:hover:bg-brand-800/60'
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+
+  if (subTab === 'planning') {
+    return (
+      <>
+        {subTabBar}
+        <PlanningTab />
+      </>
+    )
+  }
+
   return (
-    <div
-      className={`mx-auto flex max-w-lg flex-col px-3 pt-4 pb-36 sm:pb-4 lg:max-w-6xl ${
+    <>
+      {subTabBar}
+      <div
+      className={`mx-auto flex max-w-lg flex-col px-3 pb-36 sm:pb-4 lg:max-w-6xl ${
         isDesktop && hasValidSelection ? 'lg:h-full lg:overflow-hidden lg:pb-4' : ''
       }`}
       style={isDesktop ? { maxWidth: hasValidSelection ? '1700px' : undefined, transition: 'max-width 300ms ease' } : undefined}
@@ -316,6 +363,7 @@ export default function RecipesTab() {
           onClose={() => setMatchModal(null)}
         />
       )}
-    </div>
+      </div>
+    </>
   )
 }
