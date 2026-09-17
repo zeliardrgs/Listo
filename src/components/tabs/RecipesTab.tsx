@@ -149,7 +149,7 @@ export default function RecipesTab() {
 
   const subTabBar = (
     <div className="mx-auto max-w-[1800px] px-3 pt-4 lg:px-6">
-      <div className="mb-1 flex gap-2">
+      <div className="mb-1 flex justify-center gap-2">
         {SUBTABS.map((t) => (
           <button
             key={t.key}

@@ -181,7 +181,7 @@ export default function App() {
           scrolled ? 'sm:pt-1' : 'sm:pt-2'
         }`}
       >
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-stretch sm:justify-between">
+        <div className="relative flex flex-col gap-2 sm:flex-row sm:items-stretch sm:justify-between">
           <div
             className={`relative flex items-center justify-center gap-2 sm:static sm:justify-start ${scrolled ? 'pb-1' : 'pb-2'}`}
           >
@@ -194,7 +194,7 @@ export default function App() {
           </div>
 
           <nav
-            className={`hidden gap-1 transition-all duration-200 sm:flex ${scrolled ? 'items-center' : 'items-stretch'}`}
+            className={`hidden gap-1 transition-all duration-200 sm:flex lg:absolute lg:inset-y-0 lg:left-1/2 lg:-translate-x-1/2 ${scrolled ? 'items-center' : 'items-stretch'}`}
           >
             {TABS.map((t) => (
               <button
@@ -222,7 +222,7 @@ export default function App() {
             ))}
           </nav>
 
-          <div className={`hidden items-center gap-2 sm:flex ${scrolled ? 'pb-1' : 'pb-2'}`}>
+          <div className={`hidden items-center justify-end gap-2 sm:flex ${scrolled ? 'pb-1' : 'pb-2'}`}>
             <HouseholdSwitcher onOpenSettings={() => setShowSettings(true)} />
             <ThemeToggleButton />
             <SettingsButton onClick={() => setShowSettings(true)} />
