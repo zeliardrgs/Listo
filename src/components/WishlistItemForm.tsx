@@ -3,19 +3,29 @@ import { useAppStore } from '../store/useAppStore'
 import { importWishlistItemFromUrl } from '../utils/importWishlistItem'
 import { CheckIcon, CrossIcon, HeartIcon, LinkIcon } from './icons'
 import StoreSelect from './StoreSelect'
+import type { WishlistItem } from '../types'
 
-export default function AddWishlistItemForm({ onAdded, onCancel }: { onAdded?: () => void; onCancel?: () => void }) {
+export default function WishlistItemForm({
+  item,
+  onSaved,
+  onCancel
+}: {
+  item?: WishlistItem
+  onSaved?: () => void
+  onCancel?: () => void
+}) {
   const addWishlistItem = useAppStore((s) => s.addWishlistItem)
+  const updateWishlistItem = useAppStore((s) => s.updateWishlistItem)
   const getDefaultStore = useAppStore((s) => s.getDefaultStore)
 
-  const [url, setUrl] = useState('')
+  const [url, setUrl] = useState(item?.sourceUrl || '')
   const [importing, setImporting] = useState(false)
   const [importError, setImportError] = useState('')
-  const [name, setName] = useState('')
-  const [store, setStore] = useState('')
-  const [imageUrl, setImageUrl] = useState('')
-  const [sourceUrl, setSourceUrl] = useState('')
-  const [price, setPrice] = useState('')
+  const [name, setName] = useState(item?.name || '')
+  const [store, setStore] = useState(item?.store || '')
+  const [imageUrl, setImageUrl] = useState(item?.imageUrl || '')
+  const [sourceUrl, setSourceUrl] = useState(item?.sourceUrl || '')
+  const [price, setPrice] = useState(item?.price != null ? String(item.price) : '')
   const abortRef = useRef<AbortController | null>(null)
 
   function reset() {
@@ -54,15 +64,20 @@ export default function AddWishlistItemForm({ onAdded, onCancel }: { onAdded?: (
     e.preventDefault()
     if (!name.trim()) return
     const parsedPrice = price.trim() ? parseFloat(price.trim().replace(',', '.')) : undefined
-    addWishlistItem({
+    const patch = {
       name: name.trim(),
       store: store.trim() || getDefaultStore(),
       imageUrl: imageUrl.trim() || undefined,
       sourceUrl: sourceUrl.trim() || undefined,
       price: parsedPrice != null && Number.isFinite(parsedPrice) ? parsedPrice : undefined
-    })
-    reset()
-    onAdded?.()
+    }
+    if (item) {
+      updateWishlistItem(item.id, patch)
+    } else {
+      addWishlistItem(patch)
+      reset()
+    }
+    onSaved?.()
   }
 
   return (
@@ -142,7 +157,7 @@ export default function AddWishlistItemForm({ onAdded, onCancel }: { onAdded?: (
           <button
             type="button"
             onClick={() => {
-              reset()
+              if (!item) reset()
               onCancel?.()
             }}
             title="Annuler"
@@ -152,7 +167,7 @@ export default function AddWishlistItemForm({ onAdded, onCancel }: { onAdded?: (
           </button>
           <button
             type="submit"
-            title="Ajouter"
+            title={item ? 'Enregistrer' : 'Ajouter'}
             className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-600 text-white hover:bg-brand-700"
           >
             <CheckIcon className="h-4 w-4" />

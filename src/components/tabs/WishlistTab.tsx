@@ -4,8 +4,8 @@ import { useHouseholdStore } from '../../store/useHouseholdStore'
 import { useSyncStatusStore } from '../../store/useSyncStatusStore'
 import { useStoreIcon } from '../../hooks/useStoreIcon'
 import StoreIconView from '../StoreIconView'
-import AddWishlistItemForm from '../AddWishlistItemForm'
-import { CheckIcon, CrossIcon, HeartIcon, LinkIcon, PlusIcon, TrashIcon } from '../icons'
+import WishlistItemForm from '../WishlistItemForm'
+import { CheckIcon, CrossIcon, EditIcon, HeartIcon, LinkIcon, PlusIcon, TrashIcon } from '../icons'
 import { formatPrice } from '../../utils/formatPrice'
 import type { WishlistItem } from '../../types'
 
@@ -24,6 +24,7 @@ export default function WishlistTab() {
   const wishlistLoaded = useSyncStatusStore((s) => s.loaded.wishlistItems ?? false)
   const isLoading = !!activeHousehold && !wishlistLoaded
   const [showForm, setShowForm] = useState(false)
+  const [editingItem, setEditingItem] = useState<WishlistItem | null>(null)
   const [toast, setToast] = useState<Toast | null>(null)
   const toastTimer = useRef<ReturnType<typeof setTimeout>>()
 
@@ -79,20 +80,31 @@ export default function WishlistTab() {
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-sm font-bold text-slate-500 dark:text-slate-400">Souhaits</h2>
         <button
-          onClick={() => setShowForm((v) => !v)}
+          onClick={() => {
+            setEditingItem(null)
+            setShowForm((v) => !v)
+          }}
           className={`flex h-11 w-11 items-center justify-center rounded-full shadow-sm transition-colors ${
-            showForm ? 'bg-slate-200 dark:bg-white/15 text-slate-600 dark:text-slate-300' : 'bg-brand-600 text-white hover:bg-brand-700'
+            showForm || editingItem
+              ? 'bg-slate-200 dark:bg-white/15 text-slate-600 dark:text-slate-300'
+              : 'bg-brand-600 text-white hover:bg-brand-700'
           }`}
           title="Ajouter un souhait"
         >
-          {showForm ? <CrossIcon className="h-5 w-5" /> : <PlusIcon className="h-5 w-5" />}
+          {showForm || editingItem ? <CrossIcon className="h-5 w-5" /> : <PlusIcon className="h-5 w-5" />}
         </button>
       </div>
 
-      {showForm && (
+      {editingItem ? (
         <div className="mb-4">
-          <AddWishlistItemForm onAdded={() => setShowForm(false)} onCancel={() => setShowForm(false)} />
+          <WishlistItemForm item={editingItem} onSaved={() => setEditingItem(null)} onCancel={() => setEditingItem(null)} />
         </div>
+      ) : (
+        showForm && (
+          <div className="mb-4">
+            <WishlistItemForm onSaved={() => setShowForm(false)} onCancel={() => setShowForm(false)} />
+          </div>
+        )
       )}
 
       {isLoading && (
@@ -149,6 +161,17 @@ export default function WishlistTab() {
                           <LinkIcon className="h-3.5 w-3.5" />
                         </a>
                       )}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowForm(false)
+                          setEditingItem(it)
+                        }}
+                        title="Modifier"
+                        className="shrink-0 rounded-full p-1 text-slate-300 hover:bg-brand-50 hover:text-brand-600 dark:hover:bg-brand-900/40 dark:hover:text-brand-300"
+                      >
+                        <EditIcon className="h-3.5 w-3.5" />
+                      </button>
                       <button
                         type="button"
                         onClick={() => handleValidatePurchase(it)}
