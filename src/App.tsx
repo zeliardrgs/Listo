@@ -18,6 +18,8 @@ import JoinInvite from './components/JoinInvite'
 import InstallBanner from './components/InstallBanner'
 import HouseholdRequiredGate from './components/HouseholdRequiredGate'
 import HouseholdSwitcher from './components/HouseholdSwitcher'
+import WhatsNewModal from './components/WhatsNewModal'
+import { SparkleIcon } from './components/icons'
 
 type Tab = 'list' | 'recipes' | 'shopping' | 'wishlist'
 
@@ -45,6 +47,15 @@ const TABS: { key: Tab; label: string; icon: JSX.Element }[] = [
     )
   },
   {
+    key: 'wishlist',
+    label: 'Souhaits',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+  },
+  {
     key: 'shopping',
     label: 'Courses',
     icon: (
@@ -52,15 +63,6 @@ const TABS: { key: Tab; label: string; icon: JSX.Element }[] = [
         <circle cx="9" cy="21" r="1" />
         <circle cx="19" cy="21" r="1" />
         <path d="M2.5 3h2l2.6 12.4a2 2 0 0 0 2 1.6h8.9a2 2 0 0 0 2-1.6L22 7H6" />
-      </svg>
-    )
-  },
-  {
-    key: 'wishlist',
-    label: 'Souhaits',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
       </svg>
     )
   }
@@ -163,6 +165,7 @@ function BottomTabBar({
 export default function App() {
   const [tab, setTab] = useState<Tab>(loadActiveTab)
   const [showSettings, setShowSettings] = useState(false)
+  const [showWhatsNew, setShowWhatsNew] = useState(false)
   const scrolled = useScrolled()
   const scrollDirection = useScrollDirection()
   useHouseholdSync()
@@ -223,6 +226,14 @@ export default function App() {
           </nav>
 
           <div className={`hidden items-center justify-end gap-2 sm:flex ${scrolled ? 'pb-1' : 'pb-2'}`}>
+            <button
+              type="button"
+              onClick={() => setShowWhatsNew(true)}
+              title="Quoi de neuf"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white transition-colors hover:bg-white/15"
+            >
+              <SparkleIcon className="h-5 w-5" />
+            </button>
             <HouseholdSwitcher onOpenSettings={() => setShowSettings(true)} />
             <ThemeToggleButton />
             <SettingsButton onClick={() => setShowSettings(true)} />
@@ -258,6 +269,7 @@ export default function App() {
 
       <JoinInvite />
       <HouseholdRequiredGate />
+      {showWhatsNew && <WhatsNewModal onClose={() => setShowWhatsNew(false)} />}
     </div>
   )
 }

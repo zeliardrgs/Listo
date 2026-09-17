@@ -338,3 +338,11 @@ export function HeartIcon({ className }: IconProps) {
     </svg>
   )
 }
+
+export function SparkleIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" className={className}>
+      <path d="M11 2.5a1 1 0 0 1 1.94 0l1.2 4.36a4 4 0 0 0 2.8 2.8l4.36 1.2a1 1 0 0 1 0 1.94l-4.36 1.2a4 4 0 0 0-2.8 2.8l-1.2 4.36a1 1 0 0 1-1.94 0l-1.2-4.36a4 4 0 0 0-2.8-2.8l-4.36-1.2a1 1 0 0 1 0-1.94l4.36-1.2a4 4 0 0 0 2.8-2.8z" />
+    </svg>
+  )
+}
