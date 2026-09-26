@@ -19,6 +19,12 @@ const FEATURES: Feature[] = [
     description: 'Un nouvel onglet pour noter les envies et cadeaux à faire (ou à recevoir), avec prix et lien optionnels.'
   },
   {
+    emoji: '⭐',
+    title: 'Onglet Favoris',
+    description:
+      'Dans Articles, le sous-onglet Favoris regroupe les articles dont la case « Favoris » est cochée. Un article ajouté depuis cet onglet est automatiquement mis en favori. L\'ancien « Ma liste » s\'appelle désormais « Tout ».'
+  },
+  {
     emoji: '🌱',
     title: 'Explorer les articles',
     description:
