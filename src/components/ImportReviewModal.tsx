@@ -7,7 +7,8 @@ import { useCategoryEmojiName } from '../hooks/useCategoryEmojiName'
 import { useCategoryColor } from '../hooks/useCategoryColor'
 import RecipeIllustration from './RecipeIllustration'
 import Emoji from './Emoji'
-import { SearchIcon, CrossIcon, CheckIcon, PlusIcon, ChevronDownIcon, TrashIcon, DownloadIcon } from './icons'
+import ItemEditForm, { itemToDraft, type ItemDraft } from './ItemEditForm'
+import { SearchIcon, CrossIcon, CheckIcon, PlusIcon, ChevronDownIcon, TrashIcon, DownloadIcon, EditIcon } from './icons'
 import type { ImportedRecipe } from '../utils/importRecipe'
 import type { ProductSuggestion, RecipeIngredient, ShoppingItem } from '../types'
 
@@ -37,6 +38,8 @@ export default function ImportReviewModal({
 }) {
   const items = useAppStore((s) => s.items)
   const addItem = useAppStore((s) => s.addItem)
+  const updateItem = useAppStore((s) => s.updateItem)
+  const getDefaultStore = useAppStore((s) => s.getDefaultStore)
   const emojiFor = useCategoryEmojiName()
   const colorFor = useCategoryColor()
 
@@ -45,6 +48,47 @@ export default function ImportReviewModal({
   const [overrides, setOverrides] = useState<Record<string, Resolution>>({})
   const [pickerFor, setPickerFor] = useState<string | null>(null)
   const [search, setSearch] = useState('')
+  // Article edits made in the review, applied on import (updating an
+  // existing article, or shaping the one about to be created).
+  const [edits, setEdits] = useState<Record<string, ItemDraft>>({})
+  const [editing, setEditing] = useState<{ ingId: string; draft: ItemDraft } | null>(null)
+
+  function baseDraft(ing: RecipeIngredient, resolution: Resolution): ItemDraft {
+    if (resolution.mode === 'existing') {
+      const item = items.find((it) => it.id === resolution.itemId)
+      if (item) return itemToDraft(item)
+    }
+    const product = resolution.mode === 'catalog' ? resolution.product : null
+    return {
+      name: product?.name ?? ing.name,
+      category: product?.category ?? (ing.category || 'Autre'),
+      brand: product?.brand || '',
+      store: product?.store || getDefaultStore(),
+      recurring: false,
+      onceOnly: false,
+      toBuy: false
+    }
+  }
+
+  function openEditor(ing: RecipeIngredient) {
+    setPickerFor(null)
+    setEditing({ ingId: ing.id, draft: edits[ing.id] ?? baseDraft(ing, resolutionFor(ing)) })
+  }
+
+  function saveEditor() {
+    if (!editing) return
+    const draft = { ...editing.draft, name: editing.draft.name.trim(), brand: editing.draft.brand.trim() }
+    setEdits((e) => ({ ...e, [editing.ingId]: draft }))
+    setEditing(null)
+  }
+
+  function dropEdit(ingId: string) {
+    setEdits((e) => {
+      const { [ingId]: _dropped, ...rest } = e
+      return rest
+    })
+    if (editing?.ingId === ingId) setEditing(null)
+  }
 
   function resolutionFor(ing: RecipeIngredient): Resolution {
     if (overrides[ing.id]) return overrides[ing.id]
@@ -60,18 +104,21 @@ export default function ImportReviewModal({
 
   function pickExisting(ingId: string, item: ShoppingItem) {
     setOverrides((o) => ({ ...o, [ingId]: existingResolution(item) }))
+    dropEdit(ingId)
     setPickerFor(null)
     setSearch('')
   }
 
   function pickCatalog(ingId: string, product: ProductSuggestion) {
     setOverrides((o) => ({ ...o, [ingId]: { mode: 'catalog', product } }))
+    dropEdit(ingId)
     setPickerFor(null)
     setSearch('')
   }
 
   function pickNew(ingId: string) {
     setOverrides((o) => ({ ...o, [ingId]: { mode: 'new' } }))
+    dropEdit(ingId)
     setPickerFor(null)
     setSearch('')
   }
@@ -86,6 +133,7 @@ export default function ImportReviewModal({
       const { [id]: _dropped, ...rest } = o
       return rest
     })
+    dropEdit(id)
     if (pickerFor === id) setPickerFor(null)
   }
 
@@ -107,21 +155,18 @@ export default function ImportReviewModal({
   function handleConfirm() {
     const finalIngredients = ingredients.map((ing) => {
       const resolution = resolutionFor(ing)
+      const edit = edits[ing.id]
       if (resolution.mode === 'existing') {
         const item = items.find((it) => it.id === resolution.itemId)
-        return item ? { ...ing, name: item.name, category: item.category } : ing
+        if (!item) return ing
+        if (!edit) return { ...ing, name: item.name, category: item.category }
+        updateItem(item.id, edit)
+        return { ...ing, name: edit.name, category: edit.category }
       }
-      if (resolution.mode === 'catalog') {
-        const { product } = resolution
-        addItem({
-          name: product.name,
-          category: product.category,
-          brand: product.brand || '',
-          store: product.store || '',
-          recurring: false,
-          toBuy: false
-        })
-        return { ...ing, name: product.name, category: product.category }
+      if (resolution.mode === 'catalog' || edit) {
+        const draft = edit ?? baseDraft(ing, resolution)
+        addItem(draft)
+        return { ...ing, name: draft.name, category: draft.category }
       }
       if (!matchExistingItem(ing.name, items)) {
         addItem({
@@ -179,8 +224,25 @@ export default function ImportReviewModal({
           <div className="mx-auto max-w-3xl space-y-2 rounded-2xl bg-[#FFF1DC] dark:bg-[#4a3178] p-3">
             {ingredients.map((ing) => {
               const resolution = resolutionFor(ing)
+              const edit = edits[ing.id]
+              const display = edit
+                ? { name: edit.name, category: edit.category }
+                : resolution.mode === 'existing'
+                  ? { name: resolution.itemName, category: resolution.itemCategory }
+                  : resolution.mode === 'catalog'
+                    ? { name: resolution.product.name, category: resolution.product.category }
+                    : null
+              const badge =
+                resolution.mode === 'catalog'
+                  ? { label: 'Explorer', title: 'Article du catalogue Explorer, il sera ajouté à tes articles' }
+                  : resolution.mode === 'new' && edit
+                    ? { label: 'Nouveau', title: 'Cet article sera créé à l’import' }
+                    : edit
+                      ? { label: 'Modifié', title: 'Tes modifications seront appliquées à l’article à l’import' }
+                      : null
               return (
-                <div key={ing.id} className="grid grid-cols-2 items-start gap-3">
+                <div key={ing.id} className="space-y-2">
+                <div className="grid grid-cols-2 items-start gap-3">
                   <div className="flex items-center gap-1.5 rounded-xl bg-white dark:bg-[#5b3d94] px-3 py-2.5 ring-1 ring-slate-100 dark:ring-white/5">
                     <input
                       value={ing.name}
@@ -197,40 +259,22 @@ export default function ImportReviewModal({
                     </button>
                   </div>
 
-                  <div className="relative">
+                  <div className="relative flex items-center gap-1.5">
                     <button
                       type="button"
                       onClick={() => setPickerFor((v) => (v === ing.id ? null : ing.id))}
-                      className="flex w-full items-center gap-2 rounded-xl bg-white dark:bg-[#5b3d94] px-3 py-2.5 text-left ring-1 ring-slate-100 dark:ring-white/5"
+                      className="flex min-w-0 flex-1 items-center gap-2 rounded-xl bg-white dark:bg-[#5b3d94] px-3 py-2.5 text-left ring-1 ring-slate-100 dark:ring-white/5"
                     >
-                      {resolution.mode === 'existing' ? (
+                      {display ? (
                         <>
                           <span
-                            className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${colorFor(resolution.itemCategory).iconBg}`}
+                            className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${colorFor(display.category).iconBg}`}
                           >
-                            <Emoji name={emojiFor(resolution.itemCategory)} size={16} />
+                            <Emoji name={emojiFor(display.category)} size={16} />
                           </span>
                           <span className="min-w-0 flex-1 truncate text-sm font-bold text-slate-800 dark:text-slate-100">
-                            {resolution.itemName}
-                            <span className="ml-1 truncate font-normal text-slate-400">· {resolution.itemCategory}</span>
-                          </span>
-                        </>
-                      ) : resolution.mode === 'catalog' ? (
-                        <>
-                          <span
-                            className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${colorFor(resolution.product.category).iconBg}`}
-                          >
-                            <Emoji name={emojiFor(resolution.product.category)} size={16} />
-                          </span>
-                          <span className="min-w-0 flex-1 truncate text-sm font-bold text-slate-800 dark:text-slate-100">
-                            {resolution.product.name}
-                            <span className="ml-1 truncate font-normal text-slate-400">· {resolution.product.category}</span>
-                          </span>
-                          <span
-                            title="Article du catalogue Explorer, il sera ajouté à tes articles"
-                            className="shrink-0 rounded-full bg-green-100 dark:bg-green-900/40 px-1.5 py-0.5 text-[10px] font-bold text-green-700 dark:text-green-300"
-                          >
-                            Explorer
+                            {display.name}
+                            <span className="ml-1 truncate font-normal text-slate-400">· {display.category}</span>
                           </span>
                         </>
                       ) : (
@@ -238,9 +282,33 @@ export default function ImportReviewModal({
                           Créer un nouvel article
                         </span>
                       )}
+                      {badge && (
+                        <span
+                          title={badge.title}
+                          className={`shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
+                            badge.label === 'Explorer'
+                              ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300'
+                              : 'bg-brand-100 dark:bg-brand-900/50 text-brand-700 dark:text-brand-300'
+                          }`}
+                        >
+                          {badge.label}
+                        </span>
+                      )}
                       <ChevronDownIcon
                         className={`h-4 w-4 shrink-0 text-slate-400 transition-transform ${pickerFor === ing.id ? 'rotate-180' : ''}`}
                       />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => (editing?.ingId === ing.id ? setEditing(null) : openEditor(ing))}
+                      title="Modifier l'article"
+                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ring-1 ring-slate-100 dark:ring-white/5 ${
+                        editing?.ingId === ing.id
+                          ? 'bg-brand-600 text-white'
+                          : 'bg-white dark:bg-[#5b3d94] text-slate-400 hover:text-brand-600 dark:hover:text-brand-300'
+                      }`}
+                    >
+                      <EditIcon className="h-3.5 w-3.5" />
                     </button>
 
                     {pickerFor === ing.id && (
@@ -302,6 +370,17 @@ export default function ImportReviewModal({
                       </div>
                     )}
                   </div>
+                </div>
+                {editing?.ingId === ing.id && (
+                  <div className="rounded-2xl border border-brand-100 dark:border-brand-800/50 bg-white dark:bg-[#5b3d94] px-4 py-4 shadow-sm">
+                    <ItemEditForm
+                      draft={editing.draft}
+                      onChange={(update) => setEditing((e) => (e ? { ...e, draft: update(e.draft) } : e))}
+                      onSubmit={saveEditor}
+                      onCancel={() => setEditing(null)}
+                    />
+                  </div>
+                )}
                 </div>
               )
             })}
