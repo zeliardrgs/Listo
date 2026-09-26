@@ -1,4 +1,5 @@
-import type { ShoppingItem } from '../types'
+import type { ProductSuggestion, ShoppingItem } from '../types'
+import { PRODUCT_SUGGESTIONS } from '../data/constants'
 
 // Strips accents and normalizes whitespace/case for loose name comparison.
 // Also folds the œ/æ ligatures to their two-letter spelling, since recipe
@@ -31,4 +32,48 @@ export function namesMatch(a: string, b: string): boolean {
 
 export function matchExistingItem(name: string, items: ShoppingItem[]): ShoppingItem | undefined {
   return items.find((it) => namesMatch(it.name, name))
+}
+
+function tokens(s: string): string[] {
+  return normalize(s)
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean)
+    .map(singularize)
+}
+
+function sequenceIndex(haystack: string[], needle: string[]): number {
+  for (let i = 0; i + needle.length <= haystack.length; i++) {
+    if (needle.every((t, j) => haystack[i + j] === t)) return i
+  }
+  return -1
+}
+
+// Looser than namesMatch, since imported ingredient names carry extra words
+// ("gousses d'ail", "oignons rouges"): an Explorer product matches if its
+// words appear in order inside the ingredient name. The longest product name
+// wins ("pommes de terre" -> "Pomme de terre", not "Pomme"), then the one
+// appearing first, since French puts the main noun first ("tomates cerises"
+// -> "Tomate", not "Cerise").
+export function matchCatalogProduct(name: string): ProductSuggestion | undefined {
+  // Accent-sensitive pass first: accent folding alone makes "pâtes" equal "Pâté".
+  const accented = (s: string) => singularize(s.trim().toLowerCase().replace(/œ/g, 'oe').replace(/æ/g, 'ae'))
+  const exact =
+    PRODUCT_SUGGESTIONS.find((p) => accented(p.name) === accented(name)) ??
+    PRODUCT_SUGGESTIONS.find((p) => namesMatch(p.name, name))
+  if (exact) return exact
+  const ingTokens = tokens(name)
+  let best: ProductSuggestion | undefined
+  let bestLen = 0
+  let bestPos = Infinity
+  for (const p of PRODUCT_SUGGESTIONS) {
+    const t = tokens(p.name)
+    const pos = sequenceIndex(ingTokens, t)
+    if (pos === -1) continue
+    if (t.length > bestLen || (t.length === bestLen && pos < bestPos)) {
+      best = p
+      bestLen = t.length
+      bestPos = pos
+    }
+  }
+  return best
 }

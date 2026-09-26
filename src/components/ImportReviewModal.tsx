@@ -1,16 +1,24 @@
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useAppStore } from '../store/useAppStore'
-import { matchExistingItem } from '../utils/matchItem'
+import { matchCatalogProduct, matchExistingItem } from '../utils/matchItem'
+import { PRODUCT_SUGGESTIONS } from '../data/constants'
 import { useCategoryEmojiName } from '../hooks/useCategoryEmojiName'
 import { useCategoryColor } from '../hooks/useCategoryColor'
 import RecipeIllustration from './RecipeIllustration'
 import Emoji from './Emoji'
 import { SearchIcon, CrossIcon, CheckIcon, PlusIcon, ChevronDownIcon, TrashIcon, DownloadIcon } from './icons'
 import type { ImportedRecipe } from '../utils/importRecipe'
-import type { RecipeIngredient, ShoppingItem } from '../types'
+import type { ProductSuggestion, RecipeIngredient, ShoppingItem } from '../types'
 
-type Resolution = { mode: 'existing'; itemId: string; itemName: string; itemCategory: string } | { mode: 'new' }
+type Resolution =
+  | { mode: 'existing'; itemId: string; itemName: string; itemCategory: string }
+  | { mode: 'catalog'; product: ProductSuggestion }
+  | { mode: 'new' }
+
+function existingResolution(item: ShoppingItem): Resolution {
+  return { mode: 'existing', itemId: item.id, itemName: item.name, itemCategory: item.category }
+}
 
 // Shown right after a recipe import finishes parsing, before the recipe is
 // saved: for every imported ingredient, decide up front which existing
@@ -41,11 +49,23 @@ export default function ImportReviewModal({
   function resolutionFor(ing: RecipeIngredient): Resolution {
     if (overrides[ing.id]) return overrides[ing.id]
     const auto = matchExistingItem(ing.name, items)
-    return auto ? { mode: 'existing', itemId: auto.id, itemName: auto.name, itemCategory: auto.category } : { mode: 'new' }
+    if (auto) return existingResolution(auto)
+    const product = matchCatalogProduct(ing.name)
+    if (!product) return { mode: 'new' }
+    // The catalog match may itself already be one of the user's articles
+    // ("gousses d'ail" -> Ail, which they already have).
+    const existing = matchExistingItem(product.name, items)
+    return existing ? existingResolution(existing) : { mode: 'catalog', product }
   }
 
   function pickExisting(ingId: string, item: ShoppingItem) {
-    setOverrides((o) => ({ ...o, [ingId]: { mode: 'existing', itemId: item.id, itemName: item.name, itemCategory: item.category } }))
+    setOverrides((o) => ({ ...o, [ingId]: existingResolution(item) }))
+    setPickerFor(null)
+    setSearch('')
+  }
+
+  function pickCatalog(ingId: string, product: ProductSuggestion) {
+    setOverrides((o) => ({ ...o, [ingId]: { mode: 'catalog', product } }))
     setPickerFor(null)
     setSearch('')
   }
@@ -76,6 +96,13 @@ export default function ImportReviewModal({
         .sort((a, b) => a.name.localeCompare(b.name, 'fr'))
         .slice(0, 6)
     : []
+  const catalogResults = searchTrimmed
+    ? PRODUCT_SUGGESTIONS.filter(
+        (p) => p.name.toLowerCase().includes(searchTrimmed.toLowerCase()) && !matchExistingItem(p.name, items)
+      )
+        .sort((a, b) => a.name.localeCompare(b.name, 'fr'))
+        .slice(0, 6)
+    : []
 
   function handleConfirm() {
     const finalIngredients = ingredients.map((ing) => {
@@ -83,6 +110,18 @@ export default function ImportReviewModal({
       if (resolution.mode === 'existing') {
         const item = items.find((it) => it.id === resolution.itemId)
         return item ? { ...ing, name: item.name, category: item.category } : ing
+      }
+      if (resolution.mode === 'catalog') {
+        const { product } = resolution
+        addItem({
+          name: product.name,
+          category: product.category,
+          brand: product.brand || '',
+          store: product.store || '',
+          recurring: false,
+          toBuy: false
+        })
+        return { ...ing, name: product.name, category: product.category }
       }
       if (!matchExistingItem(ing.name, items)) {
         addItem({
@@ -176,6 +215,24 @@ export default function ImportReviewModal({
                             <span className="ml-1 truncate font-normal text-slate-400">· {resolution.itemCategory}</span>
                           </span>
                         </>
+                      ) : resolution.mode === 'catalog' ? (
+                        <>
+                          <span
+                            className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${colorFor(resolution.product.category).iconBg}`}
+                          >
+                            <Emoji name={emojiFor(resolution.product.category)} size={16} />
+                          </span>
+                          <span className="min-w-0 flex-1 truncate text-sm font-bold text-slate-800 dark:text-slate-100">
+                            {resolution.product.name}
+                            <span className="ml-1 truncate font-normal text-slate-400">· {resolution.product.category}</span>
+                          </span>
+                          <span
+                            title="Article du catalogue Explorer, il sera ajouté à tes articles"
+                            className="shrink-0 rounded-full bg-green-100 dark:bg-green-900/40 px-1.5 py-0.5 text-[10px] font-bold text-green-700 dark:text-green-300"
+                          >
+                            Explorer
+                          </span>
+                        </>
                       ) : (
                         <span className="min-w-0 flex-1 truncate text-sm font-bold text-brand-600 dark:text-brand-300">
                           Créer un nouvel article
@@ -194,7 +251,7 @@ export default function ImportReviewModal({
                             autoFocus
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            placeholder="Chercher un article existant…"
+                            placeholder="Chercher un article…"
                             className="w-full bg-transparent text-xs focus:outline-none"
                           />
                         </div>
@@ -213,6 +270,26 @@ export default function ImportReviewModal({
                               </li>
                             ))}
                           </ul>
+                        )}
+                        {catalogResults.length > 0 && (
+                          <>
+                            <p className="px-2.5 pt-1 text-[10px] font-bold uppercase tracking-wide text-slate-400">Depuis Explorer</p>
+                            <ul className="overflow-hidden rounded-lg ring-1 ring-slate-100 dark:ring-white/5">
+                              {catalogResults.map((p) => (
+                                <li key={p.name}>
+                                  <button
+                                    type="button"
+                                    onClick={() => pickCatalog(ing.id, p)}
+                                    className="flex w-full items-center gap-2 px-2.5 py-1.5 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-brand-50 dark:hover:bg-brand-900/40"
+                                  >
+                                    <Emoji name={emojiFor(p.category)} size={12} />
+                                    <span className="truncate">{p.name}</span>
+                                    <span className="ml-auto shrink-0 font-normal text-slate-400">{p.category}</span>
+                                  </button>
+                                </li>
+                              ))}
+                            </ul>
+                          </>
                         )}
                         <button
                           type="button"

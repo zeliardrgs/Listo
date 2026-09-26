@@ -186,6 +186,8 @@ export const PRODUCT_SUGGESTIONS: ProductSuggestion[] = [
   { name: 'Petit-suisse', category: 'Crémerie', unit: 'paquet' },
   { name: 'Margarine', category: 'Crémerie', unit: 'pièce' },
   { name: 'Lait végétal', category: 'Crémerie', unit: 'l' },
+  { name: 'Pâte feuilletée', category: 'Crémerie', unit: 'pièce' },
+  { name: 'Pâte brisée', category: 'Crémerie', unit: 'pièce' },
   { name: 'Emmental', category: 'Fromage', unit: 'g' },
   { name: 'Chèvre', category: 'Fromage', unit: 'pièce' },
   { name: 'Camembert', category: 'Fromage', unit: 'pièce' },
