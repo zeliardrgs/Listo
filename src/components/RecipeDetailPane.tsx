@@ -82,6 +82,17 @@ export default function RecipeDetailPane({
   const [name, setName] = useState(recipe?.name ?? initialName ?? '')
   const [tags, setTags] = useState<string[]>(recipe?.tags ?? [])
   const [imageUrl, setImageUrl] = useState(recipe?.imageUrl ?? '')
+  const [sourceUrl, setSourceUrl] = useState(recipe?.sourceUrl ?? '')
+  const sourceLink = useMemo(() => {
+    if (!recipe?.sourceUrl) return null
+    try {
+      const url = new URL(recipe.sourceUrl)
+      if (url.protocol !== 'http:' && url.protocol !== 'https:') return null
+      return { href: url.href, host: url.hostname.replace(/^www\./, '') }
+    } catch {
+      return null
+    }
+  }, [recipe?.sourceUrl])
   const [ingredients, setIngredients] = useState<RecipeIngredient[]>(recipe?.ingredients ?? [])
   const [instructions, setInstructions] = useState(recipe?.instructions ?? '')
   const [editServings, setEditServings] = useState(recipe?.servings ?? 4)
@@ -369,7 +380,7 @@ export default function RecipeDetailPane({
       instructions,
       tags,
       imageUrl: imageUrl || undefined,
-      sourceUrl: recipe?.sourceUrl
+      sourceUrl: sourceUrl || undefined
     }
     if (recipe) {
       updateRecipe(recipe.id, payload)
@@ -386,6 +397,7 @@ export default function RecipeDetailPane({
       setTags(recipe.tags)
       setImageUrl(recipe.imageUrl ?? '')
       setImageUrlDraft(recipe.imageUrl ?? '')
+      setSourceUrl(recipe.sourceUrl ?? '')
       setIngredients(recipe.ingredients)
       setInstructions(recipe.instructions)
       setEditServings(recipe.servings)
@@ -407,7 +419,7 @@ export default function RecipeDetailPane({
       instructions,
       tags,
       imageUrl: imageUrl || undefined,
-      sourceUrl: recipe.sourceUrl
+      sourceUrl: sourceUrl || undefined
     })
     onClose()
   }
@@ -536,7 +548,20 @@ export default function RecipeDetailPane({
       <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
         {mode === 'view' && recipe ? (
           <>
-            <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">{recipe.name}</h2>
+            <div>
+              <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">{recipe.name}</h2>
+              {sourceLink && (
+                <a
+                  href={sourceLink.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-1 inline-flex max-w-full items-center gap-1 text-xs font-semibold text-brand-600 dark:text-brand-300 hover:underline"
+                >
+                  <LinkIcon className="h-3.5 w-3.5 shrink-0" />
+                  <span className="truncate">Voir la recette sur {sourceLink.host}</span>
+                </a>
+              )}
+            </div>
 
             <div className="flex items-center justify-between">
               <div className="flex w-fit gap-1 rounded-full bg-slate-100 dark:bg-white/10 p-1 text-sm font-semibold">
@@ -980,6 +1005,7 @@ export default function RecipeDetailPane({
             setInstructions(importResult.instructions)
             setImageUrl(importResult.imageUrl || '')
             setImageUrlDraft(importResult.imageUrl || '')
+            setSourceUrl(importResult.sourceUrl)
             setImportResult(null)
           }}
         />

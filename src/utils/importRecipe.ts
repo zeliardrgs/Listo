@@ -7,6 +7,7 @@ export interface ImportedRecipe {
   ingredients: RecipeIngredient[]
   instructions: string
   imageUrl?: string
+  sourceUrl: string
 }
 
 function makeId() {
@@ -152,5 +153,5 @@ export async function importRecipeFromUrl(url: string, signal?: AbortSignal): Pr
   else if (Array.isArray(img)) imageUrl = typeof img[0] === 'string' ? img[0] : img[0]?.url
   else if (img?.url) imageUrl = img.url
 
-  return { name, servings, ingredients, instructions, imageUrl }
+  return { name, servings, ingredients, instructions, imageUrl, sourceUrl: url }
 }
