@@ -10,6 +10,9 @@ import { importRecipeFromUrl, type ImportedRecipe } from '../utils/importRecipe'
 import { matchExistingItem } from '../utils/matchItem'
 import RecipeIllustration from './RecipeIllustration'
 import ImportReviewModal from './ImportReviewModal'
+import RecipeSteps from './RecipeSteps'
+import CookingMode from './CookingMode'
+import { parseSteps } from '../utils/parseSteps'
 import Emoji from './Emoji'
 import {
   SearchIcon,
@@ -23,7 +26,8 @@ import {
   EditIcon,
   CalendarIcon,
   CheckIcon,
-  LinkIcon
+  LinkIcon,
+  ExpandIcon
 } from './icons'
 import type { Recipe, RecipeIngredient, RecipeQuantityContribution, Unit } from '../types'
 
@@ -82,6 +86,8 @@ export default function RecipeDetailPane({
   const [instructions, setInstructions] = useState(recipe?.instructions ?? '')
   const [editServings, setEditServings] = useState(recipe?.servings ?? 4)
   const [viewServings, setViewServings] = useState(recipe?.servings ?? 4)
+  const [cooking, setCooking] = useState(false)
+  const steps = useMemo(() => parseSteps(recipe?.instructions ?? ''), [recipe?.instructions])
   const [tab, setTab] = useState<'ingredients' | 'instructions'>('ingredients')
   const [confirmDelete, setConfirmDelete] = useState(false)
 
@@ -567,6 +573,16 @@ export default function RecipeDetailPane({
                   </button>
                 </div>
               )}
+              {tab === 'instructions' && (
+                <button
+                  type="button"
+                  onClick={() => setCooking(true)}
+                  className="flex shrink-0 items-center gap-1.5 rounded-full bg-brand-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-brand-700"
+                >
+                  <ExpandIcon className="h-3.5 w-3.5" />
+                  Mode cuisine
+                </button>
+              )}
             </div>
 
             {tab === 'ingredients' ? (
@@ -585,7 +601,18 @@ export default function RecipeDetailPane({
                 )}
               </div>
             ) : (
-              <p className="whitespace-pre-wrap text-sm text-slate-600 dark:text-slate-300">{recipe.instructions || 'Aucune instruction.'}</p>
+              <div className="pt-2">
+                <RecipeSteps steps={steps} />
+              </div>
+            )}
+            {cooking && (
+              <CookingMode
+                name={recipe.name}
+                ingredients={recipe.ingredients}
+                factor={recipe.servings ? viewServings / recipe.servings : 1}
+                steps={steps}
+                onClose={() => setCooking(false)}
+              />
             )}
           </>
         ) : (
@@ -843,7 +870,7 @@ export default function RecipeDetailPane({
                 value={instructions}
                 onChange={(e) => setInstructions(e.target.value)}
                 rows={10}
-                placeholder="Instructions (facultatif)"
+                placeholder="Instructions (facultatif) — une étape par ligne"
                 className="w-full rounded-lg border border-slate-200 dark:border-white/10 px-3 py-2 text-sm focus:border-brand-400 focus:outline-none"
               />
             )}
