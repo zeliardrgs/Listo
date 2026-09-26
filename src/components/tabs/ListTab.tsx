@@ -18,14 +18,20 @@ import { PlusIcon, CrossIcon, TrashIcon } from '../icons'
 import type { ShoppingItem } from '../../types'
 
 type SortMode = 'name' | 'store' | 'category' | 'favorite'
-type ListSubTab = 'mine' | 'explore'
+type ListSubTab = 'mine' | 'favorites' | 'explore'
 
 const SUBTAB_KEY = 'listo-list-subtab'
 
 const SUBTABS: { key: ListSubTab; label: string }[] = [
-  { key: 'mine', label: 'Ma liste' },
+  { key: 'mine', label: 'Tout' },
+  { key: 'favorites', label: 'Favoris' },
   { key: 'explore', label: 'Explorer' }
 ]
+
+function loadSubTab(): ListSubTab {
+  const stored = localStorage.getItem(SUBTAB_KEY)
+  return SUBTABS.some((t) => t.key === stored) ? (stored as ListSubTab) : 'mine'
+}
 
 interface Toast {
   message: string
@@ -63,9 +69,9 @@ export default function ListTab() {
   const emojiFor = useCategoryEmojiName()
   const colorFor = useCategoryColor()
   const storeIconFor = useStoreIcon()
-  const [subTab, setSubTab] = useState<ListSubTab>(() =>
-    localStorage.getItem(SUBTAB_KEY) === 'explore' ? 'explore' : 'mine'
-  )
+  const [subTab, setSubTab] = useState<ListSubTab>(loadSubTab)
+  const isFavoritesTab = subTab === 'favorites'
+  const baseItems = useMemo(() => (isFavoritesTab ? items.filter((it) => it.recurring) : items), [items, isFavoritesTab])
   const [showForm, setShowForm] = useState(false)
   const [formTargetKey, setFormTargetKey] = useState<string | null>(null)
   const [prefillName, setPrefillName] = useState('')
@@ -127,7 +133,7 @@ export default function ListTab() {
         setPrefillName('')
         setPrefillCategory('')
         setPrefillStore('')
-        setPrefillRecurring(false)
+        setPrefillRecurring(isFavoritesTab)
         setFormTargetKey(null)
       }
       return !v
@@ -138,7 +144,7 @@ export default function ListTab() {
     setPrefillName(name)
     setPrefillCategory('')
     setPrefillStore('')
-    setPrefillRecurring(false)
+    setPrefillRecurring(isFavoritesTab)
     setFormTargetKey(null)
     setShowForm(true)
   }
@@ -147,7 +153,7 @@ export default function ListTab() {
     setPrefillName('')
     setPrefillCategory(sortMode === 'category' ? g.label : '')
     setPrefillStore(sortMode === 'store' ? g.label : '')
-    setPrefillRecurring(sortMode === 'favorite' && g.key === 'favorites')
+    setPrefillRecurring(isFavoritesTab || (sortMode === 'favorite' && g.key === 'favorites'))
     setFormTargetKey(g.key)
     setShowForm(true)
   }
@@ -158,7 +164,7 @@ export default function ListTab() {
   }
 
   const groups = useMemo<Group[]>(() => {
-    const filtered = items.filter((it) => it.name.toLowerCase().includes(filter.trim().toLowerCase()))
+    const filtered = baseItems.filter((it) => it.name.toLowerCase().includes(filter.trim().toLowerCase()))
     if (sortMode === 'name') {
       const map = new Map<string, ShoppingItem[]>()
       filtered.forEach((it) => {
@@ -211,7 +217,7 @@ export default function ListTab() {
         color: sortMode === 'category' ? colorFor(label) : NEUTRAL_GROUP_COLOR,
         emojiKind: sortMode === 'category' ? 'category' : sortMode === 'store' ? 'store' : null
       }))
-  }, [items, sortMode, filter, colorFor])
+  }, [baseItems, sortMode, filter, colorFor])
 
   const resultCount = groups.reduce((n, g) => n + g.items.length, 0)
 
@@ -374,9 +380,11 @@ export default function ListTab() {
         </div>
       )}
 
-      {!isLoading && items.length === 0 && !filter.trim() && (
+      {!isLoading && baseItems.length === 0 && !filter.trim() && (
         <p className="order-4 mt-10 text-center text-sm text-slate-400 sm:order-none">
-          Aucun article. Utilise la barre de recherche ou le bouton « + » pour en ajouter un.
+          {isFavoritesTab
+            ? 'Aucun favori. Coche la case « Favoris » sur un article pour le retrouver ici.'
+            : 'Aucun article. Utilise la barre de recherche ou le bouton « + » pour en ajouter un.'}
         </p>
       )}
 
