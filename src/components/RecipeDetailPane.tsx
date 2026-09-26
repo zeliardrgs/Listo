@@ -130,11 +130,12 @@ export default function RecipeDetailPane({
   useEffect(() => {
     if (variant !== 'pane') return
     function onDocClick(e: MouseEvent) {
-      // The import review modal is rendered in a portal (so it can truly
-      // cover the whole screen instead of being trapped by this pane's own
-      // transform), so it's outside paneRef's DOM subtree even though it's
-      // conceptually "inside" — don't treat clicks in it as outside-clicks.
-      if (importResult) return
+      // The import review modal and cooking mode are rendered in portals (so
+      // they can truly cover the whole screen instead of being trapped by this
+      // pane's own transform), so they're outside paneRef's DOM subtree even
+      // though they're conceptually "inside" — don't treat clicks in them as
+      // outside-clicks.
+      if (importResult || cooking) return
       if (paneRef.current && !paneRef.current.contains(e.target as Node)) {
         if (isDirty) {
           e.preventDefault()
@@ -147,7 +148,7 @@ export default function RecipeDetailPane({
     }
     document.addEventListener('click', onDocClick, true)
     return () => document.removeEventListener('click', onDocClick, true)
-  }, [variant, isDirty, onClose, importResult])
+  }, [variant, isDirty, onClose, importResult, cooking])
 
   useEffect(() => () => clearTimeout(unsavedHintTimer.current), [])
 

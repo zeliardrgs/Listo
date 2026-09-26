@@ -70,7 +70,9 @@ export default function CookingMode({
   }
 
   return createPortal(
-    <div className="fixed inset-0 z-[100] flex flex-col bg-cream dark:bg-[#2a1b4d]">
+    // React events bubble through portals: stop clicks here from reaching the
+    // recipe modal's backdrop, which would close the recipe behind us.
+    <div className="fixed inset-0 z-[100] flex flex-col bg-cream dark:bg-[#2a1b4d]" onClick={(e) => e.stopPropagation()}>
       <div className="flex shrink-0 items-center gap-3 bg-brand-600 px-4 pb-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] sm:px-8">
         <p className="min-w-0 flex-1 truncate text-lg font-extrabold text-white sm:text-xl">{name}</p>
         <button
