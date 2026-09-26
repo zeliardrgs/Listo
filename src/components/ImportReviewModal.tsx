@@ -15,16 +15,18 @@ import type { ProductSuggestion, RecipeIngredient, ShoppingItem } from '../types
 type Resolution =
   | { mode: 'existing'; itemId: string; itemName: string; itemCategory: string }
   | { mode: 'catalog'; product: ProductSuggestion }
-  | { mode: 'new' }
+  | { mode: 'new'; name: string }
+  | { mode: 'none' }
 
 function existingResolution(item: ShoppingItem): Resolution {
   return { mode: 'existing', itemId: item.id, itemName: item.name, itemCategory: item.category }
 }
 
 // Shown right after a recipe import finishes parsing, before the recipe is
-// saved: for every imported ingredient, decide up front which existing
-// article it corresponds to (or that it needs a new one) — so importing
-// never silently creates a near-duplicate article ("oeuf" vs "Oeufs").
+// saved: for every imported ingredient, decide up front which article it
+// corresponds to. Unmatched ingredients stay "Aucune correspondance" (no
+// article created) unless a new article is explicitly created from the
+// picker — so importing never silently creates near-duplicates.
 export default function ImportReviewModal({
   imported,
   sourceHost,
@@ -60,7 +62,7 @@ export default function ImportReviewModal({
     }
     const product = resolution.mode === 'catalog' ? resolution.product : null
     return {
-      name: product?.name ?? ing.name,
+      name: product?.name ?? (resolution.mode === 'new' ? resolution.name : ing.name),
       category: product?.category ?? (ing.category || 'Autre'),
       brand: product?.brand || '',
       store: product?.store || getDefaultStore(),
@@ -95,29 +97,15 @@ export default function ImportReviewModal({
     const auto = matchExistingItem(ing.name, items)
     if (auto) return existingResolution(auto)
     const product = matchCatalogProduct(ing.name)
-    if (!product) return { mode: 'new' }
+    if (!product) return { mode: 'none' }
     // The catalog match may itself already be one of the user's articles
     // ("gousses d'ail" -> Ail, which they already have).
     const existing = matchExistingItem(product.name, items)
     return existing ? existingResolution(existing) : { mode: 'catalog', product }
   }
 
-  function pickExisting(ingId: string, item: ShoppingItem) {
-    setOverrides((o) => ({ ...o, [ingId]: existingResolution(item) }))
-    dropEdit(ingId)
-    setPickerFor(null)
-    setSearch('')
-  }
-
-  function pickCatalog(ingId: string, product: ProductSuggestion) {
-    setOverrides((o) => ({ ...o, [ingId]: { mode: 'catalog', product } }))
-    dropEdit(ingId)
-    setPickerFor(null)
-    setSearch('')
-  }
-
-  function pickNew(ingId: string) {
-    setOverrides((o) => ({ ...o, [ingId]: { mode: 'new' } }))
+  function pickResolution(ingId: string, resolution: Resolution) {
+    setOverrides((o) => ({ ...o, [ingId]: resolution }))
     dropEdit(ingId)
     setPickerFor(null)
     setSearch('')
@@ -163,22 +151,10 @@ export default function ImportReviewModal({
         updateItem(item.id, edit)
         return { ...ing, name: edit.name, category: edit.category }
       }
-      if (resolution.mode === 'catalog' || edit) {
-        const draft = edit ?? baseDraft(ing, resolution)
-        addItem(draft)
-        return { ...ing, name: draft.name, category: draft.category }
-      }
-      if (!matchExistingItem(ing.name, items)) {
-        addItem({
-          name: ing.name,
-          category: ing.category || 'Autre',
-          brand: '',
-          store: '',
-          recurring: false,
-          toBuy: false
-        })
-      }
-      return ing
+      if (resolution.mode === 'none') return ing
+      const draft = edit ?? baseDraft(ing, resolution)
+      addItem(draft)
+      return { ...ing, name: draft.name, category: draft.category }
     })
     onConfirm(name.trim() || imported.name, finalIngredients)
   }
@@ -225,21 +201,25 @@ export default function ImportReviewModal({
             {ingredients.map((ing) => {
               const resolution = resolutionFor(ing)
               const edit = edits[ing.id]
-              const display = edit
-                ? { name: edit.name, category: edit.category }
-                : resolution.mode === 'existing'
-                  ? { name: resolution.itemName, category: resolution.itemCategory }
-                  : resolution.mode === 'catalog'
-                    ? { name: resolution.product.name, category: resolution.product.category }
-                    : null
+              const display =
+                resolution.mode === 'none'
+                  ? null
+                  : edit
+                    ? { name: edit.name, category: edit.category }
+                    : resolution.mode === 'existing'
+                      ? { name: resolution.itemName, category: resolution.itemCategory }
+                      : resolution.mode === 'catalog'
+                        ? { name: resolution.product.name, category: resolution.product.category }
+                        : { name: resolution.name, category: ing.category || 'Autre' }
               const badge =
                 resolution.mode === 'catalog'
                   ? { label: 'Explorer', title: 'Article du catalogue Explorer, il sera ajouté à tes articles' }
-                  : resolution.mode === 'new' && edit
+                  : resolution.mode === 'new'
                     ? { label: 'Nouveau', title: 'Cet article sera créé à l’import' }
-                    : edit
+                    : resolution.mode === 'existing' && edit
                       ? { label: 'Modifié', title: 'Tes modifications seront appliquées à l’article à l’import' }
                       : null
+              const createName = searchTrimmed || ing.name
               return (
                 <div key={ing.id} className="space-y-2">
                 <div className="grid grid-cols-2 items-start gap-3">
@@ -278,8 +258,8 @@ export default function ImportReviewModal({
                           </span>
                         </>
                       ) : (
-                        <span className="min-w-0 flex-1 truncate text-sm font-bold text-brand-600 dark:text-brand-300">
-                          Créer un nouvel article
+                        <span className="min-w-0 flex-1 truncate text-sm font-semibold italic text-slate-400">
+                          Aucune correspondance
                         </span>
                       )}
                       {badge && (
@@ -300,12 +280,13 @@ export default function ImportReviewModal({
                     </button>
                     <button
                       type="button"
+                      disabled={resolution.mode === 'none'}
                       onClick={() => (editing?.ingId === ing.id ? setEditing(null) : openEditor(ing))}
-                      title="Modifier l'article"
-                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ring-1 ring-slate-100 dark:ring-white/5 ${
+                      title={resolution.mode === 'none' ? 'Choisis ou crée un article pour pouvoir le modifier' : "Modifier l'article"}
+                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ring-1 ring-slate-100 dark:ring-white/5 disabled:opacity-40 ${
                         editing?.ingId === ing.id
                           ? 'bg-brand-600 text-white'
-                          : 'bg-white dark:bg-[#5b3d94] text-slate-400 hover:text-brand-600 dark:hover:text-brand-300'
+                          : 'bg-white dark:bg-[#5b3d94] text-slate-400 enabled:hover:text-brand-600 dark:enabled:hover:text-brand-300'
                       }`}
                     >
                       <EditIcon className="h-3.5 w-3.5" />
@@ -329,7 +310,7 @@ export default function ImportReviewModal({
                               <li key={it.id}>
                                 <button
                                   type="button"
-                                  onClick={() => pickExisting(ing.id, it)}
+                                  onClick={() => pickResolution(ing.id, existingResolution(it))}
                                   className="flex w-full items-center gap-2 px-2.5 py-1.5 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-brand-50 dark:hover:bg-brand-900/40"
                                 >
                                   <CheckIcon className="h-3 w-3 shrink-0 text-brand-500 dark:text-brand-300" />
@@ -347,7 +328,7 @@ export default function ImportReviewModal({
                                 <li key={p.name}>
                                   <button
                                     type="button"
-                                    onClick={() => pickCatalog(ing.id, p)}
+                                    onClick={() => pickResolution(ing.id, { mode: 'catalog', product: p })}
                                     className="flex w-full items-center gap-2 px-2.5 py-1.5 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-brand-50 dark:hover:bg-brand-900/40"
                                   >
                                     <Emoji name={emojiFor(p.category)} size={12} />
@@ -361,12 +342,22 @@ export default function ImportReviewModal({
                         )}
                         <button
                           type="button"
-                          onClick={() => pickNew(ing.id)}
+                          onClick={() => pickResolution(ing.id, { mode: 'new', name: createName })}
                           className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs font-semibold text-brand-600 dark:text-brand-300 hover:bg-brand-50 dark:hover:bg-brand-900/40"
                         >
                           <PlusIcon className="h-3 w-3 shrink-0" />
-                          <span className="truncate">Créer « {ing.name} » comme nouvel article</span>
+                          <span className="truncate">Créer « {createName} » comme nouvel article</span>
                         </button>
+                        {resolution.mode !== 'none' && (
+                          <button
+                            type="button"
+                            onClick={() => pickResolution(ing.id, { mode: 'none' })}
+                            className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs font-semibold text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5"
+                          >
+                            <CrossIcon className="h-3 w-3 shrink-0" />
+                            <span className="truncate">Aucune correspondance</span>
+                          </button>
+                        )}
                       </div>
                     )}
                   </div>
